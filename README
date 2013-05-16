@@ -3,3 +3,33 @@ graph3 - a 3D graphing program
 very much still a work in process
 
 Watch this space for news as it happens (maybe - no promises)
+
+TODO:
+    windowing - SFML
+    widgets? - need to research possible to use with gtkmm, or sfgui
+    muParser
+    graph data structs
+        dynamically resizable?
+        support Cartesian, cylindrical, spherical, parametric
+        generate model, then dump? keep only eqn and evolute as needed?
+        look into getting norms from eqn - partial derivatives?
+    texturing
+    model display
+        want to use modern OGL - shaders
+    camera
+        if using shaders, can't use glulookat
+    config / keep most recent
+        libconfig++
+
+model generator(string eqn)
+    muparser magic
+    can muparser be run in parallel?
+
+    loop over max-min / step size
+        get coords
+        calc texture coords
+        normals
+            either from eqn if possible, or from avg (will need to be a separate loop)
+        
+    build opengl model (how with shaders?)
+
