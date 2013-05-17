@@ -8,7 +8,7 @@ OBJECTS = $(C_OBJECTS) $(CXX_OBJECTS)
 
 INCLUDE_DIRS :=
 LIBRARY_DIRS :=
-LIBRARIES := sfml-window
+LIBRARIES := sfml-window GL GLU
 
 REL_FLAGS := -O2 -fomit-frame-pointer
 DBG_FLAGS := -g -DDEBUG
