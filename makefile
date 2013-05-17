@@ -1,6 +1,6 @@
 TARGET := graph3
 C_SOURCES :=
-CXX_SOURCES :=
+CXX_SOURCES := window.cpp
 SOURCES := $(C_SOURCES) $(CXX_SOURCES)
 C_OBJECTS := ${C_SOURCES:.c=.o}
 CXX_OBJECTS := ${CXX_SOURCES:.cpp=.o}
@@ -8,7 +8,7 @@ OBJECTS = $(C_OBJECTS) $(CXX_OBJECTS)
 
 INCLUDE_DIRS :=
 LIBRARY_DIRS :=
-LIBRARIES :=
+LIBRARIES := sfml-window
 
 REL_FLAGS := -O2 -fomit-frame-pointer
 DBG_FLAGS := -g -DDEBUG
