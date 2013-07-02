@@ -1,3 +1,7 @@
+// window.cpp
+// Copyright 2013 Matthew Chandler
+// windowing code. Using GTK to create the window, SFML to do openGL graphics.
+
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 #include <gtkmm.h>
