@@ -21,5 +21,6 @@ include_directories(${GTKMM_INCLUDE_DIRS})
 link_directories(${GTKMM_LINK_DIRS})
 
 add_executable(${PROJECT_NAME}
-    src/window.cpp)
+    src/window.cpp
+    src/SFML_widget.cpp)
 target_link_libraries(${PROJECT_NAME} ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES})

@@ -1,5 +1,5 @@
-// window.cpp
-// windowing code. Using GTK to create the window, SFML to do openGL graphics.
+// SFML_widget.h
+// GTK widget containing an SFML OpenGL drawing context
 
 // Copyright 2013 Matthew Chandler
 
@@ -20,28 +20,36 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <iostream>
+#ifndef __SFML_WIDGET_H__
+#define __SFML_WIDGET_H__
 
-#include <gtkmm/box.h>
-#include <gtkmm/main.h>
-#include <gtkmm/window.h>
+#include <SFML/Window.hpp>
+#include <SFML/OpenGL.hpp>
 
-#include "SFML_widget.h"
+#include <gdkmm/general.h>
+#include <gdk/gdk.h>
+#include <gdk/gdkx.h>
 
-int main(int argc, char* argv[])
+#include <gtkmm/widget.h>
+
+class SFML_widget: public Gtk::Widget, public sf::Window
 {
-    Gtk::Main kit(argc, argv);
-    Gtk::Window gtk_window;
-    Gtk::VBox main_box;
+public:
+    SFML_widget(sf::VideoMode Mode);
 
-    SFML_widget gl_window(sf::VideoMode(640, 480));
+protected:
+    sf::VideoMode m_vMode;
 
-    gl_window.show();
-    main_box.pack_start(gl_window);
-    main_box.show();
+    virtual void on_size_request(Gtk::Requisition* requisition);
+    virtual void on_size_allocate(Gtk::Allocation& allocation);
+    virtual void on_map();
+    virtual void on_unmap();
+    virtual void on_realize();
+    virtual void on_unrealize();
+    virtual bool on_idle();
+    virtual bool on_expose_event(GdkEventExpose* event);
 
-    gtk_window.add(main_box);
+    Glib::RefPtr<Gdk::Window> gdk_window;
+};
 
-    Gtk::Main::run(gtk_window);
-    return 0;
-}
+#endif // __SFML_WIDGET_H__
