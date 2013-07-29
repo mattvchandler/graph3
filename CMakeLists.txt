@@ -15,6 +15,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 find_package(PkgConfig)
 pkg_check_modules(GTKMM gtkmm-2.4)
 find_package(SFML 2 COMPONENTS window system)
+pkg_check_modules(MUPARSER muparser)
 find_package(OpenGL)
 
 include_directories(${GTKMM_INCLUDE_DIRS})
@@ -24,3 +25,8 @@ add_executable(${PROJECT_NAME}
     src/window.cpp
     src/SFML_widget.cpp)
 target_link_libraries(${PROJECT_NAME} ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES})
+
+add_executable(graph_test
+    src/graph.cpp
+    src/graph_test.cpp)
+target_link_libraries(graph_test ${MUPARSER_LIBRARIES})
