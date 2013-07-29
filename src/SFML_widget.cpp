@@ -115,8 +115,6 @@ bool SFML_widget::on_expose_event(GdkEventExpose* event)
 {
     if(gdk_window)
     {
-        glClearColor(0.25f, 0.25f, 0.25f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         display();
     }
 

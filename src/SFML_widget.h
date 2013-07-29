@@ -26,6 +26,7 @@
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 
+#include <gtkmm/window.h>
 #include <gdkmm/general.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
