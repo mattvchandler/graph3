@@ -26,46 +26,55 @@
 #include <gtkmm/main.h>
 #include <gtkmm/window.h>
 
-#include "SFML_widget.h"
+#include <glibmm/main.h>
 
-class Graph_disp: public SFML_widget
+#include "SFMLWidget/SFMLWidget.h"
+
+class Graph_disp: public SFMLWidget
 {
 public:
-    Graph_disp(sf::VideoMode Mode): SFML_widget(Mode)
+    Graph_disp(sf::VideoMode Mode): SFMLWidget(Mode)
     {
+        std::cout<<"constructing"<<std::endl;
+        Glib::signal_idle().connect(sigc::mem_fun(*this, &Graph_disp::on_idle));
     }
 
     void on_realize()
     {
-        SFML_widget::on_realize();
+        std::cout<<"realizing"<<std::endl;
+        SFMLWidget::on_realize();
 
         glClearColor(0.25f, 0.25f, 0.25f, 0.0f);
 
-        float aspect = (float)gdk_window->get_width() / (float)gdk_window->get_height(); glViewport(0, 0, gdk_window->get_width(), gdk_window->get_height());
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
+        float aspect = (float)glWindow.getSize().x / (float)glWindow.getSize().y;
         gluOrtho2D(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f);
         glMatrixMode(GL_MODELVIEW);
+        invalidate();
     }
 
     void on_size_allocate(Gtk::Allocation & allocation)
     {
-        SFML_widget::on_size_allocate(allocation);
+        std::cout<<"allocating"<<std::endl;
+        SFMLWidget::on_size_allocate(allocation);
 
-        if(gdk_window)
+        if(m_refGdkWindow)
         {
-            float aspect = (float)gdk_window->get_width() / (float)gdk_window->get_height();
-            glViewport(0, 0, gdk_window->get_width(), gdk_window->get_height());
+            glViewport(0, 0, glWindow.getSize().x, glWindow.getSize().y);
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
+            float aspect = (float)glWindow.getSize().x / (float)glWindow.getSize().y;
             gluOrtho2D(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f);
             glMatrixMode(GL_MODELVIEW);
         }
+        invalidate();
     }
 
     bool on_idle()
     {
-        if(gdk_window)
+        // std::cout<<"running"<<std::endl;
+        if(m_refGdkWindow)
         {
             // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -84,6 +93,7 @@ public:
             display();
 
             rotation += .01f;
+            invalidate();
         }
         return true;
     }
