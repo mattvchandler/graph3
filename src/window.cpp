@@ -36,65 +36,66 @@ public:
     Graph_disp(sf::VideoMode Mode): SFMLWidget(Mode)
     {
         std::cout<<"constructing"<<std::endl;
-        Glib::signal_idle().connect(sigc::mem_fun(*this, &Graph_disp::on_idle));
+        signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
+        signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::draw));
+        Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_disp::rotate), 1000);
     }
 
-    void on_realize()
+    void resize(Gtk::Allocation & allocation)
     {
-        std::cout<<"realizing"<<std::endl;
-        SFMLWidget::on_realize();
+        std::cout<<"allocating"<<std::endl;
 
         glClearColor(0.25f, 0.25f, 0.25f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glViewport(0, 0, glWindow.getSize().x, glWindow.getSize().y);
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         float aspect = (float)glWindow.getSize().x / (float)glWindow.getSize().y;
         gluOrtho2D(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f);
+
         glMatrixMode(GL_MODELVIEW);
         invalidate();
     }
 
-    void on_size_allocate(Gtk::Allocation & allocation)
+    bool draw(const Cairo::RefPtr<Cairo::Context> & cr)
     {
-        std::cout<<"allocating"<<std::endl;
-        SFMLWidget::on_size_allocate(allocation);
-
+        // std::cout<<"drawing"<<std::endl;
         if(m_refGdkWindow)
         {
-            glViewport(0, 0, glWindow.getSize().x, glWindow.getSize().y);
-            glMatrixMode(GL_PROJECTION);
-            glLoadIdentity();
-            float aspect = (float)glWindow.getSize().x / (float)glWindow.getSize().y;
-            gluOrtho2D(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f);
-            glMatrixMode(GL_MODELVIEW);
-        }
-        invalidate();
-    }
-
-    bool on_idle()
-    {
-        // std::cout<<"running"<<std::endl;
-        if(m_refGdkWindow)
-        {
-            // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glLoadIdentity();
             glRotatef(rotation, 0.0f, 0.0f, 1.0f);
 
-            glBegin(GL_TRIANGLES);
-            glColor4f(1.0f, 0.0f, 0.0f, 0.0f);
-            glVertex3f(0.0f, sqrt(3.0f) / 3.0f, 0.0f);
-            glColor4f(0.0f, 1.0f, 0.0f, 0.0f);
-            glVertex3f(0.5f, -sqrt(3.0f) / 6.0f, 0.0f);
-            glColor4f(0.0f, 0.0f, 1.0f, 0.0f);
-            glVertex3f(-0.5f, -sqrt(3.0f) / 6.0f, 0.0f);
+            glBegin(GL_TRIANGLE_FAN);
+            glColor4f(1.0f, 1.0f, 1.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f);
+            glColor4f(1.0f, 0.0f, 0.0f, 0.0f); glVertex3f(0.5f, sqrt(3.0f) / 2.0f, 0.0f);
+            glColor4f(1.0f, 1.0f, 0.0f, 0.0f); glVertex3f(-0.5f, sqrt(3.0f) / 2.0f, 0.0f);
+            glColor4f(0.0f, 1.0f, 0.0f, 0.0f); glVertex3f(-1.0f, 0.0f, 0.0f);
+            glColor4f(0.0f, 1.0f, 1.0f, 0.0f); glVertex3f(-0.5f, -sqrt(3.0f) / 2.0f, 0.0f);
+            glColor4f(0.0f, 0.0f, 1.0f, 0.0f); glVertex3f(0.5f, -sqrt(3.0f) / 2.0f, 0.0f);
+            glColor4f(1.0f, 0.0f, 1.0f, 0.0f); glVertex3f(1.0f, 0.0f, 0.0f);
+            glColor4f(1.0f, 0.0f, 0.0f, 0.0f); glVertex3f(0.5f, sqrt(3.0f) / 2.0f, 0.0f);
+            // glColor4f(1.0f, 0.0f, 0.0f, 0.0f); glVertex3f(0.0f, sqrt(3.0f) / 3.0f, 0.0f);
+            // glColor4f(0.0f, 1.0f, 0.0f, 0.0f); glVertex3f(0.5f, -sqrt(3.0f) / 6.0f, 0.0f);
+            // glColor4f(0.0f, 0.0f, 1.0f, 0.0f); glVertex3f(-0.5f, -sqrt(3.0f) / 6.0f, 0.0f);
             glEnd();
 
             display();
-
-            rotation += .01f;
-            invalidate();
         }
+        return true;
+    }
+
+    bool rotate()
+    {
+        // std::cout<<"rotating owl"<<std::endl;
+        rotation += 360.0f / 60.0f;
+        if(rotation > 360.0f)
+            rotation -= 360.0f;
+
+        invalidate();
         return true;
     }
 
@@ -108,7 +109,7 @@ int main(int argc, char* argv[])
     Gtk::Window gtk_window;
     Gtk::VBox main_box;
 
-    Graph_disp gl_window(sf::VideoMode(640, 480));
+    Graph_disp gl_window(sf::VideoMode(800, 600));
 
     gl_window.show();
     main_box.pack_start(gl_window);
