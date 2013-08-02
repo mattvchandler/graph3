@@ -39,6 +39,10 @@ public:
         signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
         signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::draw));
         Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_disp::rotate), 1000);
+        Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_disp::rotate_z), 1);
+
+        rotation = 0.0f;
+        rotation_z = 0.0f;
     }
 
     void resize(Gtk::Allocation & allocation)
@@ -53,9 +57,12 @@ public:
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         float aspect = (float)glWindow.getSize().x / (float)glWindow.getSize().y;
-        gluOrtho2D(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f);
+        // gluOrtho2D(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f);
+        gluPerspective(30.0f, aspect, 0.1f, 1000.0f);
 
         glMatrixMode(GL_MODELVIEW);
+        glEnable(GL_DEPTH_TEST);
+        glLineWidth(5.0f);
         invalidate();
     }
 
@@ -67,24 +74,70 @@ public:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glLoadIdentity();
+            glTranslatef(0.0f, 0.0f, -3.0f);
+            glRotatef(rotation_z, 0.0f, 1.0f, 0.0f);
             glRotatef(rotation, 0.0f, 0.0f, 1.0f);
 
-            glBegin(GL_TRIANGLE_FAN);
-            glColor4f(1.0f, 1.0f, 1.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f);
-            glColor4f(1.0f, 0.0f, 0.0f, 0.0f); glVertex3f(0.5f, sqrt(3.0f) / 2.0f, 0.0f);
-            glColor4f(1.0f, 1.0f, 0.0f, 0.0f); glVertex3f(-0.5f, sqrt(3.0f) / 2.0f, 0.0f);
-            glColor4f(0.0f, 1.0f, 0.0f, 0.0f); glVertex3f(-1.0f, 0.0f, 0.0f);
-            glColor4f(0.0f, 1.0f, 1.0f, 0.0f); glVertex3f(-0.5f, -sqrt(3.0f) / 2.0f, 0.0f);
-            glColor4f(0.0f, 0.0f, 1.0f, 0.0f); glVertex3f(0.5f, -sqrt(3.0f) / 2.0f, 0.0f);
-            glColor4f(1.0f, 0.0f, 1.0f, 0.0f); glVertex3f(1.0f, 0.0f, 0.0f);
-            glColor4f(1.0f, 0.0f, 0.0f, 0.0f); glVertex3f(0.5f, sqrt(3.0f) / 2.0f, 0.0f);
+            glBegin(GL_TRIANGLES);
+            // Hexagon (using triangle fan
+            // glColor4f(1.0f, 1.0f, 1.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f);
+            // glColor4f(1.0f, 0.0f, 0.0f, 0.0f); glVertex3f(0.5f, sqrt(3.0f) / 2.0f, 0.0f);
+            // glColor4f(1.0f, 1.0f, 0.0f, 0.0f); glVertex3f(-0.5f, sqrt(3.0f) / 2.0f, 0.0f);
+            // glColor4f(0.0f, 1.0f, 0.0f, 0.0f); glVertex3f(-1.0f, 0.0f, 0.0f);
+            // glColor4f(0.0f, 1.0f, 1.0f, 0.0f); glVertex3f(-0.5f, -sqrt(3.0f) / 2.0f, 0.0f);
+            // glColor4f(0.0f, 0.0f, 1.0f, 0.0f); glVertex3f(0.5f, -sqrt(3.0f) / 2.0f, 0.0f);
+            // glColor4f(1.0f, 0.0f, 1.0f, 0.0f); glVertex3f(1.0f, 0.0f, 0.0f);
+            // glColor4f(1.0f, 0.0f, 0.0f, 0.0f); glVertex3f(0.5f, sqrt(3.0f) / 2.0f, 0.0f);
+
+            // Triangle
             // glColor4f(1.0f, 0.0f, 0.0f, 0.0f); glVertex3f(0.0f, sqrt(3.0f) / 3.0f, 0.0f);
             // glColor4f(0.0f, 1.0f, 0.0f, 0.0f); glVertex3f(0.5f, -sqrt(3.0f) / 6.0f, 0.0f);
             // glColor4f(0.0f, 0.0f, 1.0f, 0.0f); glVertex3f(-0.5f, -sqrt(3.0f) / 6.0f, 0.0f);
+
+            // Tetragedron
+            glColor4f(1.0f, 0.0f, 0.0f, 0.0f); glVertex3f(0.0f, -sqrt(6.0f) / 6.0f, sqrt(3.0f) / 3.0f);
+            glColor4f(0.0f, 1.0f, 0.0f, 0.0f); glVertex3f(0.5f, -sqrt(6.0f) / 6.0f, -sqrt(3.0f) / 6.0f);
+            glColor4f(0.0f, 0.0f, 1.0f, 0.0f); glVertex3f(-0.5f, -sqrt(6.0f) / 6.0f, -sqrt(3.0f) / 6.0f);
+
+            glColor4f(1.0f, 1.0f, 1.0f, 0.0f); glVertex3f(0.0f, sqrt(6.0f) / 6.0f, 0.0f);
+            glColor4f(0.0f, 1.0f, 0.0f, 0.0f); glVertex3f(0.5f, -sqrt(6.0f) / 6.0f, -sqrt(3.0f) / 6.0f);
+            glColor4f(0.0f, 0.0f, 1.0f, 0.0f); glVertex3f(-0.5f, -sqrt(6.0f) / 6.0f, -sqrt(3.0f) / 6.0f);
+
+            glColor4f(1.0f, 1.0f, 1.0f, 0.0f); glVertex3f(0.0f, sqrt(6.0f) / 6.0f, 0.0f);
+            glColor4f(1.0f, 0.0f, 0.0f, 0.0f); glVertex3f(0.0f, -sqrt(6.0f) / 6.0f, sqrt(3.0f) / 3.0f);
+            glColor4f(0.0f, 0.0f, 1.0f, 0.0f); glVertex3f(-0.5f, -sqrt(6.0f) / 6.0f, -sqrt(3.0f) / 6.0f);
+
+            glColor4f(1.0f, 1.0f, 1.0f, 0.0f); glVertex3f(0.0f, sqrt(6.0f) / 6.0f, 0.0f);
+            glColor4f(1.0f, 0.0f, 0.0f, 0.0f); glVertex3f(0.0f, -sqrt(6.0f) / 6.0f, sqrt(3.0f) / 3.0f);
+            glColor4f(0.0f, 1.0f, 0.0f, 0.0f); glVertex3f(0.5f, -sqrt(6.0f) / 6.0f, -sqrt(3.0f) / 6.0f);
+
+            glEnd();
+
+            // tetrahedron edges
+            glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
+            glBegin(GL_LINES);
+            glVertex3f(0.0f, -sqrt(6.0f) / 6.0f, sqrt(3.0f) / 3.0f); glVertex3f(0.5f, -sqrt(6.0f) / 6.0f, -sqrt(3.0f) / 6.0f);
+            glVertex3f(0.5f, -sqrt(6.0f) / 6.0f, -sqrt(3.0f) / 6.0f); glVertex3f(-0.5f, -sqrt(6.0f) / 6.0f, -sqrt(3.0f) / 6.0f);
+            glVertex3f(0.0f, -sqrt(6.0f) / 6.0f, sqrt(3.0f) / 3.0f); glVertex3f(-0.5f, -sqrt(6.0f) / 6.0f, -sqrt(3.0f) / 6.0f);
+
+            glVertex3f(0.0f, sqrt(6.0f) / 6.0f, 0.0f); glVertex3f(0.5f, -sqrt(6.0f) / 6.0f, -sqrt(3.0f) / 6.0f);
+            glVertex3f(0.0f, sqrt(6.0f) / 6.0f, 0.0f); glVertex3f(-0.5f, -sqrt(6.0f) / 6.0f, -sqrt(3.0f) / 6.0f);
+            glVertex3f(0.0f, sqrt(6.0f) / 6.0f, 0.0f); glVertex3f(0.0f, -sqrt(6.0f) / 6.0f, sqrt(3.0f) / 3.0f);
             glEnd();
 
             display();
         }
+        return true;
+    }
+
+    bool rotate_z()
+    {
+        // std::cout<<"rotating owl"<<std::endl;
+        rotation_z += .05f;
+        if(rotation_z > 360.0f)
+            rotation_z -= 360.0f;
+
+        invalidate();
         return true;
     }
 
@@ -99,8 +152,10 @@ public:
         return true;
     }
 
+
 private:
     float rotation;
+    float rotation_z;
 };
 
 int main(int argc, char* argv[])
@@ -116,6 +171,9 @@ int main(int argc, char* argv[])
     main_box.show();
 
     gtk_window.add(main_box);
+
+    std::cout<<"OpenGL version: "<<glGetString(GL_VERSION)<<std::endl;
+    std::cout<<"GLSL version: "<<glGetString(GL_SHADING_LANGUAGE_VERSION)<<std::endl;
 
     Gtk::Main::run(gtk_window);
     return 0;
