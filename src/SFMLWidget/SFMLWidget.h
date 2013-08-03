@@ -26,10 +26,13 @@ protected:
     virtual void on_unrealize();
 
     Glib::RefPtr<Gdk::Window> m_refGdkWindow;
+    
+    sf::ContextSettings gl_context_settings;
+
 public:
     sf::Window glWindow;
 
-    SFMLWidget(sf::VideoMode mode, int size_request=-1);
+    SFMLWidget(const sf::VideoMode & mode, const int size_request=-1, const sf::ContextSettings & context_settings = sf::ContextSettings());
     virtual ~SFMLWidget();
 
     void invalidate();

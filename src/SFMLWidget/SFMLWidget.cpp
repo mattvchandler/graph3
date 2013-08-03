@@ -29,7 +29,7 @@
 #endif
 
 
-SFMLWidget::SFMLWidget(sf::VideoMode mode, int size_request)
+SFMLWidget::SFMLWidget(const sf::VideoMode & mode, int size_request, const sf::ContextSettings & context_settings): gl_context_settings(context_settings)
 {
     if(size_request<=0)
         size_request = std::max<int>(1, std::min<int>(mode.width, mode.height) / 2);
@@ -102,7 +102,7 @@ void SFMLWidget::on_realize()
         //make the widget receive expose events
         m_refGdkWindow->set_user_data(gobj());
 
-        glWindow.create(GET_WINDOW_HANDLE_FROM_GDK(m_refGdkWindow->gobj()));
+        glWindow.create(GET_WINDOW_HANDLE_FROM_GDK(m_refGdkWindow->gobj()), gl_context_settings);
     }
 }
 

@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project(graph3)
 
 set(CMAKE_CXX_FLAGS "-Wall -std=c++11")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -17,14 +17,16 @@ pkg_check_modules(GTKMM gtkmm-3.0)
 find_package(SFML 2 COMPONENTS window system)
 pkg_check_modules(MUPARSER muparser)
 find_package(OpenGL)
+find_package(GLEW)
 
-include_directories(${GTKMM_INCLUDE_DIRS})
+include_directories(${GTKMM_INCLUDE_DIRS}, ${CMAKE_CURRENT_SOURCE_DIR}/src/)
 link_directories(${GTKMM_LINK_DIRS})
 
 add_executable(${PROJECT_NAME}
     src/window.cpp
     src/SFMLWidget/SFMLWidget.cpp)
-target_link_libraries(${PROJECT_NAME} ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}
+    ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
 
 add_executable(graph_test
     src/graph.cpp
