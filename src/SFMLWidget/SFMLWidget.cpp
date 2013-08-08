@@ -33,7 +33,7 @@ SFMLWidget::SFMLWidget(const sf::VideoMode & mode, int size_request, const sf::C
 {
     if(size_request<=0)
         size_request = std::max<int>(1, std::min<int>(mode.width, mode.height) / 2);
-        
+
     set_size_request(size_request, size_request);
 
     set_has_window(false); // Makes this behave like an interal object rather then a parent window.

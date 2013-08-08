@@ -18,6 +18,7 @@ find_package(SFML 2 COMPONENTS window system)
 pkg_check_modules(MUPARSER muparser)
 find_package(OpenGL)
 find_package(GLEW)
+find_package(GLM)
 
 include_directories(${GTKMM_INCLUDE_DIRS}, ${CMAKE_CURRENT_SOURCE_DIR}/src/)
 link_directories(${GTKMM_LINK_DIRS})
