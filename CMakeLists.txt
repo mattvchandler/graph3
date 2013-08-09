@@ -16,18 +16,19 @@ find_package(PkgConfig)
 pkg_check_modules(GTKMM gtkmm-3.0)
 find_package(SFML 2 COMPONENTS window system)
 pkg_check_modules(MUPARSER muparser)
+find_package(LibPNG++)
 find_package(OpenGL)
 find_package(GLEW)
 find_package(GLM)
 
-include_directories(${GTKMM_INCLUDE_DIRS}, ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+include_directories(${GTKMM_INCLUDE_DIRS}, ${LIBPNG++_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/src/)
 link_directories(${GTKMM_LINK_DIRS})
 
 add_executable(${PROJECT_NAME}
     src/window.cpp
     src/SFMLWidget/SFMLWidget.cpp)
 target_link_libraries(${PROJECT_NAME}
-    ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
+    ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${LIBPNG++_LIBRARIES})
 
 add_executable(graph_test
     src/graph.cpp

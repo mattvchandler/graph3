@@ -26,6 +26,10 @@
 #include <string>
 #include <vector>
 
+#include <cmath>
+
+#include <png++/png.hpp>
+
 #include <GL/glew.h>
 
 #include <SFML/OpenGL.hpp>
@@ -42,6 +46,14 @@
 
 
 #include "SFMLWidget/SFMLWidget.h"
+
+void check_error(const char * at)
+{
+    GLenum e = glGetError();
+    if(e == GL_NO_ERROR)
+        return;
+    std::cerr<<"OpenGL Error at "<<at<<": "<<gluErrorString(e)<<std::endl;
+}
 
 GLuint compile_shader(const char * filename, GLenum shader_type)
 {
@@ -124,6 +136,25 @@ GLuint link_shader_prog(const std::vector<GLuint> & shaders)
 
 }
 
+std::vector<float> read_png(const char * filename)
+{
+    png::image<png::rgba_pixel> image(filename);
+    std::vector<float> data(image.get_height() * image.get_width() * 4);
+
+    for(size_t r = 0; r < image.get_height(); ++r)
+    {
+        for(size_t c = 0; c < image.get_width(); ++c)
+        {
+            data[(image.get_width() * r + c) * 4 + 0] = (float)image[r][c].red / 255.0f;
+            data[(image.get_width() * r + c) * 4 + 1] = (float)image[r][c].green / 255.0f;
+            data[(image.get_width() * r + c) * 4 + 2] = (float)image[r][c].blue / 255.0f;
+            data[(image.get_width() * r + c) * 4 + 3] = (float)image[r][c].alpha / 255.0f;
+        }
+    }
+
+    return data;
+}
+
 class Graph_disp final: public SFMLWidget
 {
 public:
@@ -152,14 +183,12 @@ public:
     {
         if(shader_prog != 0)
             glDeleteProgram(shader_prog);
-        if(vao != 0)
-            glDeleteVertexArrays(1, &vao);
-        if(vao_lines != 0)
-            glDeleteVertexArrays(1, &vao_lines);
+        // this is so bad...
+        if(vao[0] != 0)
+            glDeleteVertexArrays(4, &vao[0]);
         // if(buffer != 0)
         //     glInvalidateBufferData(buffer);
-        // if(line_buffer != 0)
-        //     glInvalidateBufferData(line_buffer);
+        glDeleteTextures(textures.size(), &textures[0]);
     }
 
     void realize()
@@ -180,11 +209,9 @@ public:
         glDepthRangef(0.0f, 1.0f);
         glLineWidth(5.0f);
 
-        glEnable(GL_LINE_SMOOTH);
         glEnable(GL_POLYGON_SMOOTH);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
         glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
 
         // build shader program
@@ -204,95 +231,87 @@ public:
         glUseProgram(shader_prog);
 
         // generate buffers for verts and colors
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
+        vao.resize(4);
+        buffer.resize(vao.size());
+        glGenVertexArrays(4, &vao[0]);
+        for(size_t i = 0; i < vao.size(); ++i)
+        {
+            glBindVertexArray(vao[i]);
 
-        std::vector<glm::vec3> verts;
-        std::vector<glm::vec4> vert_color;
+            std::vector<glm::vec3> verts;
+            std::vector<glm::vec2> texs;
 
-        vert_color.push_back(colors[RED]); vert_color.push_back(colors[RED]); vert_color.push_back(colors[RED]);
-        verts.push_back(tet_coords[0]); verts.push_back(tet_coords[1]); verts.push_back(tet_coords[2]);
-        vert_color.push_back(colors[GREEN]); vert_color.push_back(colors[GREEN]); vert_color.push_back(colors[GREEN]);
-        verts.push_back(tet_coords[0]); verts.push_back(tet_coords[3]); verts.push_back(tet_coords[1]);
-        vert_color.push_back(colors[BLUE]); vert_color.push_back(colors[BLUE]); vert_color.push_back(colors[BLUE]);
-        verts.push_back(tet_coords[0]); verts.push_back(tet_coords[2]); verts.push_back(tet_coords[3]);
-        vert_color.push_back(colors[YELLOW]); vert_color.push_back(colors[YELLOW]); vert_color.push_back(colors[YELLOW]);
-        verts.push_back(tet_coords[1]); verts.push_back(tet_coords[2]); verts.push_back(tet_coords[3]);
+            texs.push_back(tex_coords[0]); texs.push_back(tex_coords[1]); texs.push_back(tex_coords[2]);
 
-        glGenBuffers(1, &buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3) + vert_color.size() * sizeof(glm::vec4), NULL, GL_STATIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, verts.size() * sizeof(glm::vec3), &verts[0]);
-        glBufferSubData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3), vert_color.size() * sizeof(glm::vec4), &vert_color[0]);
+            switch(i)
+            {
+            case 0:
+                verts.push_back(tet_coords[0]); verts.push_back(tet_coords[2]); verts.push_back(tet_coords[1]);
+                break;
+            case 1:
+                verts.push_back(tet_coords[0]); verts.push_back(tet_coords[1]); verts.push_back(tet_coords[3]);
+                break;
+            case 2:
+                verts.push_back(tet_coords[0]); verts.push_back(tet_coords[3]); verts.push_back(tet_coords[2]);
+                break;
+            case 3:
+                verts.push_back(tet_coords[3]); verts.push_back(tet_coords[1]); verts.push_back(tet_coords[2]);
+                break;
+            }
 
-        glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-        glEnableVertexAttribArray(pos);
+            glGenBuffers(1, &buffer[i]);
+            glBindBuffer(GL_ARRAY_BUFFER, buffer[i]);
+            glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3) + texs.size() * sizeof(glm::vec2), NULL, GL_STATIC_DRAW);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, verts.size() * sizeof(glm::vec3), &verts[0]);
+            glBufferSubData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3), texs.size() * sizeof(glm::vec2), &texs[0]);
 
-        glVertexAttribPointer(color, 4, GL_FLOAT, GL_TRUE, 0, (void *)(verts.size() * sizeof(glm::vec3)));
-        glEnableVertexAttribArray(color);
+            glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(pos);
 
-        //buffers for lines
-        glGenVertexArrays(1, &vao_lines);
-        glBindVertexArray(vao_lines);
+            glVertexAttribPointer(tex, 2, GL_FLOAT, GL_FALSE, 0, (void *)(verts.size() * sizeof(glm::vec3)));
+            glEnableVertexAttribArray(tex);
+        }
+        // load images
+        glEnable(GL_TEXTURE_2D);
 
-        verts.clear();
-        vert_color.clear();
+        std::vector<std::vector<float>> texture_data;
 
-        // outlines
-        verts.push_back(tet_coords[0]); verts.push_back(tet_coords[1]);
-        verts.push_back(tet_coords[0]); verts.push_back(tet_coords[2]);
-        verts.push_back(tet_coords[0]); verts.push_back(tet_coords[3]);
-        verts.push_back(tet_coords[1]); verts.push_back(tet_coords[2]);
-        verts.push_back(tet_coords[2]); verts.push_back(tet_coords[3]);
-        verts.push_back(tet_coords[3]); verts.push_back(tet_coords[1]);
+        try
+        {
+            texture_data.push_back(read_png("img/tet-red.png"));
+            texture_data.push_back(read_png("img/tet-green.png"));
+            texture_data.push_back(read_png("img/tet-blue.png"));
+            texture_data.push_back(read_png("img/tet-yellow.png"));
+        }
+        catch(std::exception &e)
+        {
+            std::cerr<<"Error reading image file: "<<e.what()<<std::endl;
+            exit(EXIT_FAILURE);
+        }
 
-        // inner lines
-        verts.push_back(2.0f / 3.0f * tet_coords[0] + 1.0f / 3.0f * tet_coords[1]); verts.push_back(2.0f / 3.0f * tet_coords[0] + 1.0f / 3.0f * tet_coords[2]);
-        verts.push_back(2.0f / 3.0f * tet_coords[0] + 1.0f / 3.0f * tet_coords[2]); verts.push_back(2.0f / 3.0f * tet_coords[0] + 1.0f / 3.0f * tet_coords[3]);
-        verts.push_back(2.0f / 3.0f * tet_coords[0] + 1.0f / 3.0f * tet_coords[3]); verts.push_back(2.0f / 3.0f * tet_coords[0] + 1.0f / 3.0f * tet_coords[1]);
+        textures.resize(texture_data.size());
+        glGenTextures(textures.size(), &textures[0]);
 
-        verts.push_back(2.0f / 3.0f * tet_coords[1] + 1.0f / 3.0f * tet_coords[0]); verts.push_back(2.0f / 3.0f * tet_coords[1] + 1.0f / 3.0f * tet_coords[2]);
-        verts.push_back(2.0f / 3.0f * tet_coords[1] + 1.0f / 3.0f * tet_coords[2]); verts.push_back(2.0f / 3.0f * tet_coords[1] + 1.0f / 3.0f * tet_coords[3]);
-        verts.push_back(2.0f / 3.0f * tet_coords[1] + 1.0f / 3.0f * tet_coords[3]); verts.push_back(2.0f / 3.0f * tet_coords[1] + 1.0f / 3.0f * tet_coords[0]);
+        check_error("after gen");
 
-        verts.push_back(2.0f / 3.0f * tet_coords[2] + 1.0f / 3.0f * tet_coords[0]); verts.push_back(2.0f / 3.0f * tet_coords[2] + 1.0f / 3.0f * tet_coords[1]);
-        verts.push_back(2.0f / 3.0f * tet_coords[2] + 1.0f / 3.0f * tet_coords[1]); verts.push_back(2.0f / 3.0f * tet_coords[2] + 1.0f / 3.0f * tet_coords[3]);
-        verts.push_back(2.0f / 3.0f * tet_coords[2] + 1.0f / 3.0f * tet_coords[3]); verts.push_back(2.0f / 3.0f * tet_coords[2] + 1.0f / 3.0f * tet_coords[0]);
+        std::cout<<texture_data[0][0]<<std::endl;
 
-        verts.push_back(2.0f / 3.0f * tet_coords[3] + 1.0f / 3.0f * tet_coords[0]); verts.push_back(2.0f / 3.0f * tet_coords[3] + 1.0f / 3.0f * tet_coords[1]);
-        verts.push_back(2.0f / 3.0f * tet_coords[3] + 1.0f / 3.0f * tet_coords[1]); verts.push_back(2.0f / 3.0f * tet_coords[3] + 1.0f / 3.0f * tet_coords[2]);
-        verts.push_back(2.0f / 3.0f * tet_coords[3] + 1.0f / 3.0f * tet_coords[2]); verts.push_back(2.0f / 3.0f * tet_coords[3] + 1.0f / 3.0f * tet_coords[0]);
-
-        verts.push_back(1.0f / 3.0f * tet_coords[0] + 2.0f / 3.0f * tet_coords[1]); verts.push_back(1.0f / 3.0f * tet_coords[0] + 2.0f / 3.0f * tet_coords[2]);
-        verts.push_back(1.0f / 3.0f * tet_coords[0] + 2.0f / 3.0f * tet_coords[2]); verts.push_back(1.0f / 3.0f * tet_coords[0] + 2.0f / 3.0f * tet_coords[3]);
-        verts.push_back(1.0f / 3.0f * tet_coords[0] + 2.0f / 3.0f * tet_coords[3]); verts.push_back(1.0f / 3.0f * tet_coords[0] + 2.0f / 3.0f * tet_coords[1]);
-
-        verts.push_back(1.0f / 3.0f * tet_coords[1] + 2.0f / 3.0f * tet_coords[0]); verts.push_back(1.0f / 3.0f * tet_coords[1] + 2.0f / 3.0f * tet_coords[2]);
-        verts.push_back(1.0f / 3.0f * tet_coords[1] + 2.0f / 3.0f * tet_coords[2]); verts.push_back(1.0f / 3.0f * tet_coords[1] + 2.0f / 3.0f * tet_coords[3]);
-        verts.push_back(1.0f / 3.0f * tet_coords[1] + 2.0f / 3.0f * tet_coords[3]); verts.push_back(1.0f / 3.0f * tet_coords[1] + 2.0f / 3.0f * tet_coords[0]);
-
-        verts.push_back(1.0f / 3.0f * tet_coords[2] + 2.0f / 3.0f * tet_coords[0]); verts.push_back(1.0f / 3.0f * tet_coords[2] + 2.0f / 3.0f * tet_coords[1]);
-        verts.push_back(1.0f / 3.0f * tet_coords[2] + 2.0f / 3.0f * tet_coords[1]); verts.push_back(1.0f / 3.0f * tet_coords[2] + 2.0f / 3.0f * tet_coords[3]);
-        verts.push_back(1.0f / 3.0f * tet_coords[2] + 2.0f / 3.0f * tet_coords[3]); verts.push_back(1.0f / 3.0f * tet_coords[2] + 2.0f / 3.0f * tet_coords[0]);
-
-        verts.push_back(1.0f / 3.0f * tet_coords[3] + 2.0f / 3.0f * tet_coords[0]); verts.push_back(1.0f / 3.0f * tet_coords[3] + 2.0f / 3.0f * tet_coords[1]);
-        verts.push_back(1.0f / 3.0f * tet_coords[3] + 2.0f / 3.0f * tet_coords[1]); verts.push_back(1.0f / 3.0f * tet_coords[3] + 2.0f / 3.0f * tet_coords[2]);
-        verts.push_back(1.0f / 3.0f * tet_coords[3] + 2.0f / 3.0f * tet_coords[2]); verts.push_back(1.0f / 3.0f * tet_coords[3] + 2.0f / 3.0f * tet_coords[0]);
-
-        for(size_t i = 0; i < verts.size(); ++i)
-            vert_color.push_back(colors[BLACK]);
-
-        glGenBuffers(1, &line_buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, line_buffer);
-        glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3) + vert_color.size() * sizeof(glm::vec4), NULL, GL_STATIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, verts.size() * sizeof(glm::vec3), &verts[0]);
-        glBufferSubData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3), vert_color.size() * sizeof(glm::vec4), &vert_color[0]);
-
-        glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-        glEnableVertexAttribArray(pos);
-
-        glVertexAttribPointer(color, 4, GL_FLOAT, GL_TRUE, 0, (void *)(verts.size() * sizeof(glm::vec3)));
-        glEnableVertexAttribArray(color);
+        for(size_t i = 0; i < textures.size(); ++i)
+        {
+            glBindTexture(GL_TEXTURE_2D, textures[i]);
+            check_error("after bind");
+            glTexStorage2D(GL_TEXTURE_2D, (int)(log2(512)) + 1, GL_RGBA8, 512, 512);
+            check_error("after storage");
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 512, 512, GL_RGBA, GL_FLOAT, &texture_data[i][0]);
+            check_error("after subimage");
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            check_error("after parms");
+            glGenerateMipmap(GL_TEXTURE_2D);
+            check_error("after mipmap");
+        }
 
         std::cout<<"OpenGL version: "<<glGetString(GL_VERSION)<<std::endl;
         std::cout<<"GLSL version: "<<glGetString(GL_SHADING_LANGUAGE_VERSION)<<std::endl;
@@ -373,11 +392,17 @@ public:
 
         glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
 
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 12);
+        // glActiveTexture(GL_TEXTURE0);
+        // glBindTexture(GL_TEXTURE_2D, textures[0]);
+        // glUniform1i(glGetUniformLocation(shader_prog, "tex"), 0);
+        check_error("draw");
 
-        glBindVertexArray(vao_lines);
-        glDrawArrays(GL_LINES, 0, 60);
+        for(size_t i = 0; i < vao.size(); ++i)
+        {
+            glBindVertexArray(vao[i]);
+            glBindTexture(GL_TEXTURE_2D, textures[i]);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+        }
 
         display();
         return true;
@@ -417,20 +442,18 @@ private:
 
     GLuint shader_prog;
 
-    GLuint vao;
-    GLuint vao_lines;
-    GLuint buffer;
-    GLuint line_buffer;
+    std::vector<GLuint> vao;
+    std::vector<GLuint> buffer;
 
-    enum {pos = 0, color};
+    enum {pos = 0, tex};
 
     // coords are X,Z,Y in sane-coords™
     const std::vector<glm::vec3> tet_coords =
     {
-        glm::vec3(0.0f, sqrt(6.0f) / 4.0f, 0.0f),
-        glm::vec3(-0.5f, -sqrt(6.0f) / 12.0f, -sqrt(3.0f) / 6.0f),
-        glm::vec3(0.5f, -sqrt(6.0f) / 12.0f, -sqrt(3.0f) / 6.0f),
-        glm::vec3(0.0f, -sqrt(6.0f) / 12.0f, sqrt(3.0f) / 3.0f)
+        glm::vec3(0.0f, sqrtf(6.0f) / 4.0f, 0.0f),
+        glm::vec3(-0.5f, -sqrtf(6.0f) / 12.0f, -sqrtf(3.0f) / 6.0f),
+        glm::vec3(0.5f, -sqrtf(6.0f) / 12.0f, -sqrtf(3.0f) / 6.0f),
+        glm::vec3(0.0f, -sqrtf(6.0f) / 12.0f, sqrtf(3.0f) / 3.0f)
     };
 
     const std::vector<glm::vec4> colors =
@@ -445,6 +468,15 @@ private:
         glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
     };
     enum {RED = 0, GREEN, BLUE, YELLOW, CYAN, MAGENTA, WHITE, BLACK};
+
+    const std::vector<glm::vec2> tex_coords = 
+    {
+        glm::vec2(0.5f, 1.0f - sqrtf(3.0f) / 2.0f),
+        glm::vec2(0.0f, 1.0f),
+        glm::vec2(1.0f, 1.0f)
+    };
+
+    std::vector<GLuint> textures;
 
     std::vector<glm::vec3> normals;
 };
