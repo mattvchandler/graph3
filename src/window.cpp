@@ -175,7 +175,7 @@ public:
         // calculate normals
         for(auto &i: tet_coords)
         {
-            normals.push_back(-glm::normalize(i));
+            tet_normals.push_back(-glm::normalize(i));
         }
     }
 
@@ -183,7 +183,11 @@ public:
     {
         if(shader_prog != 0)
             glDeleteProgram(shader_prog);
+        if(shader_prog_line != 0)
+            glDeleteProgram(shader_prog_line);
         // this is so bad...
+        if(vao_line != 0)
+            glDeleteVertexArrays(1, &vao_line);
         if(vao[0] != 0)
             glDeleteVertexArrays(4, &vao[0]);
         // if(buffer != 0)
@@ -214,7 +218,7 @@ public:
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
 
-        // build shader program
+        // build shader programs
         GLuint vert_shader = compile_shader("src/tet.vert", GL_VERTEX_SHADER);
         GLuint frag_shader = compile_shader("src/tet.frag", GL_FRAGMENT_SHADER);
 
@@ -228,7 +232,18 @@ public:
         glDeleteShader(vert_shader);
         glDeleteShader(frag_shader);
 
-        glUseProgram(shader_prog);
+        vert_shader = compile_shader("src/line.vert", GL_VERTEX_SHADER);
+        frag_shader = compile_shader("src/line.frag", GL_FRAGMENT_SHADER);
+
+        if(frag_shader == 0 || vert_shader == 0)
+            exit(EXIT_FAILURE);
+
+        shader_prog_line = link_shader_prog(std::vector<GLuint> {vert_shader, frag_shader});
+        if(shader_prog_line == 0)
+            exit(EXIT_FAILURE);
+
+        glDeleteShader(vert_shader);
+        glDeleteShader(frag_shader);
 
         // generate buffers for verts and colors
         vao.resize(4);
@@ -240,8 +255,12 @@ public:
 
             std::vector<glm::vec3> verts;
             std::vector<glm::vec2> texs;
+            std::vector<glm::vec3> normals;
 
             texs.push_back(tex_coords[0]); texs.push_back(tex_coords[1]); texs.push_back(tex_coords[2]);
+
+            for(int j = 0; j < 3; ++j)
+                normals.push_back(tet_normals[i]);
 
             switch(i)
             {
@@ -261,16 +280,47 @@ public:
 
             glGenBuffers(1, &buffer[i]);
             glBindBuffer(GL_ARRAY_BUFFER, buffer[i]);
-            glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3) + texs.size() * sizeof(glm::vec2), NULL, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3)
+                + texs.size() * sizeof(glm::vec2) + normals.size() * sizeof(glm::vec3), NULL, GL_STATIC_DRAW);
             glBufferSubData(GL_ARRAY_BUFFER, 0, verts.size() * sizeof(glm::vec3), &verts[0]);
             glBufferSubData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3), texs.size() * sizeof(glm::vec2), &texs[0]);
+            glBufferSubData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3) + texs.size() * sizeof(glm::vec2),
+                normals.size() * sizeof(glm::vec3), &normals[0]);
 
             glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
             glEnableVertexAttribArray(pos);
 
             glVertexAttribPointer(tex, 2, GL_FLOAT, GL_FALSE, 0, (void *)(verts.size() * sizeof(glm::vec3)));
             glEnableVertexAttribArray(tex);
+
+            glVertexAttribPointer(normal, 4, GL_FLOAT, GL_FALSE, 0, (void *)(verts.size() * sizeof(glm::vec3) + texs.size() * sizeof(glm::vec2)));
+            glEnableVertexAttribArray(normal);
         }
+
+        glGenVertexArrays(1, &vao_line);
+        glBindVertexArray(vao_line);
+
+        std::vector<glm::vec3> verts;
+        std::vector<glm::vec4> vert_colors;
+
+        for(size_t i = 0; i < 4; ++i)
+        {
+            vert_colors.push_back(colors[CYAN]); vert_colors.push_back(colors[CYAN]);
+            verts.push_back(glm::normalize(tet_coords[i]) * -sqrtf(6.0f) / 12.0f); verts.push_back(verts.back() + tet_normals[i]);
+        }
+
+        glGenBuffers(1, &buffer_line);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_line);
+        glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3) + vert_colors.size() * sizeof(glm::vec4), NULL, GL_STATIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, verts.size() * sizeof(glm::vec3), &verts[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3), vert_colors.size() * sizeof(glm::vec4), &vert_colors[0]);
+
+        glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        glEnableVertexAttribArray(pos);
+
+        glVertexAttribPointer(vert_color, 4, GL_FLOAT, GL_TRUE, 0, (void *)(verts.size() * sizeof(glm::vec3)));
+        glEnableVertexAttribArray(vert_color);
+
         // load images
         glEnable(GL_TEXTURE_2D);
 
@@ -294,23 +344,16 @@ public:
 
         check_error("after gen");
 
-        std::cout<<texture_data[0][0]<<std::endl;
-
         for(size_t i = 0; i < textures.size(); ++i)
         {
             glBindTexture(GL_TEXTURE_2D, textures[i]);
-            check_error("after bind");
             glTexStorage2D(GL_TEXTURE_2D, (int)(log2(512)) + 1, GL_RGBA8, 512, 512);
-            check_error("after storage");
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 512, 512, GL_RGBA, GL_FLOAT, &texture_data[i][0]);
-            check_error("after subimage");
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            check_error("after parms");
             glGenerateMipmap(GL_TEXTURE_2D);
-            check_error("after mipmap");
         }
 
         std::cout<<"OpenGL version: "<<glGetString(GL_VERSION)<<std::endl;
@@ -388,13 +431,12 @@ public:
 
         glm::mat4 view_model_perspective = perspective * translate * rotate_z_mat * rotate_y_mat;
 
-        // glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model_perspective)));
+        glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model_perspective)));
 
+        glUseProgram(shader_prog);
         glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
+        glUniformMatrix3fv(glGetUniformLocation(shader_prog, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
 
-        // glActiveTexture(GL_TEXTURE0);
-        // glBindTexture(GL_TEXTURE_2D, textures[0]);
-        // glUniform1i(glGetUniformLocation(shader_prog, "tex"), 0);
         check_error("draw");
 
         for(size_t i = 0; i < vao.size(); ++i)
@@ -403,6 +445,11 @@ public:
             glBindTexture(GL_TEXTURE_2D, textures[i]);
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
+
+        glUseProgram(shader_prog_line);
+        glUniformMatrix4fv(glGetUniformLocation(shader_prog_line, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
+        glBindVertexArray(vao_line);
+        glDrawArrays(GL_LINES, 0, 8);
 
         display();
         return true;
@@ -441,11 +488,15 @@ private:
     glm::mat4 perspective;
 
     GLuint shader_prog;
+    GLuint shader_prog_line;
 
     std::vector<GLuint> vao;
+    GLuint vao_line;
     std::vector<GLuint> buffer;
+    GLuint buffer_line;
 
-    enum {pos = 0, tex};
+    enum {pos = 0, tex, normal};
+    const GLuint vert_color = 1;
 
     // coords are X,Z,Y in sane-coords™
     const std::vector<glm::vec3> tet_coords =
@@ -478,7 +529,7 @@ private:
 
     std::vector<GLuint> textures;
 
-    std::vector<glm::vec3> normals;
+    std::vector<glm::vec3> tet_normals;
 };
 
 int main(int argc, char* argv[])
