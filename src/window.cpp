@@ -214,9 +214,11 @@ public:
         glLineWidth(5.0f);
 
         glEnable(GL_POLYGON_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+        glEnable(GL_LINE_SMOOTH);
+        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND);
 
         // build shader programs
         GLuint vert_shader = compile_shader("src/tet.vert", GL_VERTEX_SHADER);
@@ -306,7 +308,16 @@ public:
         for(size_t i = 0; i < 4; ++i)
         {
             vert_colors.push_back(colors[CYAN]); vert_colors.push_back(colors[CYAN]);
-            verts.push_back(glm::normalize(tet_coords[i]) * -sqrtf(6.0f) / 12.0f); verts.push_back(verts.back() + tet_normals[i]);
+            verts.push_back(glm::normalize(tet_coords[i]) * -sqrtf(6.0f) / 12.0f); verts.push_back(verts.back() + tet_normals[i] * 0.25f);
+
+            for(size_t j = 0; j < 4; ++j)
+            {
+                if(j == i)
+                    continue;
+                vert_colors.push_back(colors[MAGENTA]); vert_colors.push_back(colors[MAGENTA]);
+                verts.push_back(tet_coords[i]); verts.push_back(tet_coords[i] + tet_normals[j] * 0.25f);
+            }
+
         }
 
         glGenBuffers(1, &buffer_line);
@@ -449,7 +460,7 @@ public:
         glUseProgram(shader_prog_line);
         glUniformMatrix4fv(glGetUniformLocation(shader_prog_line, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
         glBindVertexArray(vao_line);
-        glDrawArrays(GL_LINES, 0, 8);
+        glDrawArrays(GL_LINES, 0, 32);
 
         display();
         return true;
