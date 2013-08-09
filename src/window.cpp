@@ -454,6 +454,7 @@ public:
         glm::mat4 rotate_view = glm::rotate(glm::mat4(), 30.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
         glUseProgram(shader_prog);
+        glUniform4fv(glGetUniformLocation(shader_prog, "ambient"), 1, &ambient[0]);
 
         // draw ground
         glm::mat4 view_model_perspective = perspective * translate * rotate_view;
@@ -565,6 +566,8 @@ private:
     std::vector<GLuint> textures;
 
     std::vector<glm::vec3> tet_normals;
+
+    glm::vec4 ambient = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
 };
 
 int main(int argc, char* argv[])
