@@ -248,9 +248,9 @@ public:
         glDeleteShader(frag_shader);
 
         // generate buffers for verts and colors
-        vao.resize(4);
+        vao.resize(5);
         buffer.resize(vao.size());
-        glGenVertexArrays(4, &vao[0]);
+        glGenVertexArrays(vao.size(), &vao[0]);
         for(size_t i = 0; i < vao.size(); ++i)
         {
             glBindVertexArray(vao[i]);
@@ -277,6 +277,16 @@ public:
                 break;
             case 3:
                 verts.push_back(tet_coords[3]); verts.push_back(tet_coords[1]); verts.push_back(tet_coords[2]);
+                break;
+            case 4:
+                // add the ground plane
+                texs.clear(); normals.clear();
+                texs.push_back(glm::vec2(0.0f, 0.0f)); texs.push_back(glm::vec2(5.0f, 0.0f));
+                texs.push_back(glm::vec2(5.0f, 5.0f)); texs.push_back(glm::vec2(0.0f, 5.0f));
+                verts.push_back(glm::vec3(-10.0f, -1.0f, -10.0f)); verts.push_back(glm::vec3(10.0f, -1.0f, -10.0f));
+                verts.push_back(glm::vec3(10.0f, -1.0f, 10.0f)); verts.push_back(glm::vec3(-10.0f, -1.0f, 10.0f));
+                for(int j = 0; j < 4; ++j)
+                    normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
                 break;
             }
 
@@ -343,6 +353,7 @@ public:
             texture_data.push_back(read_png("img/tet-green.png"));
             texture_data.push_back(read_png("img/tet-blue.png"));
             texture_data.push_back(read_png("img/tet-yellow.png"));
+            texture_data.push_back(read_png("img/floor.png"));
         }
         catch(std::exception &e)
         {
@@ -422,7 +433,7 @@ public:
         //     glm::vec4(0.0f, 1.0f, 0.0f, 0.0f),
         //     glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
         //     glm::vec4(0.0f, 0.0f, -3.0f, 1.0f));
-        glm::mat4 translate = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
+        glm::mat4 translate = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -4.0f));
 
         // float rotate_z_rad = rotation_z * M_PI / 180.0f;
         // glm::mat4 rotate_z_mat(
@@ -440,17 +451,30 @@ public:
         //     glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
         glm::mat4 rotate_y_mat = glm::rotate(glm::mat4(), rotation_y, glm::vec3(0.0f, 0.0f, 1.0f));
 
-        glm::mat4 view_model_perspective = perspective * translate * rotate_z_mat * rotate_y_mat;
-
-        glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model_perspective)));
+        glm::mat4 rotate_view = glm::rotate(glm::mat4(), 30.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
         glUseProgram(shader_prog);
+
+        // draw ground
+        glm::mat4 view_model_perspective = perspective * translate * rotate_view;
+        glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model_perspective)));
+
+        glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
+        glUniformMatrix3fv(glGetUniformLocation(shader_prog, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
+
+        glBindVertexArray(vao.back());
+        glBindTexture(GL_TEXTURE_2D, textures[vao.size() - 1]);
+        glDrawArrays(GL_QUADS, 0, 4);
+
+        view_model_perspective = perspective * translate * rotate_view * rotate_z_mat * rotate_y_mat;
+        normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model_perspective)));
+
         glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
         glUniformMatrix3fv(glGetUniformLocation(shader_prog, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
 
         check_error("draw");
 
-        for(size_t i = 0; i < vao.size(); ++i)
+        for(size_t i = 0; i < vao.size() - 1; ++i)
         {
             glBindVertexArray(vao[i]);
             glBindTexture(GL_TEXTURE_2D, textures[i]);
