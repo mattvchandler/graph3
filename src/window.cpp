@@ -259,28 +259,34 @@ public:
             std::vector<glm::vec2> texs;
             std::vector<glm::vec3> normals;
 
-            texs.push_back(tex_coords[0]); texs.push_back(tex_coords[1]); texs.push_back(tex_coords[2]);
-
-            for(int j = 0; j < 3; ++j)
-                normals.push_back(tet_normals[i]);
-
             switch(i)
             {
             case 0:
+                for(int j = 0; j < 3; ++j)
+                    normals.push_back(tet_normals[3]);
+                texs.push_back(tex_coords[0]); texs.push_back(tex_coords[1]); texs.push_back(tex_coords[2]);
                 verts.push_back(tet_coords[0]); verts.push_back(tet_coords[2]); verts.push_back(tet_coords[1]);
                 break;
             case 1:
+                for(int j = 0; j < 3; ++j)
+                    normals.push_back(tet_normals[2]);
+                texs.push_back(tex_coords[0]); texs.push_back(tex_coords[1]); texs.push_back(tex_coords[2]);
                 verts.push_back(tet_coords[0]); verts.push_back(tet_coords[1]); verts.push_back(tet_coords[3]);
                 break;
             case 2:
+                for(int j = 0; j < 3; ++j)
+                    normals.push_back(tet_normals[1]);
+                texs.push_back(tex_coords[0]); texs.push_back(tex_coords[1]); texs.push_back(tex_coords[2]);
                 verts.push_back(tet_coords[0]); verts.push_back(tet_coords[3]); verts.push_back(tet_coords[2]);
                 break;
             case 3:
+                for(int j = 0; j < 3; ++j)
+                    normals.push_back(tet_normals[0]);
+                texs.push_back(tex_coords[0]); texs.push_back(tex_coords[1]); texs.push_back(tex_coords[2]);
                 verts.push_back(tet_coords[3]); verts.push_back(tet_coords[1]); verts.push_back(tet_coords[2]);
                 break;
             case 4:
                 // add the ground plane
-                texs.clear(); normals.clear();
                 texs.push_back(glm::vec2(0.0f, 0.0f)); texs.push_back(glm::vec2(5.0f, 0.0f));
                 texs.push_back(glm::vec2(5.0f, 5.0f)); texs.push_back(glm::vec2(0.0f, 5.0f));
                 verts.push_back(glm::vec3(-10.0f, -1.0f, -10.0f)); verts.push_back(glm::vec3(10.0f, -1.0f, -10.0f));
@@ -299,13 +305,13 @@ public:
             glBufferSubData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3) + texs.size() * sizeof(glm::vec2),
                 normals.size() * sizeof(glm::vec3), &normals[0]);
 
-            glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-            glEnableVertexAttribArray(pos);
+            glVertexAttribPointer(vert_pos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(vert_pos);
 
             glVertexAttribPointer(tex, 2, GL_FLOAT, GL_FALSE, 0, (void *)(verts.size() * sizeof(glm::vec3)));
             glEnableVertexAttribArray(tex);
 
-            glVertexAttribPointer(normal, 4, GL_FLOAT, GL_FALSE, 0, (void *)(verts.size() * sizeof(glm::vec3) + texs.size() * sizeof(glm::vec2)));
+            glVertexAttribPointer(normal, 3, GL_FLOAT, GL_FALSE, 0, (void *)(verts.size() * sizeof(glm::vec3) + texs.size() * sizeof(glm::vec2)));
             glEnableVertexAttribArray(normal);
         }
 
@@ -336,8 +342,8 @@ public:
         glBufferSubData(GL_ARRAY_BUFFER, 0, verts.size() * sizeof(glm::vec3), &verts[0]);
         glBufferSubData(GL_ARRAY_BUFFER, verts.size() * sizeof(glm::vec3), vert_colors.size() * sizeof(glm::vec4), &vert_colors[0]);
 
-        glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-        glEnableVertexAttribArray(pos);
+        glVertexAttribPointer(vert_pos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        glEnableVertexAttribArray(vert_pos);
 
         glVertexAttribPointer(vert_color, 4, GL_FLOAT, GL_TRUE, 0, (void *)(verts.size() * sizeof(glm::vec3)));
         glEnableVertexAttribArray(vert_color);
@@ -427,14 +433,6 @@ public:
         // std::cout<<"drawing"<<std::endl;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // set up some matrices
-        // glm::mat4 translate(
-        //     glm::vec4(1.0f, 0.0f, 0.0f, 0.0f),
-        //     glm::vec4(0.0f, 1.0f, 0.0f, 0.0f),
-        //     glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
-        //     glm::vec4(0.0f, 0.0f, -3.0f, 1.0f));
-        glm::mat4 translate = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -4.0f));
-
         // float rotate_z_rad = rotation_z * M_PI / 180.0f;
         // glm::mat4 rotate_z_mat(
         //     glm::vec4(cos(rotate_z_rad), 0.0f, -sin(rotate_z_rad), 0.0f),
@@ -451,26 +449,38 @@ public:
         //     glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
         glm::mat4 rotate_y_mat = glm::rotate(glm::mat4(), rotation_y, glm::vec3(0.0f, 0.0f, 1.0f));
 
-        glm::mat4 rotate_view = glm::rotate(glm::mat4(), 30.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::mat4 view = glm::lookAt(cam.pos, cam.forward, cam.up);
 
         glUseProgram(shader_prog);
-        glUniform4fv(glGetUniformLocation(shader_prog, "ambient"), 1, &ambient[0]);
+        glUniform3fv(glGetUniformLocation(shader_prog, "ambient_color"), 1, &ambient_color[0]);
+        glUniform3fv(glGetUniformLocation(shader_prog, "light_color"), 1, &light_color[0]);
+        glUniform3fv(glGetUniformLocation(shader_prog, "light_pos"), 1, &light_pos[0]);
+        glUniform3fv(glGetUniformLocation(shader_prog, "cam_forward"), 1, &cam.forward[0]);
+        glUniform1f(glGetUniformLocation(shader_prog, "light_shiny"), light_shiny);
+        glUniform1f(glGetUniformLocation(shader_prog, "light_strength"), light_strength);
+        glUniform1f(glGetUniformLocation(shader_prog, "const_atten"), const_atten);
+        glUniform1f(glGetUniformLocation(shader_prog, "linear_atten"), linear_atten);
+        glUniform1f(glGetUniformLocation(shader_prog, "quad_atten"), quad_atten);
 
         // draw ground
-        glm::mat4 view_model_perspective = perspective * translate * rotate_view;
-        glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model_perspective)));
+        glm::mat4 view_model = view;
+        glm::mat4 view_model_perspective = perspective * view_model;
+        glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
         glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model"), 1, GL_FALSE, &view_model[0][0]);
         glUniformMatrix3fv(glGetUniformLocation(shader_prog, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
 
         glBindVertexArray(vao.back());
         glBindTexture(GL_TEXTURE_2D, textures[vao.size() - 1]);
         glDrawArrays(GL_QUADS, 0, 4);
 
-        view_model_perspective = perspective * translate * rotate_view * rotate_z_mat * rotate_y_mat;
-        normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model_perspective)));
+        view_model = view * rotate_z_mat * rotate_y_mat;
+        view_model_perspective = perspective * view_model;
+        normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
         glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model"), 1, GL_FALSE, &view_model[0][0]);
         glUniformMatrix3fv(glGetUniformLocation(shader_prog, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
 
         check_error("draw");
@@ -523,6 +533,13 @@ private:
 
     glm::mat4 perspective;
 
+    struct
+    {
+        glm::vec3 pos = glm::vec3(0.0f, 0.0f, -3.0f);
+        glm::vec3 forward = glm::vec3(0.0f, 0.0f, 1.0f);
+        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    } cam;
+
     GLuint shader_prog;
     GLuint shader_prog_line;
 
@@ -531,7 +548,7 @@ private:
     std::vector<GLuint> buffer;
     GLuint buffer_line;
 
-    enum {pos = 0, tex, normal};
+    enum {vert_pos = 0, tex, normal};
     const GLuint vert_color = 1;
 
     // coords are X,Z,Y in sane-coords™
@@ -567,7 +584,14 @@ private:
 
     std::vector<glm::vec3> tet_normals;
 
-    glm::vec4 ambient = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    glm::vec3 ambient_color = glm::vec3(0.2f, 0.2f, 0.2f);
+    glm::vec3 light_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 light_pos = glm::vec3(2.0f, 3.0f, 0.0f);
+    float light_shiny = 0.2f;
+    float light_strength = 0.8f;
+    float const_atten = 1.0f;
+    float linear_atten = 0.5f;
+    float quad_atten = 0.0f;
 };
 
 int main(int argc, char* argv[])
