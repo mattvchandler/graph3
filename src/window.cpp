@@ -166,8 +166,8 @@ public:
         signal_realize().connect(sigc::mem_fun(*this, &Graph_disp::realize));
         signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
         signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::draw));
-        Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_disp::rotate_y), 25);
-        Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_disp::rotate_z), 25);
+        Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_disp::rotate), 25);
+        Glib::signal_idle().connect(sigc::mem_fun(*this, &Graph_disp::idle));
 
         rotation_y = 0.0f;
         rotation_z = 0.0f;
@@ -407,21 +407,7 @@ public:
         {
             glViewport(0, 0, glWindow.getSize().x, glWindow.getSize().y);
 
-            // glMatrixMode(GL_PROJECTION);
-            // glLoadIdentity();
             float aspect = (float)glWindow.getSize().x / (float)glWindow.getSize().y;
-            // gluOrtho2D(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f);
-            // gluPerspective(30.0f, aspect, 0.1f, 1000.0f);
-
-            // glMatrixMode(GL_MODELVIEW);
-
-            // float f = 1.0f / tan(30.0f * 0.5f * M_PI / 180.0f);
-
-            // perspective = glm::mat4(
-            //         glm::vec4(f / aspect, 0.0f, 0.0f, 0.0f),
-            //         glm::vec4(0.0f, f, 0.0f, 0.0f),
-            //         glm::vec4(0.0f, 0.0f, (1000.0f + 0.1f) / (0.1f - 1000.0f), -1.0f),
-            //         glm::vec4(0.0f, 0.0f,  (2 * 1000.0f * 0.1f) / (0.1f - 1000.0f), 0.0f));
             perspective = glm::perspective(30.0f, aspect, 0.1f, 1000.0f);
 
             invalidate();
@@ -433,28 +419,19 @@ public:
         // std::cout<<"drawing"<<std::endl;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // float rotate_z_rad = rotation_z * M_PI / 180.0f;
-        // glm::mat4 rotate_z_mat(
-        //     glm::vec4(cos(rotate_z_rad), 0.0f, -sin(rotate_z_rad), 0.0f),
-        //     glm::vec4(0.0f, 1.0f, 0.0f, 0.0f),
-        //     glm::vec4(sin(rotate_z_rad), 0.0f, cos(rotate_z_rad), 0.0f),
-        //     glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
         glm::mat4 rotate_z_mat = glm::rotate(glm::mat4(), rotation_z, glm::vec3(0.0f, 1.0f, 0.0f));
 
-        // float rotate_y_rad = rotation_y * M_PI / 180.0f;
-        // glm::mat4 rotate_y_mat(
-        //     glm::vec4(cos(rotate_y_rad), sin(rotate_y_rad), 0.0f, 0.0f),
-        //     glm::vec4(-sin(rotate_y_rad), cos(rotate_y_rad), 0.0f, 0.0f),
-        //     glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
-        //     glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
         glm::mat4 rotate_y_mat = glm::rotate(glm::mat4(), rotation_y, glm::vec3(0.0f, 0.0f, 1.0f));
 
         glm::mat4 view = glm::lookAt(cam.pos, cam.forward, cam.up);
 
+        // glm::vec3 light_pos_eye = glm::vec3(0.0f, 0.0f, -9.0f);
+        glm::vec3 light_pos_eye = glm::vec3(perspective * view * glm::vec4(light_pos, 1.0f));
+
         glUseProgram(shader_prog);
         glUniform3fv(glGetUniformLocation(shader_prog, "ambient_color"), 1, &ambient_color[0]);
         glUniform3fv(glGetUniformLocation(shader_prog, "light_color"), 1, &light_color[0]);
-        glUniform3fv(glGetUniformLocation(shader_prog, "light_pos"), 1, &light_pos[0]);
+        glUniform3fv(glGetUniformLocation(shader_prog, "light_pos"), 1, &light_pos_eye[0]);
         glUniform3fv(glGetUniformLocation(shader_prog, "cam_forward"), 1, &cam.forward[0]);
         glUniform1f(glGetUniformLocation(shader_prog, "light_shiny"), light_shiny);
         glUniform1f(glGetUniformLocation(shader_prog, "light_strength"), light_strength);
@@ -501,18 +478,22 @@ public:
         return true;
     }
 
-    bool rotate_z()
+    bool idle()
+    {
+        if(dynamic_cast<Gtk::Window *>(get_toplevel())->is_active())
+        {
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+                std::cout<<"You are having a bad problem"<<std::endl;
+        }
+        return true;
+    }
+
+    bool rotate()
     {
         rotation_z += .8;
         if(rotation_z > 360.0f)
             rotation_z -= 360.0f;
 
-        invalidate();
-        return true;
-    }
-
-    bool rotate_y()
-    {
         rotation_y += .4f;
         if(rotation_y > 360.0f)
             rotation_y -= 360.0f;
@@ -586,8 +567,8 @@ private:
 
     glm::vec3 ambient_color = glm::vec3(0.2f, 0.2f, 0.2f);
     glm::vec3 light_color = glm::vec3(1.0f, 1.0f, 1.0f);
-    glm::vec3 light_pos = glm::vec3(2.0f, 3.0f, 0.0f);
-    float light_shiny = 0.2f;
+    glm::vec3 light_pos = glm::vec3(-0.5f, 1.0f, -1.0f);
+    float light_shiny = 0.8f;
     float light_strength = 0.8f;
     float const_atten = 1.0f;
     float linear_atten = 0.5f;
