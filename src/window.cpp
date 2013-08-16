@@ -24,6 +24,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <cmath>
@@ -138,7 +139,7 @@ GLuint link_shader_prog(const std::vector<GLuint> & shaders)
 
 std::vector<float> read_png(const char * filename)
 {
-    png::image<png::rgba_pixel> image(filename);
+    const png::image<png::rgba_pixel> image(filename);
     std::vector<float> data(image.get_height() * image.get_width() * 4);
 
     for(size_t r = 0; r < image.get_height(); ++r)
@@ -155,6 +156,16 @@ std::vector<float> read_png(const char * filename)
     return data;
 }
 
+//using Rodrigues' rotation formula
+//http://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+glm::vec3 rotate_vec(const glm::vec3 & v, const glm::vec3 & axis, const float angle)
+{
+    //using Rodrigues' rotation formula
+    //http://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+    return v * cosf(angle) + glm::cross(axis, v) * sinf(angle)
+        + axis * glm::dot(axis, v) * (1.0f - cosf(angle));
+}
+
 class Graph_disp final: public SFMLWidget
 {
 public:
@@ -167,7 +178,8 @@ public:
         signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
         signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::draw));
         Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_disp::rotate), 25);
-        Glib::signal_idle().connect(sigc::mem_fun(*this, &Graph_disp::idle));
+        Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_disp::input), 10);
+        // Glib::signal_idle().connect(sigc::mem_fun(*this, &Graph_disp::idle));
 
         rotation_y = 0.0f;
         rotation_z = 0.0f;
@@ -423,7 +435,7 @@ public:
 
         glm::mat4 rotate_y_mat = glm::rotate(glm::mat4(), rotation_y, glm::vec3(0.0f, 0.0f, 1.0f));
 
-        glm::mat4 view = glm::lookAt(cam.pos, cam.forward, cam.up);
+        glm::mat4 view = glm::lookAt(cam.pos, cam.pos + cam.forward, cam.up);
 
         // glm::vec3 light_pos_eye = glm::vec3(0.0f, 0.0f, -9.0f);
         glm::vec3 light_pos_eye = glm::vec3(perspective * view * glm::vec4(light_pos, 1.0f));
@@ -478,12 +490,65 @@ public:
         return true;
     }
 
-    bool idle()
+    bool input()
     {
+        static std::unordered_map<sf::Keyboard::Key, bool, std::hash<int>> key_lock;
+        static sf::Vector2i old_mouse_pos = sf::Mouse::getPosition(glWindow);
+
+        // the neat thing about having this in a timeout func is that we
+        // don't need to calc dt for movement controls.
+        // it is always (almost) exactly 10ms
         if(dynamic_cast<Gtk::Window *>(get_toplevel())->is_active())
         {
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-                std::cout<<"You are having a bad problem"<<std::endl;
+            glm::vec3 right = glm::cross(cam.up, cam.forward);
+
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+                get_toplevel()->hide();
+
+            // reset camera
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
+            {
+                key_lock[sf::Keyboard::R] = true;
+
+                cam.pos = glm::vec3(0.0f, 0.0f, -3.0f);
+                cam.forward = glm::vec3(0.0f, 0.0f, 1.0f);
+                cam.up = glm::vec3(0.0f, 1.0f, 0.0f);
+            }
+
+            else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+                key_lock[sf::Keyboard::R] = false;
+
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+                cam.pos += 0.1f * glm::length(cam.forward) * glm::normalize(glm::vec3(cam.forward.x, 0.0f, cam.forward.z));
+
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+                cam.pos -= 0.1f * glm::length(cam.forward) * glm::normalize(glm::vec3(cam.forward.x, 0.0f, cam.forward.z));
+
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+                cam.pos += 0.1f * right;
+
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+                cam.pos -= 0.1f * right;
+
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+                cam.pos += 0.1f * glm::vec3(0.0f, 1.0f, 0.0f);
+
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl))
+                cam.pos -= 0.1f * glm::vec3(0.0f, 1.0f, 0.0f);
+
+            sf::Vector2i new_mouse_pos = sf::Mouse::getPosition(glWindow);
+            if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+            {
+                int d_x = new_mouse_pos.x - old_mouse_pos.x;
+                int d_y = new_mouse_pos.y - old_mouse_pos.y;
+
+
+                cam.forward = glm::normalize(rotate_vec(cam.forward, right, 0.005f * d_y));
+                cam.up = glm::normalize(rotate_vec(cam.up, right, 0.005f * d_y));
+                cam.forward = glm::normalize(rotate_vec(cam.forward, glm::vec3(0.0f, 1.0f, 0.0f), 0.005f * d_x));
+                cam.up = glm::normalize(rotate_vec(cam.up, glm::vec3(0.0f, 1.0f, 0.0f), 0.005f * d_x));
+            }
+            old_mouse_pos = new_mouse_pos;
         }
         return true;
     }
