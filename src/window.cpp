@@ -437,14 +437,17 @@ public:
 
         glm::mat4 view = glm::lookAt(cam.pos, cam.pos + cam.forward, cam.up);
 
-        // glm::vec3 light_pos_eye = glm::vec3(0.0f, 0.0f, -9.0f);
-        glm::vec3 light_pos_eye = glm::vec3(perspective * view * glm::vec4(light_pos, 1.0f));
+        // calc position of light in eye space
+        glm::vec3 light_pos_eye(view * glm::vec4(light_pos, 1.0f));
+
+        // direction to camera (in eye space, so really easy)
+        glm::vec3 cam_forward_dir(0.0f, 0.0f, 1.0f);
 
         glUseProgram(shader_prog);
         glUniform3fv(glGetUniformLocation(shader_prog, "ambient_color"), 1, &ambient_color[0]);
         glUniform3fv(glGetUniformLocation(shader_prog, "light_color"), 1, &light_color[0]);
         glUniform3fv(glGetUniformLocation(shader_prog, "light_pos"), 1, &light_pos_eye[0]);
-        glUniform3fv(glGetUniformLocation(shader_prog, "cam_forward"), 1, &cam.forward[0]);
+        glUniform3fv(glGetUniformLocation(shader_prog, "cam_forward"), 1, &cam_forward_dir[0]);
         glUniform1f(glGetUniformLocation(shader_prog, "light_shiny"), light_shiny);
         glUniform1f(glGetUniformLocation(shader_prog, "light_strength"), light_strength);
         glUniform1f(glGetUniformLocation(shader_prog, "const_atten"), const_atten);
@@ -581,8 +584,8 @@ private:
 
     struct
     {
-        glm::vec3 pos = glm::vec3(0.0f, 0.0f, -3.0f);
-        glm::vec3 forward = glm::vec3(0.0f, 0.0f, 1.0f);
+        glm::vec3 pos = glm::vec3(0.0f, 0.0f, 3.0f);
+        glm::vec3 forward = glm::vec3(0.0f, 0.0f, -1.0f);
         glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
     } cam;
 
@@ -633,7 +636,7 @@ private:
     glm::vec3 ambient_color = glm::vec3(0.2f, 0.2f, 0.2f);
     glm::vec3 light_color = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 light_pos = glm::vec3(-0.5f, 1.0f, -1.0f);
-    float light_shiny = 0.8f;
+    float light_shiny = 50.0f;
     float light_strength = 0.8f;
     float const_atten = 1.0f;
     float linear_atten = 0.5f;
