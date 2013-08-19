@@ -36,8 +36,15 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Window.hpp>
 
-#include <gtkmm/box.h>
+#include <gtkmm/adjustment.h>
+#include <gtkmm/button.h>
+#include <gtkmm/grid.h>
+#include <gtkmm/label.h>
 #include <gtkmm/main.h>
+#include <gtkmm/separator.h>
+#include <gtkmm/scale.h>
+#include <gtkmm/spinbutton.h>
+#include <gtkmm/stock.h>
 #include <gtkmm/window.h>
 
 #include <glibmm/main.h>
@@ -189,6 +196,9 @@ public:
         {
             tet_normals.push_back(-glm::normalize(i));
         }
+
+        set_can_focus();
+        set_can_default();
     }
 
     ~Graph_disp()
@@ -503,53 +513,63 @@ public:
         // it is always (almost) exactly 10ms
         if(dynamic_cast<Gtk::Window *>(get_toplevel())->is_active())
         {
-            glm::vec3 right = glm::cross(cam.up, cam.forward);
-
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
                 get_toplevel()->hide();
 
-            // reset camera
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
-            {
-                key_lock[sf::Keyboard::R] = true;
-
-                cam.pos = glm::vec3(0.0f, 0.0f, -3.0f);
-                cam.forward = glm::vec3(0.0f, 0.0f, 1.0f);
-                cam.up = glm::vec3(0.0f, 1.0f, 0.0f);
-            }
-
-            else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
-                key_lock[sf::Keyboard::R] = false;
-
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-                cam.pos += 0.1f * glm::length(cam.forward) * glm::normalize(glm::vec3(cam.forward.x, 0.0f, cam.forward.z));
-
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-                cam.pos -= 0.1f * glm::length(cam.forward) * glm::normalize(glm::vec3(cam.forward.x, 0.0f, cam.forward.z));
-
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-                cam.pos += 0.1f * right;
-
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-                cam.pos -= 0.1f * right;
-
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
-                cam.pos += 0.1f * glm::vec3(0.0f, 1.0f, 0.0f);
-
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl))
-                cam.pos -= 0.1f * glm::vec3(0.0f, 1.0f, 0.0f);
-
             sf::Vector2i new_mouse_pos = sf::Mouse::getPosition(glWindow);
-            if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+
+            if(!has_focus() && sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
+                new_mouse_pos.x >= 0 && new_mouse_pos.y >= 0 &&
+                new_mouse_pos.x < (int)glWindow.getSize().x && new_mouse_pos.y < (int)glWindow.getSize().y)
             {
-                int d_x = new_mouse_pos.x - old_mouse_pos.x;
-                int d_y = new_mouse_pos.y - old_mouse_pos.y;
+                grab_focus();
+            }
+            if(has_focus())
+            {
+                glm::vec3 right = glm::cross(cam.up, cam.forward);
+
+                // reset camera
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
+                {
+                    key_lock[sf::Keyboard::R] = true;
+
+                    cam.pos = glm::vec3(0.0f, 0.0f, -3.0f);
+                    cam.forward = glm::vec3(0.0f, 0.0f, 1.0f);
+                    cam.up = glm::vec3(0.0f, 1.0f, 0.0f);
+                }
+
+                else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+                    key_lock[sf::Keyboard::R] = false;
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+                    cam.pos += 0.1f * glm::length(cam.forward) * glm::normalize(glm::vec3(cam.forward.x, 0.0f, cam.forward.z));
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+                    cam.pos -= 0.1f * glm::length(cam.forward) * glm::normalize(glm::vec3(cam.forward.x, 0.0f, cam.forward.z));
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+                    cam.pos += 0.1f * right;
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+                    cam.pos -= 0.1f * right;
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+                    cam.pos += 0.1f * glm::vec3(0.0f, 1.0f, 0.0f);
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl))
+                    cam.pos -= 0.1f * glm::vec3(0.0f, 1.0f, 0.0f);
+
+                if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+                {
+                    int d_x = new_mouse_pos.x - old_mouse_pos.x;
+                    int d_y = new_mouse_pos.y - old_mouse_pos.y;
 
 
-                cam.forward = glm::normalize(rotate_vec(cam.forward, right, 0.005f * d_y));
-                cam.up = glm::normalize(rotate_vec(cam.up, right, 0.005f * d_y));
-                cam.forward = glm::normalize(rotate_vec(cam.forward, glm::vec3(0.0f, 1.0f, 0.0f), 0.005f * d_x));
-                cam.up = glm::normalize(rotate_vec(cam.up, glm::vec3(0.0f, 1.0f, 0.0f), 0.005f * d_x));
+                    cam.forward = glm::normalize(rotate_vec(cam.forward, right, 0.005f * d_y));
+                    cam.up = glm::normalize(rotate_vec(cam.up, right, 0.005f * d_y));
+                    cam.forward = glm::normalize(rotate_vec(cam.forward, glm::vec3(0.0f, 1.0f, 0.0f), 0.005f * d_x));
+                    cam.up = glm::normalize(rotate_vec(cam.up, glm::vec3(0.0f, 1.0f, 0.0f), 0.005f * d_x));
+                }
             }
             old_mouse_pos = new_mouse_pos;
         }
@@ -634,28 +654,141 @@ private:
     std::vector<glm::vec3> tet_normals;
 
     glm::vec3 ambient_color = glm::vec3(0.2f, 0.2f, 0.2f);
-    glm::vec3 light_color = glm::vec3(1.0f, 1.0f, 1.0f);
-    glm::vec3 light_pos = glm::vec3(-0.5f, 1.0f, -1.0f);
     float light_shiny = 50.0f;
     float light_strength = 0.8f;
     float const_atten = 1.0f;
     float linear_atten = 0.5f;
     float quad_atten = 0.0f;
+public:
+    glm::vec3 light_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 light_pos = glm::vec3(-0.5f, 1.0f, -1.0f);
+
+};
+
+class Tet_window final: public Gtk::Window
+{
+public:
+    Tet_window(): gl_window(sf::VideoMode(800, 600), -1, sf::ContextSettings(0, 0, 4, 4, 0)), // these do nothing yet - future SFML version should enable them
+        top_lab("Light controls"),
+        x_lab("X position"),
+        y_lab("Y position"),
+        z_lab("Z position"),
+        x_adj(Gtk::Adjustment::create(-0.5, -10.0, 10.0, 0.1)),
+        y_adj(Gtk::Adjustment::create(1.0, -10.0, 10.0, 0.1)),
+        z_adj(Gtk::Adjustment::create(-1.0, -10.0, 10.0, 0.1)),
+        x_scale(x_adj, Gtk::ORIENTATION_HORIZONTAL),
+        y_scale(y_adj, Gtk::ORIENTATION_HORIZONTAL),
+        z_scale(z_adj, Gtk::ORIENTATION_HORIZONTAL),
+        x_spin(x_adj, 0.0, 1),
+        y_spin(y_adj, 0.0, 1),
+        z_spin(z_adj, 0.0, 1),
+        sep(Gtk::ORIENTATION_HORIZONTAL),
+        red_lab("Red"),
+        green_lab("Green"),
+        blue_lab("Blue"),
+        red_adj(Gtk::Adjustment::create(1.0, 0.0, 1.0, 0.01)),
+        green_adj(Gtk::Adjustment::create(1.0, 0.0, 1.0, 0.01)),
+        blue_adj(Gtk::Adjustment::create(1.0, 0.0, 1.0, 0.01)),
+        red_scale(red_adj, Gtk::ORIENTATION_HORIZONTAL),
+        green_scale(green_adj, Gtk::ORIENTATION_HORIZONTAL),
+        blue_scale(blue_adj, Gtk::ORIENTATION_HORIZONTAL),
+        red_spin(red_adj, 0.0, 2),
+        green_spin(green_adj, 0.0, 2),
+        blue_spin(blue_adj, 0.0, 2),
+        quit_but(Gtk::Stock::CLOSE)
+    {
+        gl_window.set_hexpand(true);
+        gl_window.set_vexpand(true);
+
+        x_scale.set_size_request(100, -1);
+        x_scale.set_hexpand(true);
+        y_scale.set_hexpand(true);
+        z_scale.set_hexpand(true);
+
+        red_scale.set_hexpand(true);
+        red_scale.set_digits(2);
+        green_scale.set_hexpand(true);
+        green_scale.set_digits(2);
+        blue_scale.set_hexpand(true);
+        blue_scale.set_digits(2);
+
+        add(main_grid);
+        main_grid.set_column_spacing(5);
+
+        main_grid.attach(gl_window, 0, 0, 1, 9);
+
+        main_grid.attach(top_lab, 1, 0, 3, 1);
+        
+        main_grid.attach(x_lab, 1, 1, 1, 1);
+        main_grid.attach(x_scale, 2, 1, 1, 1);
+        main_grid.attach(x_spin, 3, 1, 1, 1);
+
+        main_grid.attach(y_lab, 1, 2, 1, 1);
+        main_grid.attach(y_scale, 2, 2, 1, 1);
+        main_grid.attach(y_spin, 3, 2, 1, 1);
+
+        main_grid.attach(z_lab, 1, 3, 1, 1);
+        main_grid.attach(z_scale, 2, 3, 1, 1);
+        main_grid.attach(z_spin, 3, 3, 1, 1);
+
+        main_grid.attach(sep, 1, 4, 3, 1);
+
+        main_grid.attach(red_lab, 1, 5, 1, 1);
+        main_grid.attach(red_scale, 2, 5, 1, 1);
+        main_grid.attach(red_spin, 3, 5, 1, 1);
+
+        main_grid.attach(green_lab, 1, 6, 1, 1);
+        main_grid.attach(green_scale, 2, 6, 1, 1);
+        main_grid.attach(green_spin, 3, 6, 1, 1);
+
+        main_grid.attach(blue_lab, 1, 7, 1, 1);
+        main_grid.attach(blue_scale, 2, 7, 1, 1);
+        main_grid.attach(blue_spin, 3, 7, 1, 1);
+
+        main_grid.attach(quit_but, 3, 8, 1, 1);
+
+        x_adj->signal_value_changed().connect(sigc::mem_fun(*this, &Tet_window::change_pos));
+        y_adj->signal_value_changed().connect(sigc::mem_fun(*this, &Tet_window::change_pos));
+        z_adj->signal_value_changed().connect(sigc::mem_fun(*this, &Tet_window::change_pos));
+
+        red_adj->signal_value_changed().connect(sigc::mem_fun(*this, &Tet_window::change_color));
+        green_adj->signal_value_changed().connect(sigc::mem_fun(*this, &Tet_window::change_color));
+        blue_adj->signal_value_changed().connect(sigc::mem_fun(*this, &Tet_window::change_color));
+
+        quit_but.signal_clicked().connect(sigc::mem_fun(*this, &Tet_window::hide));
+
+        show_all_children();
+    }
+
+    void change_pos()
+    {
+        gl_window.light_pos = glm::vec3(x_adj->get_value(), y_adj->get_value(), z_adj->get_value());
+    }
+
+    void change_color()
+    {
+        gl_window.light_color = glm::vec3(red_adj->get_value(), green_adj->get_value(), blue_adj->get_value());
+    }
+
+    Graph_disp gl_window;
+    Gtk::Label top_lab;
+    Gtk::Grid main_grid;
+    Gtk::Label x_lab, y_lab, z_lab;
+    Glib::RefPtr<Gtk::Adjustment> x_adj, y_adj, z_adj;
+    Gtk::Scale x_scale, y_scale, z_scale;
+    Gtk::SpinButton x_spin, y_spin, z_spin;
+    Gtk::Separator sep;
+    Gtk::Label red_lab, green_lab, blue_lab;
+    Glib::RefPtr<Gtk::Adjustment> red_adj, green_adj, blue_adj;
+    Gtk::Scale red_scale, green_scale, blue_scale;
+    Gtk::SpinButton red_spin, green_spin, blue_spin;
+    Gtk::Button quit_but;
 };
 
 int main(int argc, char* argv[])
 {
     Gtk::Main kit(argc, argv);
-    Gtk::Window gtk_window;
-    Gtk::VBox main_box;
-
-    Graph_disp gl_window(sf::VideoMode(800, 600), -1, sf::ContextSettings(0, 0, 4, 4, 0)); // these do nothing yet - future SFML version should enable them
-
-    gl_window.show();
-    main_box.pack_start(gl_window);
-    main_box.show();
-
-    gtk_window.add(main_box);
+    Tet_window gtk_window;
 
     Gtk::Main::run(gtk_window);
     return 0;
