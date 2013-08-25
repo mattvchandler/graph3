@@ -26,12 +26,21 @@
 
 int main()
 {
-    Graph_cartesian a("x^2 + y^2 + pi");
+    // Graph_cartesian a("0");
+    // Graph_cartesian a("sqrt(1.0 - (x*x + y*y))");
+    // Graph_cartesian a("sqrt(1.5625 - (x*x + y*y))");
+    Graph_cartesian a("x");
     Graph * g = &a;
 
     try
     {
-        std::cout<<g->eval(1,2)<<std::endl;
+        double ret = g->eval(0,0);
+        if(std::fpclassify(ret) == FP_NORMAL || std::fpclassify(ret) == FP_ZERO)
+            std::cout<<g->eval(0,0)<<std::endl;
+        else
+            std::cout<<"Undefined!"<<std::endl;
+
+        g->build_graph();
     }
     catch(...)
     {
