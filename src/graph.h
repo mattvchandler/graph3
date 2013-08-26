@@ -67,6 +67,8 @@ public:
         std::cout<<"Base: "<<_eqn<<std::endl;
         _p.DefineConst("pi", M_PI);
         _p.DefineConst("e", M_E);
+
+        _ebo = _vao = _vbo = 0;
     }
     // remove as many of these as possible
     // probably best to make non-copyable
@@ -74,7 +76,12 @@ public:
     // Graph(Graph && a);
     ~Graph()
     {
-
+        if(_ebo)
+            glDeleteBuffers(1, &_ebo);
+        if(_vao)
+            glDeleteVertexArrays(1, &_vao);
+        if(_vbo)
+            glDeleteBuffers(1, &_vbo);
     }
     // Graph & operator =(const Graph & a);
     // Graph & operator =(Graph && a);
@@ -85,10 +92,12 @@ public:
 protected:
     std::string _eqn;
     mu::Parser _p;
-    GLuint _vao, _wire_vao;
+    GLuint _ebo;
+    GLuint _vao;
+    GLuint _vbo;
     GLuint _tex;
+    // TODO: wireframe?
     // TODO: maybe have each have its own shader program?
-    enum {vert_coords = 0, tet_coords = 1, normals = 2};
 };
 
 class Graph_cartesian final: public Graph
@@ -426,11 +435,7 @@ public:
         // std::cout<<verts[6][6]<<std::endl;
         // std::cout<<verts[6][5].coords<<" "<<verts[6][7].coords<<" "<<verts[5][6].coords<<" "<<verts[7][6].coords<<std::endl;
 
-        // build data structures for OpenGL
-        // glGenVertexArrays(1, _vao);
-        // glBindVertexArray(_vao);
-
-        std::vector<unsigned short> index;
+        std::vector<GLushort> index;
 
         bool break_flag = true;
 
@@ -511,6 +516,7 @@ public:
             break_flag = true;
         }
 
+        // TODO: remove debug
         std::cout<<std::endl;
         for(auto &i: index)
         {
@@ -519,6 +525,34 @@ public:
             else
                 std::cout<<std::endl;
         }
+
+        // generate required OpenGL structures
+        glGenBuffers(1, &_ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * index.size(), &index[0], GL_STATIC_DRAW);
+
+        glGenVertexArrays(1, &_vao);
+        glBindVertexArray(_vao);
+
+        glGenBuffers(1, &_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size() +
+            sizeof(glm::vec3) * normals.size(), NULL, GL_STATIC_DRAW);
+
+        // store vertex data
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * coords.size(), &coords[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size(), sizeof(glm::vec2) * tex_coords.size(), &tex_coords[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size(),
+            sizeof(glm::vec3) * normals.size(), &normals[0]);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *)(sizeof(glm::vec3) * coords.size()));
+        glEnableVertexAttribArray(1);
+
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid *)(sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size()));
+        glEnableVertexAttribArray(2);
     }
 
 private:

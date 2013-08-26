@@ -33,4 +33,4 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(graph_test
     src/graph.cpp
     src/graph_test.cpp)
-target_link_libraries(graph_test ${MUPARSER_LIBRARIES})
+target_link_libraries(graph_test ${MUPARSER_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})

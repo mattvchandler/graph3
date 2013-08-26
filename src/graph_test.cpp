@@ -1,5 +1,5 @@
 // graph_test.cpp
-// 
+//
 
 // Copyright 2013 Matthew Chandler
 
@@ -26,6 +26,15 @@
 
 int main()
 {
+    // init glew
+    // TODO: verify: can we do this before GL context is initialized?
+    // NOPE!
+    if(glewInit() != GLEW_OK)
+    {
+        std::cerr<<"Error loading glew. Aborting"<<std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     // Graph_cartesian a("0");
     // Graph_cartesian a("sqrt(1.0 - (x*x + y*y))");
     // Graph_cartesian a("sqrt(1.5625 - (x*x + y*y))");
