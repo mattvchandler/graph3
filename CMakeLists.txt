@@ -26,11 +26,8 @@ link_directories(${GTKMM_LINK_DIRS})
 
 add_executable(${PROJECT_NAME}
     src/window.cpp
-    src/SFMLWidget/SFMLWidget.cpp)
+    src/SFMLWidget/SFMLWidget.cpp
+    src/graph.cpp)
 target_link_libraries(${PROJECT_NAME}
-    ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${LIBPNG++_LIBRARIES})
+    ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${LIBPNG++_LIBRARIES} ${MUPARSER_LIBRARIES})
 
-add_executable(graph_test
-    src/graph.cpp
-    src/graph_test.cpp)
-target_link_libraries(graph_test ${MUPARSER_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
