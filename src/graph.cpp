@@ -53,6 +53,19 @@ Graph::~Graph()
         glDeleteBuffers(1, &_vbo);
 }
 
+// drawing code
+void Graph::draw()
+{
+    glBindVertexArray(_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+
+    glEnable(GL_PRIMITIVE_RESTART);
+    glPrimitiveRestartIndex(0xFFFF);
+
+    glDrawElements(GL_TRIANGLE_STRIP, _num_indexes, GL_UNSIGNED_SHORT, NULL);
+}
+
 Graph_cartesian::Graph_cartesian(const std::string & eqn): Graph(eqn)
 {
     std::cout<<"Derived: "<<_eqn<<std::endl;
@@ -63,7 +76,7 @@ Graph_cartesian::Graph_cartesian(const std::string & eqn): Graph(eqn)
     // TODO: remove debug stuff
     _x_min = _y_min = -1.0;
     _x_max = _y_max = 1.0;
-    _x_res = _y_res = 3;
+    _x_res = _y_res = 20;
 }
 
 double Graph_cartesian::eval(const double x, const double y)
@@ -503,4 +516,6 @@ void Graph_cartesian::build_graph()
 
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid *)(sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size()));
     glEnableVertexAttribArray(2);
+
+    _num_indexes = index.size();
 }

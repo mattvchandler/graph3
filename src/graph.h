@@ -56,16 +56,21 @@ public:
     Graph(const std::string & eqn = "");
     ~Graph();
 
+    void draw();
+
     virtual double eval(const double, const double) = 0;
     virtual void build_graph() = 0;
 
 protected:
     std::string _eqn;
     mu::Parser _p;
+
     GLuint _ebo;
     GLuint _vao;
     GLuint _vbo;
     GLuint _tex;
+    GLuint _num_indexes;
+
     // TODO: wireframe?
     // TODO: maybe have each have its own shader program?
 

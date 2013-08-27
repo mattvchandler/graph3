@@ -48,8 +48,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-
 #include "SFMLWidget/SFMLWidget.h"
+#include "graph.h"
 
 void check_error(const char * at)
 {
@@ -173,8 +173,8 @@ class Graph_disp final: public SFMLWidget
 {
 public:
     Graph_disp(const sf::VideoMode & mode, const int size_reqest = - 1, const sf::ContextSettings & context_settings= sf::ContextSettings()):
-        SFMLWidget(mode, size_reqest)
-
+        SFMLWidget(mode, size_reqest),
+        test_graph(new Graph_cartesian("x^2 +y^2"))
     {
         signal_realize().connect(sigc::mem_fun(*this, &Graph_disp::realize));
         signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
@@ -199,6 +199,49 @@ public:
             std::cerr<<"Error loading glew. Aborting"<<std::endl;
             exit(EXIT_FAILURE);
         }
+
+        // init GL state vars
+        glClearColor(0.25f, 0.25f, 0.25f, 0.0f);
+        glEnable(GL_DEPTH_TEST);
+        glDepthRangef(0.0f, 1.0f);
+        glLineWidth(5.0f);
+
+        glEnable(GL_POLYGON_SMOOTH);
+        glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+        glEnable(GL_LINE_SMOOTH);
+        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND);
+
+        // build shader programs
+        GLuint vert_shader = compile_shader("src/tet.vert", GL_VERTEX_SHADER);
+        GLuint frag_shader = compile_shader("src/tet.frag", GL_FRAGMENT_SHADER);
+
+        if(frag_shader == 0 || vert_shader == 0)
+            exit(EXIT_FAILURE);
+
+        shader_prog = link_shader_prog(std::vector<GLuint> {vert_shader, frag_shader});
+        if(shader_prog == 0)
+            exit(EXIT_FAILURE);
+
+        glDeleteShader(vert_shader);
+        glDeleteShader(frag_shader);
+
+        vert_shader = compile_shader("src/line.vert", GL_VERTEX_SHADER);
+        frag_shader = compile_shader("src/line.frag", GL_FRAGMENT_SHADER);
+
+        if(frag_shader == 0 || vert_shader == 0)
+            exit(EXIT_FAILURE);
+
+        shader_prog_line = link_shader_prog(std::vector<GLuint> {vert_shader, frag_shader});
+        if(shader_prog_line == 0)
+            exit(EXIT_FAILURE);
+
+        glDeleteShader(vert_shader);
+        glDeleteShader(frag_shader);
+
+        // TODO: maybe have set methods that call this for us
+        test_graph->build_graph();
     }
 
     void resize(Gtk::Allocation & allocation)
@@ -213,6 +256,8 @@ public:
     bool draw(const Cairo::RefPtr<Cairo::Context> & cr)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        test_graph->draw();
 
         display();
         return true;
@@ -242,12 +287,18 @@ public:
             if(has_focus())
             {
             }
+
             old_mouse_pos = new_mouse_pos;
         }
         return true;
     }
 
 private:
+
+    std::unique_ptr<Graph> test_graph;
+    GLuint shader_prog;
+    GLuint shader_prog_line;
+
     // make non-copyable
     Graph_disp(const Graph_disp &) = delete;
     Graph_disp(const Graph_disp &&) = delete;
