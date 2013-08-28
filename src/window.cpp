@@ -49,6 +49,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "SFMLWidget/SFMLWidget.h"
+
+#include "camera.h"
 #include "graph.h"
 
 void check_error(const char * at)
@@ -157,16 +159,6 @@ std::vector<float> read_png(const char * filename)
     }
 
     return data;
-}
-
-//using Rodrigues' rotation formula
-//http://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
-glm::vec3 rotate_vec(const glm::vec3 & v, const glm::vec3 & axis, const float angle)
-{
-    //using Rodrigues' rotation formula
-    //http://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
-    return v * cosf(angle) + glm::cross(axis, v) * sinf(angle)
-        + axis * glm::dot(axis, v) * (1.0f - cosf(angle));
 }
 
 class Graph_disp final: public SFMLWidget
