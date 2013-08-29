@@ -85,15 +85,19 @@ private:
 class Graph_cartesian final: public Graph
 {
 public:
-    Graph_cartesian(const std::string & eqn = "");
+    Graph_cartesian(const std::string & eqn = "",
+        float x_min = -1.0f, float x_max = 1.0f, int x_res = 50,
+        float y_min = -1.0f, float y_max = 1.0f, int y_res = 50);
 
     double eval(const double x, const double y) override;
     void build_graph() override;
 
 private:
     double _x, _y;
-    double _x_min, _y_min, _x_max, _y_max;
-    int _x_res, _y_res;
+    double _x_min, _x_max;
+    int _x_res;
+    double _y_min, _y_max;
+    int _y_res;
 };
 
 #endif // __GRAPH_H__

@@ -174,7 +174,7 @@ class Graph_disp final: public SFMLWidget
 public:
     Graph_disp(const sf::VideoMode & mode, const int size_reqest = - 1, const sf::ContextSettings & context_settings= sf::ContextSettings()):
         SFMLWidget(mode, size_reqest),
-        test_graph(new Graph_cartesian("sqrt(1 - x^2 - y^2)")),
+        test_graph(new Graph_cartesian("x^2 + y^2", -1.0f, 1.0f, 50, -1.0f, 1.0f, 50)),
         cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
         perspective_mat(1.0f),
         light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 50.0f, 0.8f, 1.0f, 0.5f, 0.0f}),

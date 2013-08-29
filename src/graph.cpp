@@ -67,18 +67,16 @@ void Graph::draw()
     glDrawElements(GL_TRIANGLE_STRIP, _num_indexes, GL_UNSIGNED_SHORT, NULL);
 }
 
-Graph_cartesian::Graph_cartesian(const std::string & eqn): Graph(eqn)
+Graph_cartesian::Graph_cartesian(const std::string & eqn, float x_min, float x_max, int x_res,
+    float y_min, float y_max, int y_res): Graph(eqn),
+    _x_min(x_min), _x_max(x_max), _x_res(x_res), _y_min(y_min), _y_max(y_max), _y_res(y_res)
+
 {
     // TODO: remove
     // std::cout<<"Derived: "<<_eqn<<std::endl;
     _p.DefineVar("x", &_x);
     _p.DefineVar("y", &_y);
     _p.SetExpr(eqn);
-
-    // TODO: remove debug stuff
-    _x_min = _y_min = -1.0;
-    _x_max = _y_max = 1.0;
-    _x_res = _y_res = 50;
 }
 
 double Graph_cartesian::eval(const double x, const double y)
