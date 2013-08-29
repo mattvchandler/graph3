@@ -8,14 +8,14 @@ uniform sampler2D tex;
 uniform vec3 ambient_color;
 uniform vec3 light_color;
 uniform vec3 light_pos;
-uniform float light_shiny = 0.2;
-uniform float light_strength = 0.8;
+uniform float light_shiny;
+uniform float light_strength;
 
 uniform vec3 cam_forward;
 
-uniform float const_atten = 1.0;
-uniform float linear_atten = 0.5;
-uniform float quad_atten = 0.0;
+uniform float const_atten;
+uniform float linear_atten;
+uniform float quad_atten;
 
 in vec2 tex_coords;
 in vec3 normal_vec;
@@ -34,8 +34,17 @@ void main()
 
     vec3 half_vec = normalize(light_dir + cam_forward);
 
-    float diffuse = max(0.0, dot(normal_vec, light_dir));
-    float specular = max(0.0, dot(normal_vec, half_vec));
+    float diffuse, specular;
+    if(gl_FrontFacing)
+    {
+        diffuse = max(0.0, dot(normal_vec, light_dir));
+        specular = max(0.0, dot(normal_vec, half_vec));
+    }
+    else
+    {
+        diffuse = max(0.0, dot(-normal_vec, light_dir));
+        specular = max(0.0, dot(-normal_vec, half_vec));
+    }
 
     if(diffuse <= 0.0001)
         specular = 0.0;
@@ -44,6 +53,9 @@ void main()
 
     vec3 scattered = ambient_color + light_color * diffuse * atten;
     vec3 reflected = light_color * specular * atten;
-    vec3 rgb = min(texture(tex, tex_coords).rgb * scattered + reflected, vec3(1.0));
-    frag_color = vec4(rgb, texture(tex, tex_coords).a);
+    // vec3 rgb = min(texture(tex, tex_coords).rgb * scattered + reflected, vec3(1.0));
+    vec3 rgb = min(vec3(1.0, 1.0, 1.0) * scattered + reflected, vec3(1.0));
+    // frag_color = vec4(rgb, texture(tex, tex_coords).a);
+    frag_color = vec4(rgb, 1.0);
+    // frag_color = vec4(1.0, 1.0, 1.0, 1.0);
 }

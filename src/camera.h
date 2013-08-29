@@ -26,6 +26,18 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+inline std::ostream & operator<<(std::ostream & out, const glm::vec2 & v)
+{
+    out<<"("<<v.x<<", "<<v.y<<")";
+    return out;
+}
+
+inline std::ostream & operator<<(std::ostream & out, const glm::vec3 & v)
+{
+    out<<"("<<v.x<<", "<<v.y<<", "<<v.z<<")";
+    return out;
+}
+
 class Camera
 {
 public:

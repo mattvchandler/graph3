@@ -36,7 +36,8 @@ std::ostream & operator<<(std::ostream & out, const glm::vec3 & v)
 
 Graph::Graph(const std::string & eqn): _eqn(eqn)
 {
-    std::cout<<"Base: "<<_eqn<<std::endl;
+    // TODO: remove
+    // std::cout<<"Base: "<<_eqn<<std::endl;
     _p.DefineConst("pi", M_PI);
     _p.DefineConst("e", M_E);
 
@@ -68,7 +69,8 @@ void Graph::draw()
 
 Graph_cartesian::Graph_cartesian(const std::string & eqn): Graph(eqn)
 {
-    std::cout<<"Derived: "<<_eqn<<std::endl;
+    // TODO: remove
+    // std::cout<<"Derived: "<<_eqn<<std::endl;
     _p.DefineVar("x", &_x);
     _p.DefineVar("y", &_y);
     _p.SetExpr(eqn);
@@ -76,7 +78,7 @@ Graph_cartesian::Graph_cartesian(const std::string & eqn): Graph(eqn)
     // TODO: remove debug stuff
     _x_min = _y_min = -1.0;
     _x_max = _y_max = 1.0;
-    _x_res = _y_res = 20;
+    _x_res = _y_res = 100;
 }
 
 double Graph_cartesian::eval(const double x, const double y)
@@ -108,8 +110,8 @@ void Graph_cartesian::build_graph()
     std::vector<bool> defined(_y_res * _x_res);
 
     // coordinate pass
-    double y = _y_min;
-    for(int y_i = 0; y_i < _y_res; ++y_i, y += (_y_max - _y_min) / (double)(_y_res - 1))
+    double y = _y_max;
+    for(int y_i = 0; y_i < _y_res; ++y_i, y -= (_y_max - _y_min) / (double)(_y_res - 1))
     {
         double x = _x_min;
         for(int x_i = 0; x_i < _x_res; ++x_i,  x += (_x_max - _x_min) / (double)(_x_res - 1))
@@ -121,13 +123,13 @@ void Graph_cartesian::build_graph()
             {
                 coords[y_i * _x_res + x_i] = glm::vec3(0.0f);
                 tex_coords[y_i * _x_res + x_i] = glm::vec2(0.0f);
-                normals[y_i * _x_res + x_i] = glm::vec3(0.0f, 1.0f, 0.0f);
+                normals[y_i * _x_res + x_i] = glm::vec3(0.0f, 0.0f, 1.0f);
                 defined[y_i * _x_res + x_i] = false;
                 continue;
             }
 
             // re-arranged into OpenGL's coordinate system
-            coords[y_i * _x_res + x_i] = glm::vec3((float)y, (float)z, (float)x);
+            coords[y_i * _x_res + x_i] = glm::vec3((float)x, (float)y, (float)z);
             tex_coords[y_i * _x_res + x_i] = glm::vec2((float)((y - _y_min) / (_y_max - _y_min)), (float)((x - _x_min) / (_x_max - _x_min)));
             defined[y_i * _x_res + x_i] = true;
         }
@@ -149,28 +151,28 @@ void Graph_cartesian::build_graph()
 
             double l_x, r_x, u_y, d_y, x, y, z;
 
-            x = coords[y_i * _x_res + x_i].z;
-            y = coords[y_i * _x_res + x_i].x;
+            x = coords[y_i * _x_res + x_i].x;
+            y = coords[y_i * _x_res + x_i].y;
 
             if(x_i == 0)
                 l_x = _x_min - (_x_max - _x_min) / (double)_x_res;
             else
-                l_x = coords[y_i * _x_res + x_i - 1].z;
+                l_x = coords[y_i * _x_res + x_i - 1].x;
 
             if(x_i == _x_res - 1)
                 r_x = _x_max + (_x_max - _x_min) / (double)_x_res;
             else
-                r_x = coords[y_i * _x_res + x_i + 1].z;
+                r_x = coords[y_i * _x_res + x_i + 1].x;
 
             if(y_i == 0)
-                u_y = _y_min - (_y_max - _y_min) / (double)_y_res;
+                u_y = _y_max + (_y_max - _y_min) / (double)_y_res;
             else
-                u_y = coords[(y_i - 1) * _x_res + x_i].x;
+                u_y = coords[(y_i - 1) * _x_res + x_i].y;
 
             if(y_i == _y_res - 1)
-                d_y = _y_max + (_y_max - _y_min) / (double)_y_res;
+                d_y = _y_min - (_y_max - _y_min) / (double)_y_res;
             else
-                d_y = coords[(y_i + 1) * _x_res + x_i].x;
+                d_y = coords[(y_i + 1) * _x_res + x_i].y;
 
             // ul
             if(x_i == 0 || y_i == 0)
@@ -180,7 +182,7 @@ void Graph_cartesian::build_graph()
                     std::fpclassify(z) == FP_ZERO)
                 {
                     ul_def = true;
-                    ul = glm::vec3(u_y, z, l_x);
+                    ul = glm::vec3(l_x, u_y, z);
                 }
             }
             else
@@ -197,7 +199,7 @@ void Graph_cartesian::build_graph()
                     std::fpclassify(z) == FP_ZERO)
                 {
                     u_def = true;
-                    u = glm::vec3(u_y, z, x);
+                    u = glm::vec3(x, u_y, z);
                 }
             }
             else
@@ -214,7 +216,7 @@ void Graph_cartesian::build_graph()
                     std::fpclassify(z) == FP_ZERO)
                 {
                     ur_def = true;
-                    ur = glm::vec3(u_y, z, r_x);
+                    ur = glm::vec3(r_x, u_y, z);
                 }
             }
             else
@@ -231,7 +233,7 @@ void Graph_cartesian::build_graph()
                     std::fpclassify(z) == FP_ZERO)
                 {
                     r_def = true;
-                    r = glm::vec3(y, z, r_x);
+                    r = glm::vec3(r_x, y, z);
                 }
             }
             else
@@ -248,7 +250,7 @@ void Graph_cartesian::build_graph()
                     std::fpclassify(z) == FP_ZERO)
                 {
                     lr_def = true;
-                    lr = glm::vec3(d_y, z, r_x);
+                    lr = glm::vec3(r_x, d_y, z);
                 }
             }
             else
@@ -265,7 +267,7 @@ void Graph_cartesian::build_graph()
                     std::fpclassify(z) == FP_ZERO)
                 {
                     d_def = true;
-                    d = glm::vec3(d_y, z, x);
+                    d = glm::vec3(x, d_y, z);
                 }
             }
             else
@@ -282,7 +284,7 @@ void Graph_cartesian::build_graph()
                     std::fpclassify(z) == FP_ZERO)
                 {
                     ll_def = true;
-                    ll = glm::vec3(d_y, z, l_x);
+                    ll = glm::vec3(l_x, d_y, z);
                 }
             }
             else
@@ -299,7 +301,7 @@ void Graph_cartesian::build_graph()
                     std::fpclassify(z) == FP_ZERO)
                 {
                     l_def = true;
-                    l = glm::vec3(y, z, l_x);
+                    l = glm::vec3(l_x, y, z);
                 }
             }
             else
@@ -310,65 +312,65 @@ void Graph_cartesian::build_graph()
 
             std::vector<glm::vec3> surrounding;
 
-            std::cout<<ul<<u<<ur<<r<<lr<<d<<ll<<l<<std::endl;
-            std::cout<<ul_def<<u_def<<ur_def<<r_def<<lr_def<<d_def<<ll_def<<l_def<<std::endl;
+            // std::cout<<ul<<u<<ur<<r<<lr<<d<<ll<<l<<std::endl; // TODO: remove debug
+            // std::cout<<ul_def<<u_def<<ur_def<<r_def<<lr_def<<d_def<<ll_def<<l_def<<std::endl; // TODO: remove debug
             glm::vec3 center = coords[y_i * _x_res + x_i];
 
             if(u_def && ur_def)
-                surrounding.push_back(glm::normalize(glm::cross(u - center, ur - center)));
+                surrounding.push_back(glm::normalize(glm::cross(ur - center, u - center)));
             if(u_def && r_def)
-                surrounding.push_back(glm::normalize(glm::cross(u - center, r - center)));
+                surrounding.push_back(glm::normalize(glm::cross(r - center, u - center)));
             if(u_def && lr_def)
-                surrounding.push_back(glm::normalize(glm::cross(u - center, lr - center)));
+                surrounding.push_back(glm::normalize(glm::cross(lr - center, u - center)));
 
             if(ur_def && r_def)
-                surrounding.push_back(glm::normalize(glm::cross(ur - center, r - center)));
+                surrounding.push_back(glm::normalize(glm::cross(r - center, ur - center)));
             if(ur_def && lr_def)
-                surrounding.push_back(glm::normalize(glm::cross(ur - center, lr - center)));
+                surrounding.push_back(glm::normalize(glm::cross(lr - center, ur - center)));
             if(ur_def && d_def)
-                surrounding.push_back(glm::normalize(glm::cross(ur - center, d - center)));
+                surrounding.push_back(glm::normalize(glm::cross(d - center, ur - center)));
 
             if(r_def && lr_def)
-                surrounding.push_back(glm::normalize(glm::cross(r - center, lr - center)));
+                surrounding.push_back(glm::normalize(glm::cross(lr - center, r - center)));
             if(r_def && d_def)
-                surrounding.push_back(glm::normalize(glm::cross(r - center, d - center)));
+                surrounding.push_back(glm::normalize(glm::cross(d - center, r - center)));
             if(r_def && ll_def)
-                surrounding.push_back(glm::normalize(glm::cross(r - center, ll - center)));
+                surrounding.push_back(glm::normalize(glm::cross(ll - center, r - center)));
 
             if(lr_def && d_def)
-                surrounding.push_back(glm::normalize(glm::cross(lr - center, d - center)));
+                surrounding.push_back(glm::normalize(glm::cross(d - center, lr - center)));
             if(lr_def && ll_def)
-                surrounding.push_back(glm::normalize(glm::cross(lr - center, ll - center)));
+                surrounding.push_back(glm::normalize(glm::cross(ll - center, lr - center)));
             if(lr_def && l_def)
-                surrounding.push_back(glm::normalize(glm::cross(lr - center, l - center)));
+                surrounding.push_back(glm::normalize(glm::cross(l - center, lr - center)));
 
             if(d_def && ll_def)
-                surrounding.push_back(glm::normalize(glm::cross(d - center, ll - center)));
+                surrounding.push_back(glm::normalize(glm::cross(ll - center, d - center)));
             if(d_def && l_def)
-                surrounding.push_back(glm::normalize(glm::cross(d - center, l - center)));
+                surrounding.push_back(glm::normalize(glm::cross(l - center, d - center)));
             if(d_def && ul_def)
-                surrounding.push_back(glm::normalize(glm::cross(d - center, ul - center)));
+                surrounding.push_back(glm::normalize(glm::cross(ul - center, d - center)));
 
             if(ll_def && l_def)
-                surrounding.push_back(glm::normalize(glm::cross(ll - center, l - center)));
+                surrounding.push_back(glm::normalize(glm::cross(l - center, ll - center)));
             if(ll_def && ul_def)
-                surrounding.push_back(glm::normalize(glm::cross(ll - center, ul - center)));
+                surrounding.push_back(glm::normalize(glm::cross(ul - center, ll - center)));
             if(ll_def && u_def)
-                surrounding.push_back(glm::normalize(glm::cross(ll - center, u - center)));
+                surrounding.push_back(glm::normalize(glm::cross(u - center, ll - center)));
 
             if(l_def && ul_def)
-                surrounding.push_back(glm::normalize(glm::cross(l - center, ul - center)));
+                surrounding.push_back(glm::normalize(glm::cross(ul - center, l - center)));
             if(l_def && u_def)
-                surrounding.push_back(glm::normalize(glm::cross(l - center, u - center)));
+                surrounding.push_back(glm::normalize(glm::cross(u - center, l - center)));
             if(l_def && ur_def)
-                surrounding.push_back(glm::normalize(glm::cross(l - center, ur - center)));
+                surrounding.push_back(glm::normalize(glm::cross(ur - center, l - center)));
 
             if(ul_def && u_def)
-                surrounding.push_back(glm::normalize(glm::cross(ul - center, u - center)));
+                surrounding.push_back(glm::normalize(glm::cross(u - center, ul - center)));
             if(ul_def && ur_def)
-                surrounding.push_back(glm::normalize(glm::cross(ul - center, ur - center)));
+                surrounding.push_back(glm::normalize(glm::cross(ur - center, ul - center)));
             if(ul_def && r_def)
-                surrounding.push_back(glm::normalize(glm::cross(ul - center, r - center)));
+                surrounding.push_back(glm::normalize(glm::cross(r - center, ul - center)));
 
             for(auto &i: surrounding)
                 normals[y_i * _x_res + x_i] += i;
@@ -377,6 +379,8 @@ void Graph_cartesian::build_graph()
         }
     }
 
+    // TODO: remove debug
+    /*
     for(auto &i: coords)
         std::cout<<i<<" ";
     std::cout<<std::endl;
@@ -392,6 +396,7 @@ void Graph_cartesian::build_graph()
     for(size_t i = 0; i < defined.size(); ++i)
         std::cout<<(defined[i]?"def":"undef")<<" ";
     std::cout<<std::endl;
+    */
 
     // TODO: remove
     // print 'random' samples
@@ -480,14 +485,16 @@ void Graph_cartesian::build_graph()
     }
 
     // TODO: remove debug
+    /*
     std::cout<<std::endl;
     for(auto &i: index)
     {
         if(i != 0xFFFF)
-            std::cout<<i<<":"<<coords[i]<<" ";
+            std::cout<<i<<":"<<coords[i]<<"/"<<normals[i]<<" ";
         else
             std::cout<<std::endl;
     }
+    */
 
     // generate required OpenGL structures
     glGenBuffers(1, &_ebo);

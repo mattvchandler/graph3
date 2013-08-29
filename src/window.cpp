@@ -107,7 +107,6 @@ GLuint compile_shader(const char * filename, GLenum shader_type)
 
         return 0;
     }
-
     return shader;
 }
 
@@ -137,9 +136,7 @@ GLuint link_shader_prog(const std::vector<GLuint> & shaders)
 
         return 0;
     }
-
     return prog;
-
 }
 
 std::vector<float> read_png(const char * filename)
@@ -157,16 +154,31 @@ std::vector<float> read_png(const char * filename)
             data[(image.get_width() * r + c) * 4 + 3] = (float)image[r][c].alpha / 255.0f;
         }
     }
-
     return data;
 }
+
+struct Light
+{
+    glm::vec3 pos;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+    float shininess;
+    float strength;
+    float const_attenuation;
+    float linear_attenuation;
+    float quad_attenuation;
+};
 
 class Graph_disp final: public SFMLWidget
 {
 public:
     Graph_disp(const sf::VideoMode & mode, const int size_reqest = - 1, const sf::ContextSettings & context_settings= sf::ContextSettings()):
         SFMLWidget(mode, size_reqest),
-        test_graph(new Graph_cartesian("x^2 +y^2"))
+        test_graph(new Graph_cartesian("sqrt(1 - x^2 - y^2)")),
+        cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+        perspective_mat(1.0f),
+        light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 50.0f, 0.8f, 1.0f, 0.5f, 0.0f}),
+        ambient_light(0.2f, 0.2f, 0.2f)
     {
         signal_realize().connect(sigc::mem_fun(*this, &Graph_disp::realize));
         signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
@@ -206,8 +218,8 @@ public:
         glEnable(GL_BLEND);
 
         // build shader programs
-        GLuint vert_shader = compile_shader("src/tet.vert", GL_VERTEX_SHADER);
-        GLuint frag_shader = compile_shader("src/tet.frag", GL_FRAGMENT_SHADER);
+        GLuint vert_shader = compile_shader("src/graph.vert", GL_VERTEX_SHADER);
+        GLuint frag_shader = compile_shader("src/graph.frag", GL_FRAGMENT_SHADER);
 
         if(frag_shader == 0 || vert_shader == 0)
             exit(EXIT_FAILURE);
@@ -241,6 +253,8 @@ public:
         if(m_refGdkWindow)
         {
             glViewport(0, 0, glWindow.getSize().x, glWindow.getSize().y);
+            perspective_mat = glm::perspective(30.0f, (float)glWindow.getSize().x / (float)glWindow.getSize().y,
+                0.1f, 100.0f);
             invalidate();
         }
     }
@@ -248,8 +262,38 @@ public:
     bool draw(const Cairo::RefPtr<Cairo::Context> & cr)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUseProgram(shader_prog);
+
+        // set up transformation matrices
+        glm::mat4 view_model = cam.view_mat();
+        glm::mat4 view_model_perspective = perspective_mat * view_model;
+        glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
+
+        glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model"), 1, GL_FALSE, &view_model[0][0]);
+        glUniformMatrix3fv(glGetUniformLocation(shader_prog, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
+
+        // set up light
+        // TODO: add separate specular color
+        // TODO: add material properties
+        glm::vec3 light_pos_eye(0.0f);
+        glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
+
+        glUniform3fv(glGetUniformLocation(shader_prog, "light_pos"), 1, &light_pos_eye[0]);
+        glUniform3fv(glGetUniformLocation(shader_prog, "cam_forward"), 1, &light_forward[0]);
+        glUniform3fv(glGetUniformLocation(shader_prog, "ambient_color"), 1, &ambient_light[0]);
+        glUniform3fv(glGetUniformLocation(shader_prog, "light_color"), 1, &light.diffuse[0]);
+        glUniform1f(glGetUniformLocation(shader_prog, "light_shiny"), light.shininess);
+        glUniform1f(glGetUniformLocation(shader_prog, "light_strength"), light.strength);
+        glUniform1f(glGetUniformLocation(shader_prog, "const_atten"), light.const_attenuation);
+        glUniform1f(glGetUniformLocation(shader_prog, "linear_atten"), light.linear_attenuation);
+        glUniform1f(glGetUniformLocation(shader_prog, "quad_atten"), light.quad_attenuation);
+
+        check_error("pre draw");
 
         test_graph->draw();
+
+        check_error("draw");
 
         display();
         return true;
@@ -278,18 +322,78 @@ public:
             }
             if(has_focus())
             {
-            }
+                // reset camera
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
+                {
+                    key_lock[sf::Keyboard::R] = true;
+                    cam.set();
+                    invalidate();
+                }
+                else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+                    key_lock[sf::Keyboard::R] = false;
 
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+                {
+                    cam.translate(0.1f * glm::normalize(glm::vec3(cam.forward().x, cam.forward().y, 0.0f)));
+                    invalidate();
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+                {
+                    cam.translate(-0.1f * glm::normalize(glm::vec3(cam.forward().x, cam.forward().y, 0.0f)));
+                    invalidate();
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+                {
+                    cam.translate(-0.1f * cam.right());
+                    invalidate();
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+                {
+                    cam.translate(0.1f * cam.right());
+                    invalidate();
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+                {
+                    cam.translate(0.1f * glm::vec3(0.0f, 0.0f, 1.0f));
+                    invalidate();
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl))
+                {
+                    cam.translate(-0.1f * glm::vec3(0.0f, 0.0f, 1.0f));
+                    invalidate();
+                }
+
+                if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+                {
+                    int d_x = new_mouse_pos.x - old_mouse_pos.x;
+                    int d_y = new_mouse_pos.y - old_mouse_pos.y;
+
+
+                    cam.rotate(0.005f * d_y, cam.right());
+                    cam.rotate(0.005f * d_x, glm::vec3(0.0f, 0.0f, 1.0f));
+
+                    invalidate();
+                }
+            }
             old_mouse_pos = new_mouse_pos;
         }
         return true;
     }
 
 private:
-
     std::unique_ptr<Graph> test_graph;
     GLuint shader_prog;
     GLuint shader_prog_line;
+
+    Camera cam;
+    glm::mat4 perspective_mat;
+    Light light;
+    glm::vec3 ambient_light;
 
     // make non-copyable
     Graph_disp(const Graph_disp &) = delete;
