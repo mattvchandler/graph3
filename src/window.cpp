@@ -407,6 +407,8 @@ class Graph_window final: public Gtk::Window
 public:
     Graph_window(): gl_window(sf::VideoMode(800, 600), -1, sf::ContextSettings(0, 0, 4, 4, 0)) // these do nothing yet - future SFML version should enable them
     {
+        this->set_title("Graph 3");
+        set_default_size(800, 600);
         gl_window.set_hexpand(true);
         gl_window.set_vexpand(true);
 

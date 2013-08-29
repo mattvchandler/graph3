@@ -78,7 +78,7 @@ Graph_cartesian::Graph_cartesian(const std::string & eqn): Graph(eqn)
     // TODO: remove debug stuff
     _x_min = _y_min = -1.0;
     _x_max = _y_max = 1.0;
-    _x_res = _y_res = 100;
+    _x_res = _y_res = 50;
 }
 
 double Graph_cartesian::eval(const double x, const double y)
