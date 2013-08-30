@@ -334,6 +334,30 @@ public:
 
         test_graph->draw();
 
+        // switch to line shader
+        glUseProgram(shader_prog_line);
+
+        glUniformMatrix4fv(glGetUniformLocation(shader_prog_line, "perspective"), 1, GL_FALSE, &perspective_mat[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(shader_prog_line, "view_model"), 1, GL_FALSE, &view_model[0][0]);
+        glUniformMatrix3fv(glGetUniformLocation(shader_prog_line, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
+
+        // light properties
+        // TODO: store uniform locations
+        glUniform3fv(glGetUniformLocation(shader_prog_line, "light_pos"), 1, &light_pos_eye[0]);
+        glUniform3fv(glGetUniformLocation(shader_prog_line, "cam_forward"), 1, &light_forward[0]);
+        glUniform3fv(glGetUniformLocation(shader_prog_line, "ambient_color"), 1, &ambient_light[0]);
+        glUniform3fv(glGetUniformLocation(shader_prog_line, "light_color"), 1, &light.color[0]);
+        glUniform1f(glGetUniformLocation(shader_prog_line, "light_strength"), light.strength);
+        glUniform1f(glGetUniformLocation(shader_prog_line, "const_atten"), light.const_attenuation);
+        glUniform1f(glGetUniformLocation(shader_prog_line, "linear_atten"), light.linear_attenuation);
+        glUniform1f(glGetUniformLocation(shader_prog_line, "quad_atten"), light.quad_attenuation);
+        // material properties
+        glUniform4fv(glGetUniformLocation(shader_prog_line, "color"), 1, &test_graph->grid_color[0]);
+        glUniform1f(glGetUniformLocation(shader_prog_line, "shininess"), test_graph->grid_shininess);
+        glUniform3fv(glGetUniformLocation(shader_prog_line, "specular"), 1, &test_graph->grid_specular[0]);
+
+        test_graph->draw_grid();
+
         check_error("draw");
 
         display();

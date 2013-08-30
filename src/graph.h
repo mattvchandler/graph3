@@ -57,6 +57,7 @@ public:
     ~Graph();
 
     void draw() const;
+    void draw_grid() const;
 
     virtual double eval(const double, const double) = 0;
     virtual void build_graph() = 0;
@@ -67,6 +68,10 @@ public:
     float shininess;
     glm::vec3 specular;
 
+    glm::vec4 grid_color;
+    float grid_shininess;
+    glm::vec3 grid_specular;
+
 protected:
     std::string _eqn;
     mu::Parser _p;
@@ -76,7 +81,9 @@ protected:
     GLuint _vbo;
     GLuint _num_indexes;
 
-    // TODO: wireframe?
+    GLuint _grid_ebo;
+    GLuint _grid_num_indexes;
+
     // TODO: maybe have each have its own shader program?
 
 private:

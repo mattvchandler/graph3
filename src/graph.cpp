@@ -36,6 +36,7 @@ std::ostream & operator<<(std::ostream & out, const glm::vec3 & v)
 
 Graph::Graph(const std::string & eqn):
     tex(0), shininess(50.0f), specular(1.0f),
+    grid_color(0.1f, 0.1f, 0.1f, 1.0f), grid_shininess(100.0f), grid_specular(1.0f),
      _eqn(eqn), _ebo(0), _vao(0), _vbo(0), _num_indexes(0)
 
 {
@@ -64,6 +65,15 @@ void Graph::draw() const
     glBindTexture(GL_TEXTURE_2D, tex);
 
     glDrawElements(GL_TRIANGLE_STRIP, _num_indexes, GL_UNSIGNED_SHORT, NULL);
+}
+
+void Graph::draw_grid() const
+{
+    glBindVertexArray(_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _grid_ebo);
+
+    glDrawElements(GL_LINE_STRIP, _grid_num_indexes, GL_UNSIGNED_SHORT, NULL);
 }
 
 Graph_cartesian::Graph_cartesian(const std::string & eqn, float x_min, float x_max, int x_res,
@@ -520,4 +530,42 @@ void Graph_cartesian::build_graph()
     glEnableVertexAttribArray(2);
 
     _num_indexes = index.size();
+
+    // generate grid lines
+    std::vector<GLushort> grid_index;
+
+    // horizontal pass
+    for(int i = 1; i < 10; ++i)
+    {
+        for(int x_i = 0; x_i < _x_res; ++x_i)
+        {
+            GLushort ind = (int)((float)_y_res * (float)i / 10.0f) * _x_res + x_i;
+            if(defined[ind])
+                grid_index.push_back(ind);
+            else
+                grid_index.push_back(0xFFFF);
+        }
+        grid_index.push_back(0xFFFF);
+    }
+
+    //vertical pass
+    for(int i = 1; i < 10; ++i)
+    {
+        for(int y_i = 0; y_i < _y_res; ++y_i)
+        {
+            GLushort ind = y_i * _x_res + (int)((float)_x_res * (float)i / 10.0f);
+            if(defined[ind])
+                grid_index.push_back(ind);
+            else
+                grid_index.push_back(0xFFFF);
+        }
+        grid_index.push_back(0xFFFF);
+    }
+
+    // generate required OpenGL structures
+    glGenBuffers(1, &_grid_ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _grid_ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * grid_index.size(), &grid_index[0], GL_STATIC_DRAW);
+
+    _grid_num_indexes = grid_index.size();
 }
