@@ -56,10 +56,16 @@ public:
     Graph(const std::string & eqn = "");
     ~Graph();
 
-    void draw();
+    void draw() const;
 
     virtual double eval(const double, const double) = 0;
     virtual void build_graph() = 0;
+
+public:
+    // material properties
+    GLuint tex;
+    float shininess;
+    glm::vec3 specular;
 
 protected:
     std::string _eqn;
@@ -68,7 +74,6 @@ protected:
     GLuint _ebo;
     GLuint _vao;
     GLuint _vbo;
-    GLuint _tex;
     GLuint _num_indexes;
 
     // TODO: wireframe?

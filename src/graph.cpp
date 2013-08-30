@@ -34,14 +34,13 @@ std::ostream & operator<<(std::ostream & out, const glm::vec3 & v)
     return out;
 }
 
-Graph::Graph(const std::string & eqn): _eqn(eqn)
+Graph::Graph(const std::string & eqn):
+    tex(0), shininess(50.0f), specular(1.0f),
+     _eqn(eqn), _ebo(0), _vao(0), _vbo(0), _num_indexes(0)
+
 {
-    // TODO: remove
-    // std::cout<<"Base: "<<_eqn<<std::endl;
     _p.DefineConst("pi", M_PI);
     _p.DefineConst("e", M_E);
-
-    _ebo = _vao = _vbo = 0;
 }
 
 Graph::~Graph()
@@ -52,17 +51,17 @@ Graph::~Graph()
         glDeleteVertexArrays(1, &_vao);
     if(_vbo)
         glDeleteBuffers(1, &_vbo);
+    if(tex)
+        glDeleteTextures(1, &tex);
 }
 
 // drawing code
-void Graph::draw()
+void Graph::draw() const
 {
     glBindVertexArray(_vao);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-
-    glEnable(GL_PRIMITIVE_RESTART);
-    glPrimitiveRestartIndex(0xFFFF);
+    glBindTexture(GL_TEXTURE_2D, tex);
 
     glDrawElements(GL_TRIANGLE_STRIP, _num_indexes, GL_UNSIGNED_SHORT, NULL);
 }
@@ -72,8 +71,6 @@ Graph_cartesian::Graph_cartesian(const std::string & eqn, float x_min, float x_m
     _x_min(x_min), _x_max(x_max), _x_res(x_res), _y_min(y_min), _y_max(y_max), _y_res(y_res)
 
 {
-    // TODO: remove
-    // std::cout<<"Derived: "<<_eqn<<std::endl;
     _p.DefineVar("x", &_x);
     _p.DefineVar("y", &_y);
     _p.SetExpr(eqn);
@@ -128,7 +125,7 @@ void Graph_cartesian::build_graph()
 
             // re-arranged into OpenGL's coordinate system
             coords[y_i * _x_res + x_i] = glm::vec3((float)x, (float)y, (float)z);
-            tex_coords[y_i * _x_res + x_i] = glm::vec2((float)((y - _y_min) / (_y_max - _y_min)), (float)((x - _x_min) / (_x_max - _x_min)));
+            tex_coords[y_i * _x_res + x_i] = glm::vec2((float)((x - _x_min) / (_x_max - _x_min)), (float)((_y_max - y) / (_y_max - _y_min)));
             defined[y_i * _x_res + x_i] = true;
         }
     }

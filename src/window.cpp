@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <cmath>
@@ -139,30 +140,29 @@ GLuint link_shader_prog(const std::vector<GLuint> & shaders)
     return prog;
 }
 
-std::vector<float> read_png(const char * filename)
+std::pair<std::vector<float>, glm::ivec2> read_png(const char * filename)
 {
     const png::image<png::rgba_pixel> image(filename);
-    std::vector<float> data(image.get_height() * image.get_width() * 4);
+    std::pair<std::vector<float>, glm::ivec2> ret(std::vector<float>(image.get_height() * image.get_width() * 4),
+        glm::ivec2(image.get_height(), image.get_width()));
 
     for(size_t r = 0; r < image.get_height(); ++r)
     {
         for(size_t c = 0; c < image.get_width(); ++c)
         {
-            data[(image.get_width() * r + c) * 4 + 0] = (float)image[r][c].red / 255.0f;
-            data[(image.get_width() * r + c) * 4 + 1] = (float)image[r][c].green / 255.0f;
-            data[(image.get_width() * r + c) * 4 + 2] = (float)image[r][c].blue / 255.0f;
-            data[(image.get_width() * r + c) * 4 + 3] = (float)image[r][c].alpha / 255.0f;
+            ret.first[(image.get_width() * r + c) * 4 + 0] = (float)image[r][c].red / 255.0f;
+            ret.first[(image.get_width() * r + c) * 4 + 1] = (float)image[r][c].green / 255.0f;
+            ret.first[(image.get_width() * r + c) * 4 + 2] = (float)image[r][c].blue / 255.0f;
+            ret.first[(image.get_width() * r + c) * 4 + 3] = (float)image[r][c].alpha / 255.0f;
         }
     }
-    return data;
+    return ret;
 }
 
 struct Light
 {
     glm::vec3 pos;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-    float shininess;
+    glm::vec3 color;
     float strength;
     float const_attenuation;
     float linear_attenuation;
@@ -174,11 +174,11 @@ class Graph_disp final: public SFMLWidget
 public:
     Graph_disp(const sf::VideoMode & mode, const int size_reqest = - 1, const sf::ContextSettings & context_settings= sf::ContextSettings()):
         SFMLWidget(mode, size_reqest),
-        test_graph(new Graph_cartesian("x^2 + y^2", -1.0f, 1.0f, 50, -1.0f, 1.0f, 50)),
-        cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+        test_graph(new Graph_cartesian("sin(x) + sin(y)", -10.0f, 10.0f, 50, -10.0f, 10.0f, 50)), // TODO: investigate why large res breaks down - probably integer overflow
+        cam(glm::vec3(0.0f, -10.0f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
         perspective_mat(1.0f),
-        light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 50.0f, 0.8f, 1.0f, 0.5f, 0.0f}),
-        ambient_light(0.2f, 0.2f, 0.2f)
+        light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.8f, 1.0f, 0.5f, 0.0f}),
+        ambient_light(0.4f, 0.4f, 0.4f)
     {
         signal_realize().connect(sigc::mem_fun(*this, &Graph_disp::realize));
         signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
@@ -244,8 +244,40 @@ public:
         glDeleteShader(vert_shader);
         glDeleteShader(frag_shader);
 
+        // load images
+        glEnable(GL_TEXTURE_2D);
+
+        std::vector<std::pair<std::vector<float>, glm::ivec2>> texture_data;
+
+        try
+        {
+            texture_data.push_back(read_png("img/test.png"));
+        }
+        catch(std::exception &e)
+        {
+            std::cerr<<"Error reading image file: "<<e.what()<<std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+        textures.resize(texture_data.size());
+        glGenTextures(textures.size(), &textures[0]);
+
+        for(size_t i = 0; i < textures.size(); ++i)
+        {
+            glBindTexture(GL_TEXTURE_2D, textures[i]);
+            glTexStorage2D(GL_TEXTURE_2D, (int)(log2(std::min(texture_data[i].second.x, texture_data[i].second.y))) + 1,
+                GL_RGBA8, texture_data[i].second.x, texture_data[i].second.y);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 512, 512, GL_RGBA, GL_FLOAT, &texture_data[i].first[0]);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+
         // TODO: maybe have set methods that call this for us
         test_graph->build_graph();
+        test_graph->tex = textures[0];
     }
 
     void resize(Gtk::Allocation & allocation)
@@ -262,16 +294,14 @@ public:
     bool draw(const Cairo::RefPtr<Cairo::Context> & cr)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(shader_prog);
+
+        glEnable(GL_PRIMITIVE_RESTART);
+        glPrimitiveRestartIndex(0xFFFF);
 
         // set up transformation matrices
         glm::mat4 view_model = cam.view_mat();
         glm::mat4 view_model_perspective = perspective_mat * view_model;
         glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
-
-        glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model"), 1, GL_FALSE, &view_model[0][0]);
-        glUniformMatrix3fv(glGetUniformLocation(shader_prog, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
 
         // set up light
         // TODO: add separate specular color
@@ -279,15 +309,26 @@ public:
         glm::vec3 light_pos_eye(0.0f);
         glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
 
+        glUseProgram(shader_prog);
+
+        glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model"), 1, GL_FALSE, &view_model[0][0]);
+        glUniformMatrix3fv(glGetUniformLocation(shader_prog, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
+
+        // light properties
+        // TODO: store uniform locations
+        // TODO: move unchanged vars elsewhere
         glUniform3fv(glGetUniformLocation(shader_prog, "light_pos"), 1, &light_pos_eye[0]);
         glUniform3fv(glGetUniformLocation(shader_prog, "cam_forward"), 1, &light_forward[0]);
         glUniform3fv(glGetUniformLocation(shader_prog, "ambient_color"), 1, &ambient_light[0]);
-        glUniform3fv(glGetUniformLocation(shader_prog, "light_color"), 1, &light.diffuse[0]);
-        glUniform1f(glGetUniformLocation(shader_prog, "light_shiny"), light.shininess);
+        glUniform3fv(glGetUniformLocation(shader_prog, "light_color"), 1, &light.color[0]);
         glUniform1f(glGetUniformLocation(shader_prog, "light_strength"), light.strength);
         glUniform1f(glGetUniformLocation(shader_prog, "const_atten"), light.const_attenuation);
         glUniform1f(glGetUniformLocation(shader_prog, "linear_atten"), light.linear_attenuation);
         glUniform1f(glGetUniformLocation(shader_prog, "quad_atten"), light.quad_attenuation);
+        // material properties
+        glUniform1f(glGetUniformLocation(shader_prog, "shininess"), test_graph->shininess);
+        glUniform3fv(glGetUniformLocation(shader_prog, "specular"), 1, &test_graph->specular[0]);
 
         check_error("pre draw");
 
@@ -332,39 +373,51 @@ public:
                 else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
                     key_lock[sf::Keyboard::R] = false;
 
+                float scale = 0.1f;
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+                {
+                    scale *= 2.0f;
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl))
+                {
+                    scale *= 0.1f;
+                }
+
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
                 {
-                    cam.translate(0.1f * glm::normalize(glm::vec3(cam.forward().x, cam.forward().y, 0.0f)));
+                    cam.translate(scale * glm::normalize(glm::vec3(cam.forward().x, cam.forward().y, 0.0f)));
                     invalidate();
                 }
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
                 {
-                    cam.translate(-0.1f * glm::normalize(glm::vec3(cam.forward().x, cam.forward().y, 0.0f)));
+                    cam.translate(-scale * glm::normalize(glm::vec3(cam.forward().x, cam.forward().y, 0.0f)));
                     invalidate();
                 }
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
                 {
-                    cam.translate(-0.1f * cam.right());
+                    cam.translate(-scale * cam.right());
                     invalidate();
                 }
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
                 {
-                    cam.translate(0.1f * cam.right());
+                    cam.translate(scale * cam.right());
                     invalidate();
                 }
 
-                if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
                 {
-                    cam.translate(0.1f * glm::vec3(0.0f, 0.0f, 1.0f));
+                    cam.translate(scale * glm::vec3(0.0f, 0.0f, 1.0f));
                     invalidate();
                 }
 
-                if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl))
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::E))
                 {
-                    cam.translate(-0.1f * glm::vec3(0.0f, 0.0f, 1.0f));
+                    cam.translate(-scale * glm::vec3(0.0f, 0.0f, 1.0f));
                     invalidate();
                 }
 
@@ -373,9 +426,8 @@ public:
                     int d_x = new_mouse_pos.x - old_mouse_pos.x;
                     int d_y = new_mouse_pos.y - old_mouse_pos.y;
 
-
-                    cam.rotate(0.005f * d_y, cam.right());
-                    cam.rotate(0.005f * d_x, glm::vec3(0.0f, 0.0f, 1.0f));
+                    cam.rotate(0.01f * scale * d_y, cam.right());
+                    cam.rotate(0.01f * scale * d_x, glm::vec3(0.0f, 0.0f, 1.0f));
 
                     invalidate();
                 }
@@ -389,6 +441,7 @@ private:
     std::unique_ptr<Graph> test_graph;
     GLuint shader_prog;
     GLuint shader_prog_line;
+    std::vector<GLuint> textures;
 
     Camera cam;
     glm::mat4 perspective_mat;
