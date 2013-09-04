@@ -66,7 +66,7 @@ void Graph::draw() const
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     glBindTexture(GL_TEXTURE_2D, tex);
 
-    glDrawElements(GL_TRIANGLE_STRIP, _num_indexes, GL_UNSIGNED_SHORT, NULL);
+    glDrawElements(GL_TRIANGLE_STRIP, _num_indexes, GL_UNSIGNED_INT, NULL);
 }
 
 void Graph::draw_grid() const
@@ -75,7 +75,7 @@ void Graph::draw_grid() const
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _grid_ebo);
 
-    glDrawElements(GL_LINE_STRIP, _grid_num_indexes, GL_UNSIGNED_SHORT, NULL);
+    glDrawElements(GL_LINE_STRIP, _grid_num_indexes, GL_UNSIGNED_INT, NULL);
 }
 
 Graph_cartesian::Graph_cartesian(const std::string & eqn, float x_min, float x_max, int x_res,
@@ -410,7 +410,7 @@ void Graph_cartesian::build_graph()
     // std::cout<<verts[6][6]<<std::endl;
     // std::cout<<verts[6][5].coords<<" "<<verts[6][7].coords<<" "<<verts[5][6].coords<<" "<<verts[7][6].coords<<std::endl;
 
-    std::vector<GLushort> index;
+    std::vector<GLuint> index;
 
     bool break_flag = true;
 
@@ -438,17 +438,17 @@ void Graph_cartesian::build_graph()
                 index.push_back(ul);
                 index.push_back(ll);
                 index.push_back(ur);
-                index.push_back(0xFFFF);
+                index.push_back(0xFFFFFFFF);
                 break_flag = true;
             }
             else if(defined[ul] && defined[ur] && defined[lr])
             {
                 if(!break_flag)
-                    index.push_back(0xFFFF);
+                    index.push_back(0xFFFFFFFF);
                 index.push_back(ul);
                 index.push_back(lr);
                 index.push_back(ur);
-                index.push_back(0xFFFF);
+                index.push_back(0xFFFFFFFF);
                 break_flag = true;
             }
             else if(defined[ul] && defined[ll] && defined[lr])
@@ -456,23 +456,23 @@ void Graph_cartesian::build_graph()
                 index.push_back(ul);
                 index.push_back(ll);
                 index.push_back(lr);
-                index.push_back(0xFFFF);
+                index.push_back(0xFFFFFFFF);
                 break_flag = true;
             }
             else if(defined[ur] && defined[ll] && defined[lr])
             {
                 if(!break_flag)
-                    index.push_back(0xFFFF);
+                    index.push_back(0xFFFFFFFF);
                 index.push_back(ur);
                 index.push_back(ll);
                 index.push_back(lr);
-                index.push_back(0xFFFF);
+                index.push_back(0xFFFFFFFF);
                 break_flag = true;
             }
             else
             {
                 if(!break_flag)
-                    index.push_back(0xFFFF);
+                    index.push_back(0xFFFFFFFF);
                 break_flag = true;
             }
         }
@@ -487,7 +487,7 @@ void Graph_cartesian::build_graph()
         }
 
         if(!break_flag)
-            index.push_back(0xFFFF);
+            index.push_back(0xFFFFFFFF);
         break_flag = true;
     }
 
@@ -496,7 +496,7 @@ void Graph_cartesian::build_graph()
     std::cout<<std::endl;
     for(auto &i: index)
     {
-        if(i != 0xFFFF)
+        if(i != 0xFFFFFFFF)
             std::cout<<i<<":"<<coords[i]<<"/"<<normals[i]<<" ";
         else
             std::cout<<std::endl;
@@ -506,7 +506,7 @@ void Graph_cartesian::build_graph()
     // generate required OpenGL structures
     glGenBuffers(1, &_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * index.size(), &index[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * index.size(), &index[0], GL_STATIC_DRAW);
 
     glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
@@ -534,20 +534,20 @@ void Graph_cartesian::build_graph()
     _num_indexes = index.size();
 
     // generate grid lines
-    std::vector<GLushort> grid_index;
+    std::vector<GLuint> grid_index;
 
     // horizontal pass
     for(int i = 1; i < 10; ++i)
     {
         for(int x_i = 0; x_i < _x_res; ++x_i)
         {
-            GLushort ind = (int)((float)_y_res * (float)i / 10.0f) * _x_res + x_i;
+            GLuint ind = (int)((float)_y_res * (float)i / 10.0f) * _x_res + x_i;
             if(defined[ind])
                 grid_index.push_back(ind);
             else
-                grid_index.push_back(0xFFFF);
+                grid_index.push_back(0xFFFFFFFF);
         }
-        grid_index.push_back(0xFFFF);
+        grid_index.push_back(0xFFFFFFFF);
     }
 
     //vertical pass
@@ -555,19 +555,19 @@ void Graph_cartesian::build_graph()
     {
         for(int y_i = 0; y_i < _y_res; ++y_i)
         {
-            GLushort ind = y_i * _x_res + (int)((float)_x_res * (float)i / 10.0f);
+            GLuint ind = y_i * _x_res + (int)((float)_x_res * (float)i / 10.0f);
             if(defined[ind])
                 grid_index.push_back(ind);
             else
-                grid_index.push_back(0xFFFF);
+                grid_index.push_back(0xFFFFFFFF);
         }
-        grid_index.push_back(0xFFFF);
+        grid_index.push_back(0xFFFFFFFF);
     }
 
     // generate required OpenGL structures
     glGenBuffers(1, &_grid_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _grid_ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * grid_index.size(), &grid_index[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * grid_index.size(), &grid_index[0], GL_STATIC_DRAW);
 
     _grid_num_indexes = grid_index.size();
 
