@@ -404,6 +404,7 @@ public:
         test_graph->tex = textures[0];
 
         cursor.build();
+        cursor_text = test_graph->cursor_text();
         cursor.tex = textures[1];
     }
 
@@ -493,8 +494,9 @@ public:
         {
             glUseProgram(shader_prog);
 
-            view_model = glm::translate(cam.view_mat(), test_graph->cursor_pos());
+            view_model = glm::translate(cam.view_mat(), test_graph->cursor_pos()) * glm::scale(glm::mat4(), glm::vec3(0.25f));
             view_model_perspective = perspective_mat * view_model;
+            normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
             glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
             glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model"), 1, GL_FALSE, &view_model[0][0]);
@@ -613,32 +615,32 @@ public:
                 {
                     test_graph->move_cursor(Graph::UP);
                     cursor_delay.restart();
+                    cursor_text = test_graph->cursor_text();
                     invalidate();
-                    std::cout<<test_graph->cursor_text()<<std::endl;
                 }
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
                 {
                     test_graph->move_cursor(Graph::DOWN);
                     cursor_delay.restart();
+                    cursor_text = test_graph->cursor_text();
                     invalidate();
-                    std::cout<<test_graph->cursor_text()<<std::endl;
                 }
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
                 {
                     test_graph->move_cursor(Graph::LEFT);
                     cursor_delay.restart();
+                    cursor_text = test_graph->cursor_text();
                     invalidate();
-                    std::cout<<test_graph->cursor_text()<<std::endl;
                 }
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
                 {
                     test_graph->move_cursor(Graph::RIGHT);
                     cursor_delay.restart();
+                    cursor_text = test_graph->cursor_text();
                     invalidate();
-                    std::cout<<test_graph->cursor_text()<<std::endl;
                 }
                 
                 // TODO: pgup/ pgdn to switch cursor to different graph
@@ -647,6 +649,8 @@ public:
         }
         return true;
     }
+
+    std::string cursor_text;
 
 private:
     std::unique_ptr<Graph> test_graph;
@@ -681,11 +685,23 @@ public:
         main_grid.set_column_spacing(5);
 
         main_grid.attach(gl_window, 0, 0, 1, 9);
+        main_grid.attach(cursor_text, 0, 9, 1, 1);
         show_all_children();
+
+        Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_window::update_cursor_text), 100);
     }
 
+    bool update_cursor_text()
+    {
+        cursor_text.set_label(gl_window.cursor_text);
+        return true;
+    }
+
+private:
     Graph_disp gl_window;
     Gtk::Grid main_grid;
+
+    Gtk::Label cursor_text;
 };
 
 int main(int argc, char* argv[])
