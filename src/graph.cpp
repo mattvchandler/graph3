@@ -1,5 +1,5 @@
 // graph.cpp
-// 
+//
 
 // Copyright 2013 Matthew Chandler
 
@@ -19,6 +19,8 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#include <sstream>
 
 #include "graph.h"
 
@@ -102,7 +104,7 @@ double Graph_cartesian::eval(const double x, const double y)
         std::cerr<<"Token:    "<< e.GetToken() <<std::endl;
         std::cerr<<"Position: "<< e.GetPos()<<std::endl;
         std::cerr<<"Errc:     "<< e.GetCode()<<std::endl;
-        throw e;
+        throw;
     }
     return result;
 }
@@ -568,4 +570,58 @@ void Graph_cartesian::build_graph()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * grid_index.size(), &grid_index[0], GL_STATIC_DRAW);
 
     _grid_num_indexes = grid_index.size();
+
+    // initialize cursor
+    _cursor_pos.x = (_x_max - _x_min) / 2.0 + _x_min;
+    _cursor_pos.y = (_y_max - _y_min) / 2.0 + _y_min;
+    _cursor_pos.z = eval(_cursor_pos.x, _cursor_pos.y);
+    _cursor_defined = std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO;
+}
+
+void Graph_cartesian::move_cursor(const Cursor_dir dir)
+{
+    switch(dir)
+    {
+    case UP:
+        _cursor_pos.y += (_y_max - _y_min) / (double)_y_res;
+        if(_cursor_pos.y > _y_max)
+            _cursor_pos.y -= _y_max - _y_min;
+        break;
+    case DOWN:
+        _cursor_pos.y -= (_y_max - _y_min) / (double)_y_res;
+        if(_cursor_pos.y < _y_min)
+            _cursor_pos.y += _y_max - _y_min;
+        break;
+    case LEFT:
+        _cursor_pos.x -= (_x_max - _x_min) / (double)_x_res;
+        if(_cursor_pos.x < _x_min)
+            _cursor_pos.x += _x_max - _x_min;
+        break;
+    case RIGHT:
+        _cursor_pos.x += (_x_max - _x_min) / (double)_x_res;
+        if(_cursor_pos.x > _x_max)
+            _cursor_pos.x -= _x_max - _x_min;
+        break;
+    default:
+        break;
+    }
+    _cursor_pos.z = eval(_cursor_pos.x, _cursor_pos.y);
+    _cursor_defined = std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO;
+}
+
+glm::vec3 Graph_cartesian::cursor_pos() const
+{
+    return _cursor_pos;
+}
+
+bool Graph_cartesian::cursor_defined() const
+{
+    return _cursor_defined;
+}
+
+std::string Graph_cartesian::cursor_text() const
+{
+    std::ostringstream str;
+    str<<"Z(X: "<<_cursor_pos.x<<", Y: "<<_cursor_pos.y<<") = "<<_cursor_pos.z;
+    return str.str();
 }

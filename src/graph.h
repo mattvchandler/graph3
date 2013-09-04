@@ -62,6 +62,13 @@ public:
     virtual double eval(const double, const double) = 0;
     virtual void build_graph() = 0;
 
+    // cursor funcs
+    typedef enum {UP, DOWN, LEFT, RIGHT} Cursor_dir;
+    virtual void move_cursor(const Cursor_dir dir) = 0;
+    virtual glm::vec3 cursor_pos() const = 0;
+    virtual bool cursor_defined() const = 0;
+    virtual std::string cursor_text() const = 0;
+
 public:
     // material properties
     GLuint tex;
@@ -104,12 +111,21 @@ public:
     double eval(const double x, const double y) override;
     void build_graph() override;
 
+    // cursor funcs
+    void move_cursor(const Cursor_dir dir) override;
+    glm::vec3 cursor_pos() const override;
+    bool cursor_defined() const override;
+    std::string cursor_text() const override;
+
 private:
     double _x, _y;
     double _x_min, _x_max;
     int _x_res;
     double _y_min, _y_max;
     int _y_res;
+
+    glm::vec3 _cursor_pos;
+    bool _cursor_defined;
 };
 
 #endif // __GRAPH_H__

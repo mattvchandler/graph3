@@ -169,12 +169,135 @@ struct Light
     float quad_attenuation;
 };
 
+class Cursor
+{
+public:
+    Cursor(): tex(0), shininess(90.0f), specular(1.0f),
+       _vao(0), _vbo(0), _num_indexes(0)
+    {
+    }
+
+    ~Cursor()
+    {
+        if(_vao)
+            glDeleteVertexArrays(1, &_vao);
+        if(_vbo)
+            glDeleteBuffers(1, &_vbo);
+        if(tex)
+            glDeleteTextures(1, &tex);
+    }
+
+    void draw() const
+    {
+        glBindVertexArray(_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+        glBindTexture(GL_TEXTURE_2D, tex);
+
+        glDrawArrays(GL_TRIANGLES, 0, _num_indexes);
+    }
+
+    void build()
+    {
+        std::vector<glm::vec3> coords =
+        {
+            glm::vec3(0.0f, 0.0f, sqrtf(2) / 2.0f),
+            glm::vec3(-0.5f, -0.5f, 0.0f),
+            glm::vec3(0.5f, -0.5f, 0.0f),
+
+            glm::vec3(0.0f, 0.0f, sqrtf(2) / 2.0f),
+            glm::vec3(-0.5f, 0.5f, 0.0f),
+            glm::vec3(-0.5f, -0.5f, 0.0f),
+
+            glm::vec3(0.0f, 0.0f, sqrtf(2) / 2.0f),
+            glm::vec3(0.5f, 0.5f, 0.0f),
+            glm::vec3(-0.5f, 0.5f, 0.0f),
+
+            glm::vec3(0.0f, 0.0f, sqrtf(2) / 2.0f),
+            glm::vec3(0.5f, -0.5f, 0.0f),
+            glm::vec3(0.5f, 0.5f, 0.0f),
+
+            glm::vec3(0.0f, 0.0f, -sqrtf(2) / 2.0f),
+            glm::vec3(0.5f, -0.5f, 0.0f),
+            glm::vec3(-0.5f, -0.5f, 0.0f),
+
+            glm::vec3(0.0f, 0.0f, -sqrtf(2) / 2.0f),
+            glm::vec3(-0.5f, -0.5f, 0.0f),
+            glm::vec3(-0.5f, 0.5f, 0.0f),
+
+            glm::vec3(0.0f, 0.0f, -sqrtf(2) / 2.0f),
+            glm::vec3(-0.5f, 0.5f, 0.0f),
+            glm::vec3(0.5f, 0.5f, 0.0f),
+
+            glm::vec3(0.0f, 0.0f, -sqrtf(2) / 2.0f),
+            glm::vec3(0.5f, 0.5f, 0.0f),
+            glm::vec3(0.5f, -0.5f, 0.0f)
+        };
+        std::vector<glm::vec2> tex_coords;
+        std::vector<glm::vec3> normals;
+
+        for(size_t i = 0; i < coords.size(); i += 3)
+        {
+            tex_coords.push_back(glm::vec2(0.5f, 1.0f - sqrtf(3.0f) / 2.0f));
+            tex_coords.push_back(glm::vec2(0.0f, 1.0f));
+            tex_coords.push_back(glm::vec2(1.0f, 1.0f));
+
+            glm::vec3 norm = glm::normalize(glm::cross(coords[i + 1] - coords[i], coords[i + 2] - coords[i]));
+
+            for(int j = 0; j < 3; ++j)
+                normals.push_back(norm);
+        }
+
+        // OpenGL structs
+
+        glGenVertexArrays(1, &_vao);
+        glBindVertexArray(_vao);
+
+        glGenBuffers(1, &_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size() +
+            sizeof(glm::vec3) * normals.size(), NULL, GL_STATIC_DRAW);
+
+        // store vertex data
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * coords.size(), &coords[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size(), sizeof(glm::vec2) * tex_coords.size(), &tex_coords[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size(),
+            sizeof(glm::vec3) * normals.size(), &normals[0]);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *)(sizeof(glm::vec3) * coords.size()));
+        glEnableVertexAttribArray(1);
+
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid *)(sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size()));
+        glEnableVertexAttribArray(2);
+
+        _num_indexes = coords.size();
+    }
+
+    // material properties
+    GLuint tex;
+    float shininess;
+    glm::vec3 specular;
+
+private:
+    GLuint _vao;
+    GLuint _vbo;
+    GLuint _num_indexes;
+
+    // make non-copyable
+    Cursor(const Cursor &) = delete;
+    Cursor(const Cursor &&) = delete;
+    Cursor & operator=(const Cursor &) = delete;
+    Cursor & operator=(const Cursor &&) = delete;
+};
+
 class Graph_disp final: public SFMLWidget
 {
 public:
     Graph_disp(const sf::VideoMode & mode, const int size_reqest = - 1, const sf::ContextSettings & context_settings= sf::ContextSettings()):
         SFMLWidget(mode, size_reqest),
-        test_graph(new Graph_cartesian("sin(x) + sin(y)", -10.0f, 10.0f, 50, -10.0f, 10.0f, 50)), // TODO: investigate why large res breaks down - probably integer overflow
+        test_graph(new Graph_cartesian("sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)), // TODO: investigate why large res breaks down - probably integer overflow
         cam(glm::vec3(0.0f, -10.0f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
         perspective_mat(1.0f),
         light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.8f, 1.0f, 0.5f, 0.0f}),
@@ -252,6 +375,7 @@ public:
         try
         {
             texture_data.push_back(read_png("img/test.png"));
+            texture_data.push_back(read_png("img/cursor.png"));
         }
         catch(std::exception &e)
         {
@@ -278,6 +402,9 @@ public:
         // TODO: maybe have set methods that call this for us
         test_graph->build_graph();
         test_graph->tex = textures[0];
+
+        cursor.build();
+        cursor.tex = textures[1];
     }
 
     void resize(Gtk::Allocation & allocation)
@@ -343,6 +470,7 @@ public:
 
         // light properties
         // TODO: store uniform locations
+        // TODO: move unchanged vars elsewhere
         glUniform3fv(glGetUniformLocation(shader_prog_line, "light_pos"), 1, &light_pos_eye[0]);
         glUniform3fv(glGetUniformLocation(shader_prog_line, "cam_forward"), 1, &light_forward[0]);
         glUniform3fv(glGetUniformLocation(shader_prog_line, "ambient_color"), 1, &ambient_light[0]);
@@ -360,6 +488,27 @@ public:
 
         check_error("draw");
 
+        // draw cursor
+        if(test_graph->cursor_defined())
+        {
+            glUseProgram(shader_prog);
+
+            view_model = glm::translate(cam.view_mat(), test_graph->cursor_pos());
+            view_model_perspective = perspective_mat * view_model;
+
+            glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model"), 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(glGetUniformLocation(shader_prog, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
+
+            // light properties
+            // TODO: store uniform locations
+            // TODO: move unchanged vars elsewhere
+            glUniform1f(glGetUniformLocation(shader_prog, "shininess"), cursor.shininess);
+            glUniform3fv(glGetUniformLocation(shader_prog, "specular"), 1, &cursor.specular[0]);
+
+            cursor.draw();
+        }
+
         display();
         return true;
     }
@@ -368,6 +517,7 @@ public:
     {
         static std::unordered_map<sf::Keyboard::Key, bool, std::hash<int>> key_lock;
         static sf::Vector2i old_mouse_pos = sf::Mouse::getPosition(glWindow);
+        static sf::Clock cursor_delay;
 
         // the neat thing about having this in a timeout func is that we
         // don't need to calc dt for movement controls.
@@ -387,7 +537,8 @@ public:
             }
             if(has_focus())
             {
-                // reset camera
+                // Camera controls
+                // reset
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
                 {
                     key_lock[sf::Keyboard::R] = true;
@@ -455,6 +606,42 @@ public:
 
                     invalidate();
                 }
+
+                // Cursor controls
+                int cursor_timeout = 200;
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
+                {
+                    test_graph->move_cursor(Graph::UP);
+                    cursor_delay.restart();
+                    invalidate();
+                    std::cout<<test_graph->cursor_text()<<std::endl;
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
+                {
+                    test_graph->move_cursor(Graph::DOWN);
+                    cursor_delay.restart();
+                    invalidate();
+                    std::cout<<test_graph->cursor_text()<<std::endl;
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
+                {
+                    test_graph->move_cursor(Graph::LEFT);
+                    cursor_delay.restart();
+                    invalidate();
+                    std::cout<<test_graph->cursor_text()<<std::endl;
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
+                {
+                    test_graph->move_cursor(Graph::RIGHT);
+                    cursor_delay.restart();
+                    invalidate();
+                    std::cout<<test_graph->cursor_text()<<std::endl;
+                }
+                
+                // TODO: pgup/ pgdn to switch cursor to different graph
             }
             old_mouse_pos = new_mouse_pos;
         }
@@ -463,6 +650,7 @@ public:
 
 private:
     std::unique_ptr<Graph> test_graph;
+    Cursor cursor;
     GLuint shader_prog;
     GLuint shader_prog_line;
     std::vector<GLuint> textures;

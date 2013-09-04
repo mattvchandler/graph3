@@ -5,7 +5,6 @@
 // Code is public domain
 
 #include "SFMLWidget.h"
-#include <iostream>
 
 // Tested on Linux Mint 12.4 and Windows 7
 #if defined(SFML_SYSTEM_WINDOWS)
