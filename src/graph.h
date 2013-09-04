@@ -72,6 +72,7 @@ public:
 public:
     // material properties
     GLuint tex;
+    glm::vec4 color;
     float shininess;
     glm::vec3 specular;
 

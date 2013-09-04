@@ -37,7 +37,7 @@ std::ostream & operator<<(std::ostream & out, const glm::vec3 & v)
 }
 
 Graph::Graph(const std::string & eqn):
-    tex(0), shininess(50.0f), specular(1.0f),
+    tex(0), color(1.0f), shininess(50.0f), specular(1.0f),
     grid_color(0.1f, 0.1f, 0.1f, 1.0f), grid_shininess(100.0f), grid_specular(1.0f),
      _eqn(eqn), _ebo(0), _vao(0), _vbo(0), _num_indexes(0)
 
@@ -54,8 +54,6 @@ Graph::~Graph()
         glDeleteVertexArrays(1, &_vao);
     if(_vbo)
         glDeleteBuffers(1, &_vbo);
-    if(tex)
-        glDeleteTextures(1, &tex);
 }
 
 // drawing code

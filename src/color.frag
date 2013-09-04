@@ -2,7 +2,11 @@
 
 out vec4 frag_color;
 
-uniform sampler2D tex;
+// material vars
+uniform vec4 color;
+
+uniform float shininess;
+uniform vec3 specular;
 
 // lighting vars
 uniform vec3 ambient_color;
@@ -11,14 +15,11 @@ uniform vec3 light_color;
 uniform vec3 light_pos;
 uniform float light_strength;
 
-uniform vec3 cam_forward;
-
 uniform float const_atten;
 uniform float linear_atten;
 uniform float quad_atten;
 
-uniform float shininess;
-uniform vec3 specular;
+uniform vec3 cam_forward;
 
 in vec2 tex_coords;
 in vec3 normal_vec;
@@ -56,6 +57,6 @@ void main()
 
     vec3 scattered = ambient_color + light_color * diffuse_mul * atten;
     vec3 reflected = light_color * specular_mul * atten * specular;
-    vec3 rgb = min(texture(tex, tex_coords).rgb * scattered + reflected, vec3(1.0));
-    frag_color = vec4(rgb, texture(tex, tex_coords).a);
+    vec3 rgb = min(color.rgb * scattered + reflected, vec3(1.0));
+    frag_color = vec4(rgb, color.a);
 }

@@ -30,13 +30,14 @@
 
 #include <cmath>
 
-#include <png++/png.hpp>
+#include <png++/png.hpp> // TODO: look into using gtk or sfml for loading arbitrary images
 
 #include <GL/glew.h>
 
 #include <SFML/OpenGL.hpp>
 #include <SFML/Window.hpp>
 
+#include <gtkmm/colorbutton.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 #include <gtkmm/main.h>
@@ -54,6 +55,7 @@
 #include "camera.h"
 #include "graph.h"
 
+// TODO: axes
 void check_error(const char * at)
 {
     GLenum e = glGetError();
@@ -183,8 +185,6 @@ public:
             glDeleteVertexArrays(1, &_vao);
         if(_vbo)
             glDeleteBuffers(1, &_vbo);
-        if(tex)
-            glDeleteTextures(1, &tex);
     }
 
     void draw() const
@@ -315,6 +315,11 @@ public:
 
     ~Graph_disp()
     {
+        for(auto &i: textures)
+        {
+            if(i != 0)
+                glDeleteTextures(1, &i);
+        }
     }
 
     // openGL initialization should go here
@@ -341,31 +346,25 @@ public:
         glEnable(GL_BLEND);
 
         // build shader programs
-        GLuint vert_shader = compile_shader("src/graph.vert", GL_VERTEX_SHADER);
-        GLuint frag_shader = compile_shader("src/graph.frag", GL_FRAGMENT_SHADER);
+        GLuint graph_vert_shader = compile_shader("src/graph.vert", GL_VERTEX_SHADER);
+        GLuint line_vert_shader = compile_shader("src/line.vert", GL_VERTEX_SHADER);
+        GLuint tex_frag_shader = compile_shader("src/tex.frag", GL_FRAGMENT_SHADER);
+        GLuint color_frag_shader = compile_shader("src/color.frag", GL_FRAGMENT_SHADER);
 
-        if(frag_shader == 0 || vert_shader == 0)
+        if(graph_vert_shader == 0 || line_vert_shader == 0 || tex_frag_shader == 0 || color_frag_shader == 0)
             exit(EXIT_FAILURE);
 
-        shader_prog = link_shader_prog(std::vector<GLuint> {vert_shader, frag_shader});
-        if(shader_prog == 0)
+        shader_prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert_shader, tex_frag_shader});
+        shader_prog_color = link_shader_prog(std::vector<GLuint> {graph_vert_shader, color_frag_shader});
+        shader_prog_line = link_shader_prog(std::vector<GLuint> {line_vert_shader, color_frag_shader});
+
+        if(shader_prog_tex == 0 || shader_prog_color == 0 || shader_prog_line == 0)
             exit(EXIT_FAILURE);
 
-        glDeleteShader(vert_shader);
-        glDeleteShader(frag_shader);
-
-        vert_shader = compile_shader("src/line.vert", GL_VERTEX_SHADER);
-        frag_shader = compile_shader("src/line.frag", GL_FRAGMENT_SHADER);
-
-        if(frag_shader == 0 || vert_shader == 0)
-            exit(EXIT_FAILURE);
-
-        shader_prog_line = link_shader_prog(std::vector<GLuint> {vert_shader, frag_shader});
-        if(shader_prog_line == 0)
-            exit(EXIT_FAILURE);
-
-        glDeleteShader(vert_shader);
-        glDeleteShader(frag_shader);
+        glDeleteShader(graph_vert_shader);
+        glDeleteShader(line_vert_shader);
+        glDeleteShader(tex_frag_shader);
+        glDeleteShader(color_frag_shader);
 
         // load images
         glEnable(GL_TEXTURE_2D);
@@ -401,7 +400,8 @@ public:
 
         // TODO: maybe have set methods that call this for us
         test_graph->build_graph();
-        test_graph->tex = textures[0];
+        test_graph->tex = 0;
+        test_graph->color = glm::vec4(0.2f, 0.5f, 0.2f, 1.0f);
 
         cursor.build();
         cursor_text = test_graph->cursor_text();
@@ -437,26 +437,53 @@ public:
         glm::vec3 light_pos_eye(0.0f);
         glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
 
-        glUseProgram(shader_prog);
+        if(test_graph->tex != 0)
+        {
+            glUseProgram(shader_prog_tex);
 
-        glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model"), 1, GL_FALSE, &view_model[0][0]);
-        glUniformMatrix3fv(glGetUniformLocation(shader_prog, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(shader_prog_tex, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(shader_prog_tex, "view_model"), 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(glGetUniformLocation(shader_prog_tex, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
 
-        // light properties
-        // TODO: store uniform locations
-        // TODO: move unchanged vars elsewhere
-        glUniform3fv(glGetUniformLocation(shader_prog, "light_pos"), 1, &light_pos_eye[0]);
-        glUniform3fv(glGetUniformLocation(shader_prog, "cam_forward"), 1, &light_forward[0]);
-        glUniform3fv(glGetUniformLocation(shader_prog, "ambient_color"), 1, &ambient_light[0]);
-        glUniform3fv(glGetUniformLocation(shader_prog, "light_color"), 1, &light.color[0]);
-        glUniform1f(glGetUniformLocation(shader_prog, "light_strength"), light.strength);
-        glUniform1f(glGetUniformLocation(shader_prog, "const_atten"), light.const_attenuation);
-        glUniform1f(glGetUniformLocation(shader_prog, "linear_atten"), light.linear_attenuation);
-        glUniform1f(glGetUniformLocation(shader_prog, "quad_atten"), light.quad_attenuation);
-        // material properties
-        glUniform1f(glGetUniformLocation(shader_prog, "shininess"), test_graph->shininess);
-        glUniform3fv(glGetUniformLocation(shader_prog, "specular"), 1, &test_graph->specular[0]);
+            // light properties
+            // TODO: store uniform locations
+            // TODO: move unchanged vars elsewhere
+            glUniform3fv(glGetUniformLocation(shader_prog_tex, "light_pos"), 1, &light_pos_eye[0]);
+            glUniform3fv(glGetUniformLocation(shader_prog_tex, "cam_forward"), 1, &light_forward[0]);
+            glUniform3fv(glGetUniformLocation(shader_prog_tex, "ambient_color"), 1, &ambient_light[0]);
+            glUniform3fv(glGetUniformLocation(shader_prog_tex, "light_color"), 1, &light.color[0]);
+            glUniform1f(glGetUniformLocation(shader_prog_tex, "light_strength"), light.strength);
+            glUniform1f(glGetUniformLocation(shader_prog_tex, "const_atten"), light.const_attenuation);
+            glUniform1f(glGetUniformLocation(shader_prog_tex, "linear_atten"), light.linear_attenuation);
+            glUniform1f(glGetUniformLocation(shader_prog_tex, "quad_atten"), light.quad_attenuation);
+            // material properties
+            glUniform1f(glGetUniformLocation(shader_prog_tex, "shininess"), test_graph->shininess);
+            glUniform3fv(glGetUniformLocation(shader_prog_tex, "specular"), 1, &test_graph->specular[0]);
+        }
+        else
+        {
+            glUseProgram(shader_prog_color);
+
+            glUniformMatrix4fv(glGetUniformLocation(shader_prog_color, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(shader_prog_color, "view_model"), 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(glGetUniformLocation(shader_prog_color, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
+
+            // light properties
+            // TODO: store uniform locations
+            // TODO: move unchanged vars elsewhere
+            glUniform3fv(glGetUniformLocation(shader_prog_color, "light_pos"), 1, &light_pos_eye[0]);
+            glUniform3fv(glGetUniformLocation(shader_prog_color, "cam_forward"), 1, &light_forward[0]);
+            glUniform3fv(glGetUniformLocation(shader_prog_color, "ambient_color"), 1, &ambient_light[0]);
+            glUniform3fv(glGetUniformLocation(shader_prog_color, "light_color"), 1, &light.color[0]);
+            glUniform1f(glGetUniformLocation(shader_prog_color, "light_strength"), light.strength);
+            glUniform1f(glGetUniformLocation(shader_prog_color, "const_atten"), light.const_attenuation);
+            glUniform1f(glGetUniformLocation(shader_prog_color, "linear_atten"), light.linear_attenuation);
+            glUniform1f(glGetUniformLocation(shader_prog_color, "quad_atten"), light.quad_attenuation);
+            // material properties
+            glUniform4fv(glGetUniformLocation(shader_prog_color, "color"), 1, &graph_color[0]);
+            glUniform1f(glGetUniformLocation(shader_prog_color, "shininess"), test_graph->shininess);
+            glUniform3fv(glGetUniformLocation(shader_prog_color, "specular"), 1, &test_graph->specular[0]);
+        }
 
         check_error("pre draw");
 
@@ -492,25 +519,38 @@ public:
         // draw cursor
         if(test_graph->cursor_defined())
         {
-            glUseProgram(shader_prog);
+            glUseProgram(shader_prog_tex);
 
             view_model = glm::translate(cam.view_mat(), test_graph->cursor_pos()) * glm::scale(glm::mat4(), glm::vec3(0.25f));
             view_model_perspective = perspective_mat * view_model;
             normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
-            glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
-            glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_model"), 1, GL_FALSE, &view_model[0][0]);
-            glUniformMatrix3fv(glGetUniformLocation(shader_prog, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(shader_prog_tex, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(shader_prog_tex, "view_model"), 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(glGetUniformLocation(shader_prog_tex, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
 
             // light properties
             // TODO: store uniform locations
             // TODO: move unchanged vars elsewhere
-            glUniform1f(glGetUniformLocation(shader_prog, "shininess"), cursor.shininess);
-            glUniform3fv(glGetUniformLocation(shader_prog, "specular"), 1, &cursor.specular[0]);
+            glUniform3fv(glGetUniformLocation(shader_prog_tex, "light_pos"), 1, &light_pos_eye[0]);
+            glUniform3fv(glGetUniformLocation(shader_prog_tex, "cam_forward"), 1, &light_forward[0]);
+            glUniform3fv(glGetUniformLocation(shader_prog_tex, "ambient_color"), 1, &ambient_light[0]);
+            glUniform3fv(glGetUniformLocation(shader_prog_tex, "light_color"), 1, &light.color[0]);
+            glUniform1f(glGetUniformLocation(shader_prog_tex, "light_strength"), light.strength);
+            glUniform1f(glGetUniformLocation(shader_prog_tex, "const_atten"), light.const_attenuation);
+            glUniform1f(glGetUniformLocation(shader_prog_tex, "linear_atten"), light.linear_attenuation);
+            glUniform1f(glGetUniformLocation(shader_prog_tex, "quad_atten"), light.quad_attenuation);
+
+            // material properties
+            // TODO: store uniform locations
+            // TODO: move unchanged vars elsewhere
+            glUniform1f(glGetUniformLocation(shader_prog_tex, "shininess"), cursor.shininess);
+            glUniform3fv(glGetUniformLocation(shader_prog_tex, "specular"), 1, &cursor.specular[0]);
 
             cursor.draw();
         }
 
+        check_error("post draw");
         display();
         return true;
     }
@@ -651,11 +691,13 @@ public:
     }
 
     std::string cursor_text;
+    glm::vec4 graph_color;
 
 private:
     std::unique_ptr<Graph> test_graph;
     Cursor cursor;
-    GLuint shader_prog;
+    GLuint shader_prog_tex;
+    GLuint shader_prog_color;
     GLuint shader_prog_line;
     std::vector<GLuint> textures;
 
@@ -686,14 +728,27 @@ public:
 
         main_grid.attach(gl_window, 0, 0, 1, 9);
         main_grid.attach(cursor_text, 0, 9, 1, 1);
+        main_grid.attach(color_but, 1, 0, 1, 1);
         show_all_children();
 
-        Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_window::update_cursor_text), 100);
+        Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_window::update), 100);
+
+        Gdk::RGBA start_rgba;
+        start_rgba.set_rgba(0.2, 0.5, 0.2, 1.0);
+        color_but.set_rgba(start_rgba);
     }
 
-    bool update_cursor_text()
+    bool update()
     {
         cursor_text.set_label(gl_window.cursor_text);
+
+        // TODO: move to callback, clean up interface set to graph material properties
+        gl_window.graph_color.r = color_but.get_rgba().get_red();
+        gl_window.graph_color.g = color_but.get_rgba().get_green();
+        gl_window.graph_color.b = color_but.get_rgba().get_blue();
+        gl_window.graph_color.a = 1.0f;
+        gl_window.invalidate();
+
         return true;
     }
 
@@ -702,6 +757,7 @@ private:
     Gtk::Grid main_grid;
 
     Gtk::Label cursor_text;
+    Gtk::ColorButton color_but;
 };
 
 int main(int argc, char* argv[])
