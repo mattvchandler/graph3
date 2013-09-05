@@ -334,6 +334,7 @@ public:
     // openGL initialization should go here
     void realize()
     {
+        // TODO: add check for required OpenGL features
         // init glew
         if(glewInit() != GLEW_OK)
         {
@@ -413,7 +414,6 @@ public:
         test_graph->color = glm::vec4(0.2f, 0.5f, 0.2f, 1.0f);
 
         cursor.build();
-        cursor_text = test_graph->cursor_text();
         cursor.tex = textures[1];
     }
 
@@ -489,7 +489,7 @@ public:
             glUniform1f(glGetUniformLocation(shader_prog_color, "linear_atten"), light.linear_attenuation);
             glUniform1f(glGetUniformLocation(shader_prog_color, "quad_atten"), light.quad_attenuation);
             // material properties
-            glUniform4fv(glGetUniformLocation(shader_prog_color, "color"), 1, &graph_color[0]);
+            glUniform4fv(glGetUniformLocation(shader_prog_color, "color"), 1, &test_graph->color[0]);
             glUniform1f(glGetUniformLocation(shader_prog_color, "shininess"), test_graph->shininess);
             glUniform3fv(glGetUniformLocation(shader_prog_color, "specular"), 1, &test_graph->specular[0]);
         }
@@ -586,6 +586,7 @@ public:
             {
                 grab_focus();
             }
+
             if(has_focus())
             {
                 // Camera controls
@@ -664,7 +665,6 @@ public:
                 {
                     test_graph->move_cursor(Graph::UP);
                     cursor_delay.restart();
-                    cursor_text = test_graph->cursor_text();
                     invalidate();
                 }
 
@@ -672,7 +672,6 @@ public:
                 {
                     test_graph->move_cursor(Graph::DOWN);
                     cursor_delay.restart();
-                    cursor_text = test_graph->cursor_text();
                     invalidate();
                 }
 
@@ -680,7 +679,6 @@ public:
                 {
                     test_graph->move_cursor(Graph::LEFT);
                     cursor_delay.restart();
-                    cursor_text = test_graph->cursor_text();
                     invalidate();
                 }
 
@@ -688,7 +686,6 @@ public:
                 {
                     test_graph->move_cursor(Graph::RIGHT);
                     cursor_delay.restart();
-                    cursor_text = test_graph->cursor_text();
                     invalidate();
                 }
                 
@@ -699,17 +696,15 @@ public:
         return true;
     }
 
-    std::string cursor_text;
-    glm::vec4 graph_color;
+    std::unique_ptr<Graph> test_graph;
 
 private:
-    std::unique_ptr<Graph> test_graph;
-    Cursor cursor;
     GLuint shader_prog_tex;
     GLuint shader_prog_color;
     GLuint shader_prog_line;
     std::vector<GLuint> textures;
 
+    Cursor cursor;
     Camera cam;
     glm::mat4 perspective_mat;
     Light light;
@@ -750,13 +745,13 @@ public:
 
     bool update()
     {
-        cursor_text.set_label(gl_window.cursor_text);
+        cursor_text.set_label(gl_window.test_graph->cursor_text());
 
         // TODO: move to callback, clean up interface set to graph material properties
-        gl_window.graph_color.r = color_but.get_rgba().get_red();
-        gl_window.graph_color.g = color_but.get_rgba().get_green();
-        gl_window.graph_color.b = color_but.get_rgba().get_blue();
-        gl_window.graph_color.a = 1.0f;
+        gl_window.test_graph->color.r = color_but.get_rgba().get_red();
+        gl_window.test_graph->color.g = color_but.get_rgba().get_green();
+        gl_window.test_graph->color.b = color_but.get_rgba().get_blue();
+        gl_window.test_graph->color.a = 1.0f;
         gl_window.invalidate();
 
         return true;
