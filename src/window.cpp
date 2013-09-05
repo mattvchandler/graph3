@@ -356,25 +356,70 @@ public:
         glEnable(GL_BLEND);
 
         // build shader programs
-        GLuint graph_vert_shader = compile_shader("src/graph.vert", GL_VERTEX_SHADER);
-        GLuint line_vert_shader = compile_shader("src/line.vert", GL_VERTEX_SHADER);
-        GLuint tex_frag_shader = compile_shader("src/tex.frag", GL_FRAGMENT_SHADER);
-        GLuint color_frag_shader = compile_shader("src/color.frag", GL_FRAGMENT_SHADER);
+        GLuint graph_vert = compile_shader("src/graph.vert", GL_VERTEX_SHADER);
+        GLuint line_vert = compile_shader("src/line.vert", GL_VERTEX_SHADER);
+        GLuint tex_frag = compile_shader("src/tex.frag", GL_FRAGMENT_SHADER);
+        GLuint color_frag = compile_shader("src/color.frag", GL_FRAGMENT_SHADER);
 
-        if(graph_vert_shader == 0 || line_vert_shader == 0 || tex_frag_shader == 0 || color_frag_shader == 0)
+        if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0)
             exit(EXIT_FAILURE);
 
-        shader_prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert_shader, tex_frag_shader});
-        shader_prog_color = link_shader_prog(std::vector<GLuint> {graph_vert_shader, color_frag_shader});
-        shader_prog_line = link_shader_prog(std::vector<GLuint> {line_vert_shader, color_frag_shader});
+        prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag});
+        prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag});
+        prog_line = link_shader_prog(std::vector<GLuint> {line_vert, color_frag});
 
-        if(shader_prog_tex == 0 || shader_prog_color == 0 || shader_prog_line == 0)
+        if(prog_tex == 0 || prog_color == 0 || prog_line == 0)
             exit(EXIT_FAILURE);
 
-        glDeleteShader(graph_vert_shader);
-        glDeleteShader(line_vert_shader);
-        glDeleteShader(tex_frag_shader);
-        glDeleteShader(color_frag_shader);
+        glDeleteShader(graph_vert);
+        glDeleteShader(line_vert);
+        glDeleteShader(tex_frag);
+        glDeleteShader(color_frag);
+
+        // get uniform locations
+        prog_tex_uniforms["view_model_perspective"] = glGetUniformLocation(prog_tex, "view_model_perspective");
+        prog_tex_uniforms["view_model"] = glGetUniformLocation(prog_tex, "view_model");
+        prog_tex_uniforms["normal_transform"] = glGetUniformLocation(prog_tex, "normal_transform");
+        prog_tex_uniforms["shininess"] = glGetUniformLocation(prog_tex, "shininess");
+        prog_tex_uniforms["specular"] = glGetUniformLocation(prog_tex, "specular");
+        prog_tex_uniforms["ambient_color"] = glGetUniformLocation(prog_tex, "ambient_color");
+        prog_tex_uniforms["light_color"] = glGetUniformLocation(prog_tex, "light_color");
+        prog_tex_uniforms["light_pos"] = glGetUniformLocation(prog_tex, "light_pos");
+        prog_tex_uniforms["light_strength"] = glGetUniformLocation(prog_tex, "light_strength");
+        prog_tex_uniforms["const_atten"] = glGetUniformLocation(prog_tex, "const_atten");
+        prog_tex_uniforms["linear_atten"] = glGetUniformLocation(prog_tex, "linear_atten");
+        prog_tex_uniforms["quad_atten"] = glGetUniformLocation(prog_tex, "quad_atten");
+        prog_tex_uniforms["cam_forward"] = glGetUniformLocation(prog_tex, "cam_forward");
+
+        prog_color_uniforms["view_model_perspective"] = glGetUniformLocation(prog_color, "view_model_perspective");
+        prog_color_uniforms["view_model"] = glGetUniformLocation(prog_color, "view_model");
+        prog_color_uniforms["normal_transform"] = glGetUniformLocation(prog_color, "normal_transform");
+        prog_color_uniforms["color"] = glGetUniformLocation(prog_color, "color");
+        prog_color_uniforms["shininess"] = glGetUniformLocation(prog_color, "shininess");
+        prog_color_uniforms["specular"] = glGetUniformLocation(prog_color, "specular");
+        prog_color_uniforms["ambient_color"] = glGetUniformLocation(prog_color, "ambient_color");
+        prog_color_uniforms["light_color"] = glGetUniformLocation(prog_color, "light_color");
+        prog_color_uniforms["light_pos"] = glGetUniformLocation(prog_color, "light_pos");
+        prog_color_uniforms["light_strength"] = glGetUniformLocation(prog_color, "light_strength");
+        prog_color_uniforms["const_atten"] = glGetUniformLocation(prog_color, "const_atten");
+        prog_color_uniforms["linear_atten"] = glGetUniformLocation(prog_color, "linear_atten");
+        prog_color_uniforms["quad_atten"] = glGetUniformLocation(prog_color, "quad_atten");
+        prog_color_uniforms["cam_forward"] = glGetUniformLocation(prog_color, "cam_forward");
+
+        prog_line_uniforms["perspective"] = glGetUniformLocation(prog_line, "perspective");
+        prog_line_uniforms["view_model"] = glGetUniformLocation(prog_line, "view_model");
+        prog_line_uniforms["normal_transform"] = glGetUniformLocation(prog_line, "normal_transform");
+        prog_line_uniforms["color"] = glGetUniformLocation(prog_line, "color");
+        prog_line_uniforms["shininess"] = glGetUniformLocation(prog_line, "shininess");
+        prog_line_uniforms["specular"] = glGetUniformLocation(prog_line, "specular");
+        prog_line_uniforms["ambient_color"] = glGetUniformLocation(prog_line, "ambient_color");
+        prog_line_uniforms["light_color"] = glGetUniformLocation(prog_line, "light_color");
+        prog_line_uniforms["light_pos"] = glGetUniformLocation(prog_line, "light_pos");
+        prog_line_uniforms["light_strength"] = glGetUniformLocation(prog_line, "light_strength");
+        prog_line_uniforms["const_atten"] = glGetUniformLocation(prog_line, "const_atten");
+        prog_line_uniforms["linear_atten"] = glGetUniformLocation(prog_line, "linear_atten");
+        prog_line_uniforms["quad_atten"] = glGetUniformLocation(prog_line, "quad_atten");
+        prog_line_uniforms["cam_forward"] = glGetUniformLocation(prog_line, "cam_forward");
 
         // load images
         glEnable(GL_TEXTURE_2D);
@@ -413,6 +458,41 @@ public:
         test_graph->tex = 0;
         test_graph->color = glm::vec4(0.2f, 0.5f, 0.2f, 1.0f);
 
+
+        // set up un-changing values
+        glm::vec3 light_pos_eye(0.0f);
+        glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
+
+        glUseProgram(prog_tex);
+        glUniform3fv(prog_tex_uniforms["ambient_color"], 1, &ambient_light[0]);
+        glUniform3fv(prog_tex_uniforms["light_color"], 1, &light.color[0]);
+        glUniform3fv(prog_tex_uniforms["light_pos"], 1, &light_pos_eye[0]);
+        glUniform1f(prog_tex_uniforms["light_strength"], light.strength);
+        glUniform1f(prog_tex_uniforms["const_atten"], light.const_attenuation);
+        glUniform1f(prog_tex_uniforms["linear_atten"], light.linear_attenuation);
+        glUniform1f(prog_tex_uniforms["quad_atten"], light.quad_attenuation);
+        glUniform3fv(prog_tex_uniforms["cam_forward"], 1, &light_forward[0]);
+
+        glUseProgram(prog_color);
+        glUniform3fv(prog_color_uniforms["ambient_color"], 1, &ambient_light[0]);
+        glUniform3fv(prog_color_uniforms["light_color"], 1, &light.color[0]);
+        glUniform3fv(prog_color_uniforms["light_pos"], 1, &light_pos_eye[0]);
+        glUniform1f(prog_color_uniforms["light_strength"], light.strength);
+        glUniform1f(prog_color_uniforms["const_atten"], light.const_attenuation);
+        glUniform1f(prog_color_uniforms["linear_atten"], light.linear_attenuation);
+        glUniform1f(prog_color_uniforms["quad_atten"], light.quad_attenuation);
+        glUniform3fv(prog_color_uniforms["cam_forward"], 1, &light_forward[0]);
+
+        glUseProgram(prog_line);
+        glUniform3fv(prog_line_uniforms["ambient_color"], 1, &ambient_light[0]);
+        glUniform3fv(prog_line_uniforms["light_color"], 1, &light.color[0]);
+        glUniform3fv(prog_line_uniforms["light_pos"], 1, &light_pos_eye[0]);
+        glUniform1f(prog_line_uniforms["light_strength"], light.strength);
+        glUniform1f(prog_line_uniforms["const_atten"], light.const_attenuation);
+        glUniform1f(prog_line_uniforms["linear_atten"], light.linear_attenuation);
+        glUniform1f(prog_line_uniforms["quad_atten"], light.quad_attenuation);
+        glUniform3fv(prog_line_uniforms["cam_forward"], 1, &light_forward[0]);
+
         cursor.build();
         cursor.tex = textures[1];
     }
@@ -440,58 +520,30 @@ public:
         glm::mat4 view_model_perspective = perspective_mat * view_model;
         glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
-        // set up light
-        // TODO: add separate specular color
-        // TODO: add material properties
-        glm::vec3 light_pos_eye(0.0f);
-        glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
-
         if(test_graph->tex != 0)
         {
-            glUseProgram(shader_prog_tex);
+            glUseProgram(prog_tex);
 
-            glUniformMatrix4fv(glGetUniformLocation(shader_prog_tex, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
-            glUniformMatrix4fv(glGetUniformLocation(shader_prog_tex, "view_model"), 1, GL_FALSE, &view_model[0][0]);
-            glUniformMatrix3fv(glGetUniformLocation(shader_prog_tex, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
+            glUniformMatrix4fv(prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
 
-            // light properties
-            // TODO: store uniform locations
-            // TODO: move unchanged vars elsewhere
-            glUniform3fv(glGetUniformLocation(shader_prog_tex, "light_pos"), 1, &light_pos_eye[0]);
-            glUniform3fv(glGetUniformLocation(shader_prog_tex, "cam_forward"), 1, &light_forward[0]);
-            glUniform3fv(glGetUniformLocation(shader_prog_tex, "ambient_color"), 1, &ambient_light[0]);
-            glUniform3fv(glGetUniformLocation(shader_prog_tex, "light_color"), 1, &light.color[0]);
-            glUniform1f(glGetUniformLocation(shader_prog_tex, "light_strength"), light.strength);
-            glUniform1f(glGetUniformLocation(shader_prog_tex, "const_atten"), light.const_attenuation);
-            glUniform1f(glGetUniformLocation(shader_prog_tex, "linear_atten"), light.linear_attenuation);
-            glUniform1f(glGetUniformLocation(shader_prog_tex, "quad_atten"), light.quad_attenuation);
             // material properties
-            glUniform1f(glGetUniformLocation(shader_prog_tex, "shininess"), test_graph->shininess);
-            glUniform3fv(glGetUniformLocation(shader_prog_tex, "specular"), 1, &test_graph->specular[0]);
+            glUniform1f(prog_tex_uniforms["shininess"], test_graph->shininess);
+            glUniform3fv(prog_tex_uniforms["specular"], 1, &test_graph->specular[0]);
         }
         else
         {
-            glUseProgram(shader_prog_color);
+            glUseProgram(prog_color);
 
-            glUniformMatrix4fv(glGetUniformLocation(shader_prog_color, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
-            glUniformMatrix4fv(glGetUniformLocation(shader_prog_color, "view_model"), 1, GL_FALSE, &view_model[0][0]);
-            glUniformMatrix3fv(glGetUniformLocation(shader_prog_color, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
+            glUniformMatrix4fv(prog_color_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(prog_color_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(prog_color_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
 
-            // light properties
-            // TODO: store uniform locations
-            // TODO: move unchanged vars elsewhere
-            glUniform3fv(glGetUniformLocation(shader_prog_color, "light_pos"), 1, &light_pos_eye[0]);
-            glUniform3fv(glGetUniformLocation(shader_prog_color, "cam_forward"), 1, &light_forward[0]);
-            glUniform3fv(glGetUniformLocation(shader_prog_color, "ambient_color"), 1, &ambient_light[0]);
-            glUniform3fv(glGetUniformLocation(shader_prog_color, "light_color"), 1, &light.color[0]);
-            glUniform1f(glGetUniformLocation(shader_prog_color, "light_strength"), light.strength);
-            glUniform1f(glGetUniformLocation(shader_prog_color, "const_atten"), light.const_attenuation);
-            glUniform1f(glGetUniformLocation(shader_prog_color, "linear_atten"), light.linear_attenuation);
-            glUniform1f(glGetUniformLocation(shader_prog_color, "quad_atten"), light.quad_attenuation);
             // material properties
-            glUniform4fv(glGetUniformLocation(shader_prog_color, "color"), 1, &test_graph->color[0]);
-            glUniform1f(glGetUniformLocation(shader_prog_color, "shininess"), test_graph->shininess);
-            glUniform3fv(glGetUniformLocation(shader_prog_color, "specular"), 1, &test_graph->specular[0]);
+            glUniform4fv(prog_color_uniforms["color"], 1, &test_graph->color[0]);
+            glUniform1f(prog_color_uniforms["shininess"], test_graph->shininess);
+            glUniform3fv(prog_color_uniforms["specular"], 1, &test_graph->specular[0]);
         }
 
         check_error("pre draw");
@@ -499,27 +551,16 @@ public:
         test_graph->draw();
 
         // switch to line shader
-        glUseProgram(shader_prog_line);
+        glUseProgram(prog_line);
 
-        glUniformMatrix4fv(glGetUniformLocation(shader_prog_line, "perspective"), 1, GL_FALSE, &perspective_mat[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(shader_prog_line, "view_model"), 1, GL_FALSE, &view_model[0][0]);
-        glUniformMatrix3fv(glGetUniformLocation(shader_prog_line, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
+        glUniformMatrix4fv(prog_line_uniforms["perspective"], 1, GL_FALSE, &perspective_mat[0][0]);
+        glUniformMatrix4fv(prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+        glUniformMatrix3fv(prog_line_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
 
-        // light properties
-        // TODO: store uniform locations
-        // TODO: move unchanged vars elsewhere
-        glUniform3fv(glGetUniformLocation(shader_prog_line, "light_pos"), 1, &light_pos_eye[0]);
-        glUniform3fv(glGetUniformLocation(shader_prog_line, "cam_forward"), 1, &light_forward[0]);
-        glUniform3fv(glGetUniformLocation(shader_prog_line, "ambient_color"), 1, &ambient_light[0]);
-        glUniform3fv(glGetUniformLocation(shader_prog_line, "light_color"), 1, &light.color[0]);
-        glUniform1f(glGetUniformLocation(shader_prog_line, "light_strength"), light.strength);
-        glUniform1f(glGetUniformLocation(shader_prog_line, "const_atten"), light.const_attenuation);
-        glUniform1f(glGetUniformLocation(shader_prog_line, "linear_atten"), light.linear_attenuation);
-        glUniform1f(glGetUniformLocation(shader_prog_line, "quad_atten"), light.quad_attenuation);
         // material properties
-        glUniform4fv(glGetUniformLocation(shader_prog_line, "color"), 1, &test_graph->grid_color[0]);
-        glUniform1f(glGetUniformLocation(shader_prog_line, "shininess"), test_graph->grid_shininess);
-        glUniform3fv(glGetUniformLocation(shader_prog_line, "specular"), 1, &test_graph->grid_specular[0]);
+        glUniform4fv(prog_line_uniforms["color"], 1, &test_graph->grid_color[0]);
+        glUniform1f(prog_line_uniforms["shininess"], test_graph->grid_shininess);
+        glUniform3fv(prog_line_uniforms["specular"], 1, &test_graph->grid_specular[0]);
 
         test_graph->draw_grid();
 
@@ -528,33 +569,19 @@ public:
         // draw cursor
         if(test_graph->cursor_defined())
         {
-            glUseProgram(shader_prog_tex);
+            glUseProgram(prog_tex);
 
             view_model = glm::translate(cam.view_mat(), test_graph->cursor_pos()) * glm::scale(glm::mat4(), glm::vec3(0.25f));
             view_model_perspective = perspective_mat * view_model;
             normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
-            glUniformMatrix4fv(glGetUniformLocation(shader_prog_tex, "view_model_perspective"), 1, GL_FALSE, &view_model_perspective[0][0]);
-            glUniformMatrix4fv(glGetUniformLocation(shader_prog_tex, "view_model"), 1, GL_FALSE, &view_model[0][0]);
-            glUniformMatrix3fv(glGetUniformLocation(shader_prog_tex, "normal_transform"), 1, GL_FALSE, &normal_transform[0][0]);
-
-            // light properties
-            // TODO: store uniform locations
-            // TODO: move unchanged vars elsewhere
-            glUniform3fv(glGetUniformLocation(shader_prog_tex, "light_pos"), 1, &light_pos_eye[0]);
-            glUniform3fv(glGetUniformLocation(shader_prog_tex, "cam_forward"), 1, &light_forward[0]);
-            glUniform3fv(glGetUniformLocation(shader_prog_tex, "ambient_color"), 1, &ambient_light[0]);
-            glUniform3fv(glGetUniformLocation(shader_prog_tex, "light_color"), 1, &light.color[0]);
-            glUniform1f(glGetUniformLocation(shader_prog_tex, "light_strength"), light.strength);
-            glUniform1f(glGetUniformLocation(shader_prog_tex, "const_atten"), light.const_attenuation);
-            glUniform1f(glGetUniformLocation(shader_prog_tex, "linear_atten"), light.linear_attenuation);
-            glUniform1f(glGetUniformLocation(shader_prog_tex, "quad_atten"), light.quad_attenuation);
+            glUniformMatrix4fv(prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
 
             // material properties
-            // TODO: store uniform locations
-            // TODO: move unchanged vars elsewhere
-            glUniform1f(glGetUniformLocation(shader_prog_tex, "shininess"), cursor.shininess);
-            glUniform3fv(glGetUniformLocation(shader_prog_tex, "specular"), 1, &cursor.specular[0]);
+            glUniform1f(prog_tex_uniforms["shininess"], cursor.shininess);
+            glUniform3fv(prog_tex_uniforms["specular"], 1, &cursor.specular[0]);
 
             cursor.draw();
         }
@@ -699,9 +726,12 @@ public:
     std::unique_ptr<Graph> test_graph;
 
 private:
-    GLuint shader_prog_tex;
-    GLuint shader_prog_color;
-    GLuint shader_prog_line;
+    GLuint prog_tex;
+    GLuint prog_color;
+    GLuint prog_line;
+    std::unordered_map<std::string, GLuint> prog_tex_uniforms;
+    std::unordered_map<std::string, GLuint> prog_color_uniforms;
+    std::unordered_map<std::string, GLuint> prog_line_uniforms;
     std::vector<GLuint> textures;
 
     Cursor cursor;
