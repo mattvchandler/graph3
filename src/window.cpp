@@ -54,6 +54,7 @@
 
 #include "camera.h"
 #include "graph.h"
+#include "graph_cartesian.h"
 
 // TODO: axes
 void check_error(const char * at)

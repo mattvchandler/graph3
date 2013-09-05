@@ -23,11 +23,9 @@
 #ifndef __GRAPH_H__
 #define __GRAPH_H__
 
-#include <iostream>
+#include <iostream> // TODO: remove with debug funcs
 #include <string>
-#include <vector>
 
-#include <cmath>
 
 #include <GL/glew.h>
 
@@ -100,33 +98,6 @@ private:
     Graph(const Graph &&) = delete;
     Graph & operator=(const Graph &) = delete;
     Graph & operator=(const Graph &&) = delete;
-};
-
-class Graph_cartesian final: public Graph
-{
-public:
-    Graph_cartesian(const std::string & eqn = "",
-        float x_min = -1.0f, float x_max = 1.0f, int x_res = 50,
-        float y_min = -1.0f, float y_max = 1.0f, int y_res = 50);
-
-    double eval(const double x, const double y) override;
-    void build_graph() override;
-
-    // cursor funcs
-    void move_cursor(const Cursor_dir dir) override;
-    glm::vec3 cursor_pos() const override;
-    bool cursor_defined() const override;
-    std::string cursor_text() const override;
-
-private:
-    double _x, _y;
-    double _x_min, _x_max;
-    int _x_res;
-    double _y_min, _y_max;
-    int _y_res;
-
-    glm::vec3 _cursor_pos;
-    bool _cursor_defined;
 };
 
 #endif // __GRAPH_H__
