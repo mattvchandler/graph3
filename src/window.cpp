@@ -307,11 +307,19 @@ public:
         signal_realize().connect(sigc::mem_fun(*this, &Graph_disp::realize));
         signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
         signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::draw));
+        signal_key_press_event().connect(sigc::mem_fun(*this, &Graph_disp::key_press));
         Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_disp::input), 10);
         // Glib::signal_idle().connect(sigc::mem_fun(*this, &Graph_disp::idle));
 
         set_can_focus();
         set_can_default();
+    }
+    
+    // key press handler
+    bool key_press(GdkEventKey * e)
+    {
+        // don't propagate key presses up - capture them in this widget
+        return true;
     }
 
     ~Graph_disp()
@@ -714,6 +722,7 @@ private:
     Graph_disp & operator=(const Graph_disp &&) = delete;
 };
 
+// TODO: move draw and input methods to window class
 class Graph_window final: public Gtk::Window
 {
 public:
