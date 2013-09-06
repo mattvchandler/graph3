@@ -602,9 +602,6 @@ public:
         // it is always (almost) exactly 10ms
         if(dynamic_cast<Gtk::Window *>(get_toplevel())->is_active())
         {
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-                get_toplevel()->hide();
-
             sf::Vector2i new_mouse_pos = sf::Mouse::getPosition(glWindow);
 
             if(!has_focus() && sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
@@ -747,7 +744,6 @@ private:
     Graph_disp & operator=(const Graph_disp &&) = delete;
 };
 
-// TODO: move draw and input methods to window class
 class Graph_window final: public Gtk::Window
 {
 public:
@@ -766,25 +762,27 @@ public:
         main_grid.attach(color_but, 1, 0, 1, 1);
         show_all_children();
 
-        Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_window::update), 100);
+        gl_window.test_graph->signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_window::update_cursor_text));
 
         Gdk::RGBA start_rgba;
         start_rgba.set_rgba(0.2, 0.5, 0.2, 1.0);
         color_but.set_rgba(start_rgba);
+        color_but.set_title("Graph 1 Color");
+        color_but.signal_color_set().connect(sigc::mem_fun(*this, &Graph_window::change_graph_color));
     }
 
-    bool update()
+    void update_cursor_text()
     {
         cursor_text.set_label(gl_window.test_graph->cursor_text());
+    }
 
-        // TODO: move to callback, clean up interface set to graph material properties
+    void change_graph_color()
+    {
         gl_window.test_graph->color.r = color_but.get_rgba().get_red();
         gl_window.test_graph->color.g = color_but.get_rgba().get_green();
         gl_window.test_graph->color.b = color_but.get_rgba().get_blue();
         gl_window.test_graph->color.a = 1.0f;
         gl_window.invalidate();
-
-        return true;
     }
 
 private:

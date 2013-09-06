@@ -26,8 +26,9 @@
 #include <iostream> // TODO: remove with debug funcs
 #include <string>
 
-
 #include <GL/glew.h>
+
+#include <sigc++/sigc++.h>
 
 #include <SFML/OpenGL.hpp>
 
@@ -52,7 +53,7 @@ class Graph
 {
 public:
     Graph(const std::string & eqn = "");
-    ~Graph();
+    virtual ~Graph();
 
     void draw() const;
     void draw_grid() const;
@@ -66,6 +67,7 @@ public:
     virtual glm::vec3 cursor_pos() const = 0;
     virtual bool cursor_defined() const = 0;
     virtual std::string cursor_text() const = 0;
+    sigc::signal<void> signal_cursor_moved();
 
 public:
     // material properties
@@ -90,7 +92,7 @@ protected:
     GLuint _grid_ebo;
     GLuint _grid_num_indexes;
 
-    // TODO: maybe have each have its own shader program?
+    sigc::signal<void> _signal_cursor_moved;
 
 private:
     // make non-copyable

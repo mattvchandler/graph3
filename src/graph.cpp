@@ -75,3 +75,8 @@ void Graph::draw_grid() const
 
     glDrawElements(GL_LINE_STRIP, _grid_num_indexes, GL_UNSIGNED_INT, NULL);
 }
+
+sigc::signal<void> Graph::signal_cursor_moved()
+{
+    return _signal_cursor_moved;
+}
