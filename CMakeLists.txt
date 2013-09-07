@@ -25,10 +25,12 @@ include_directories(${GTKMM_INCLUDE_DIRS}, ${LIBPNG++_INCLUDE_DIRS} ${CMAKE_CURR
 link_directories(${GTKMM_LINK_DIRS})
 
 add_executable(${PROJECT_NAME}
-    src/window.cpp
-    src/SFMLWidget/SFMLWidget.cpp
     src/graph.cpp
-    src/graph_cartesian.cpp)
+    src/graph_cartesian.cpp
+    src/graph_disp.cpp
+    src/graph_window.cpp
+    src/main.cpp
+    src/SFMLWidget/SFMLWidget.cpp)
 target_link_libraries(${PROJECT_NAME}
     ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${LIBPNG++_LIBRARIES} ${MUPARSER_LIBRARIES})
 
