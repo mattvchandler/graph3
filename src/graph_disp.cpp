@@ -137,8 +137,9 @@ std::pair<std::vector<float>, glm::ivec2> read_png(const char * filename)
 }
 
 Cursor::Cursor(): tex(0), shininess(90.0f), specular(1.0f),
-       _vao(0), _vbo(0), _num_indexes(0)
-{}
+    _vao(0), _vbo(0), _num_indexes(0)
+{
+}
 
 Cursor::~Cursor()
 {
@@ -235,8 +236,7 @@ void Cursor::build()
 }
 
 Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_reqest, const sf::ContextSettings & context_settings):
-    SFMLWidget(mode, size_reqest),
-    test_graph(new Graph_cartesian("sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)),
+    SFMLWidget(mode, size_reqest), active_graph(0),
     cam(glm::vec3(0.0f, -10.0f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
     perspective_mat(1.0f),
     light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.8f, 1.0f, 0.5f, 0.0f}),
@@ -390,11 +390,6 @@ void Graph_disp::realize()
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
-    // TODO: maybe have set methods that call this for us
-    test_graph->build_graph();
-    test_graph->tex = 0;
-    test_graph->color = glm::vec4(0.2f, 0.5f, 0.2f, 1.0f);
-
     // set up un-changing values
     glm::vec3 light_pos_eye(0.0f);
     glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
@@ -456,70 +451,77 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
     glm::mat4 view_model_perspective = perspective_mat * view_model;
     glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
-    if(test_graph->tex != 0)
-    {
-        glUseProgram(prog_tex);
 
-        glUniformMatrix4fv(prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-        glUniformMatrix4fv(prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-        glUniformMatrix3fv(prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+    for(auto &graph: graphs)
+    {
+        if(graph->tex != 0)
+        {
+            glUseProgram(prog_tex);
+
+            glUniformMatrix4fv(prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+
+            // material properties
+            glUniform1f(prog_tex_uniforms["shininess"], graph->shininess);
+            glUniform3fv(prog_tex_uniforms["specular"], 1, &graph->specular[0]);
+        }
+        else
+        {
+            glUseProgram(prog_color);
+
+            glUniformMatrix4fv(prog_color_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(prog_color_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(prog_color_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+
+            // material properties
+            glUniform4fv(prog_color_uniforms["color"], 1, &graph->color[0]);
+            glUniform1f(prog_color_uniforms["shininess"], graph->shininess);
+            glUniform3fv(prog_color_uniforms["specular"], 1, &graph->specular[0]);
+        }
+
+        check_error("pre draw");
+
+        graph->draw();
+
+        // switch to line shader
+        glUseProgram(prog_line);
+
+        glUniformMatrix4fv(prog_line_uniforms["perspective"], 1, GL_FALSE, &perspective_mat[0][0]);
+        glUniformMatrix4fv(prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+        glUniformMatrix3fv(prog_line_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
 
         // material properties
-        glUniform1f(prog_tex_uniforms["shininess"], test_graph->shininess);
-        glUniform3fv(prog_tex_uniforms["specular"], 1, &test_graph->specular[0]);
+        glUniform4fv(prog_line_uniforms["color"], 1, &graph->grid_color[0]);
+        glUniform1f(prog_line_uniforms["shininess"], graph->grid_shininess);
+        glUniform3fv(prog_line_uniforms["specular"], 1, &graph->grid_specular[0]);
+
+        graph->draw_grid();
+
+        check_error("draw");
     }
-    else
+
+    if(active_graph < graphs.size())
     {
-        glUseProgram(prog_color);
+        // draw cursor
+        if(graphs[active_graph]->cursor_defined())
+        {
+            glUseProgram(prog_tex);
 
-        glUniformMatrix4fv(prog_color_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-        glUniformMatrix4fv(prog_color_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-        glUniformMatrix3fv(prog_color_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+            view_model = glm::translate(cam.view_mat(), graphs[active_graph]->cursor_pos()) * glm::scale(glm::mat4(), glm::vec3(0.25f));
+            view_model_perspective = perspective_mat * view_model;
+            normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
-        // material properties
-        glUniform4fv(prog_color_uniforms["color"], 1, &test_graph->color[0]);
-        glUniform1f(prog_color_uniforms["shininess"], test_graph->shininess);
-        glUniform3fv(prog_color_uniforms["specular"], 1, &test_graph->specular[0]);
-    }
+            glUniformMatrix4fv(prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
 
-    check_error("pre draw");
+            // material properties
+            glUniform1f(prog_tex_uniforms["shininess"], cursor.shininess);
+            glUniform3fv(prog_tex_uniforms["specular"], 1, &cursor.specular[0]);
 
-    test_graph->draw();
-
-    // switch to line shader
-    glUseProgram(prog_line);
-
-    glUniformMatrix4fv(prog_line_uniforms["perspective"], 1, GL_FALSE, &perspective_mat[0][0]);
-    glUniformMatrix4fv(prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-    glUniformMatrix3fv(prog_line_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
-
-    // material properties
-    glUniform4fv(prog_line_uniforms["color"], 1, &test_graph->grid_color[0]);
-    glUniform1f(prog_line_uniforms["shininess"], test_graph->grid_shininess);
-    glUniform3fv(prog_line_uniforms["specular"], 1, &test_graph->grid_specular[0]);
-
-    test_graph->draw_grid();
-
-    check_error("draw");
-
-    // draw cursor
-    if(test_graph->cursor_defined())
-    {
-        glUseProgram(prog_tex);
-
-        view_model = glm::translate(cam.view_mat(), test_graph->cursor_pos()) * glm::scale(glm::mat4(), glm::vec3(0.25f));
-        view_model_perspective = perspective_mat * view_model;
-        normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
-
-        glUniformMatrix4fv(prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-        glUniformMatrix4fv(prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-        glUniformMatrix3fv(prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
-
-        // material properties
-        glUniform1f(prog_tex_uniforms["shininess"], cursor.shininess);
-        glUniform3fv(prog_tex_uniforms["specular"], 1, &cursor.specular[0]);
-
-        cursor.draw();
+            cursor.draw();
+        }
     }
 
     check_error("post draw");
@@ -527,6 +529,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
     return true;
 }
 
+// TODO: add zoom w/ mouse wheel
 bool Graph_disp::input()
 {
     static std::unordered_map<sf::Keyboard::Key, bool, std::hash<int>> key_lock;
@@ -619,34 +622,37 @@ bool Graph_disp::input()
                 invalidate();
             }
 
-            // Cursor controls
-            int cursor_timeout = 200;
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
+            if(active_graph < graphs.size())
             {
-                test_graph->move_cursor(Graph::UP);
-                cursor_delay.restart();
-                invalidate();
-            }
+                // Cursor controls
+                int cursor_timeout = 200;
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
+                {
+                    graphs[active_graph]->move_cursor(Graph::UP);
+                    cursor_delay.restart();
+                    invalidate();
+                }
 
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
-            {
-                test_graph->move_cursor(Graph::DOWN);
-                cursor_delay.restart();
-                invalidate();
-            }
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
+                {
+                    graphs[active_graph]->move_cursor(Graph::DOWN);
+                    cursor_delay.restart();
+                    invalidate();
+                }
 
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
-            {
-                test_graph->move_cursor(Graph::LEFT);
-                cursor_delay.restart();
-                invalidate();
-            }
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
+                {
+                    graphs[active_graph]->move_cursor(Graph::LEFT);
+                    cursor_delay.restart();
+                    invalidate();
+                }
 
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
-            {
-                test_graph->move_cursor(Graph::RIGHT);
-                cursor_delay.restart();
-                invalidate();
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
+                {
+                    graphs[active_graph]->move_cursor(Graph::RIGHT);
+                    cursor_delay.restart();
+                    invalidate();
+                }
             }
             // TODO: pgup/ pgdn to switch cursor to different graph
         }

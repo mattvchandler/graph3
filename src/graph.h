@@ -59,7 +59,6 @@ public:
     void draw_grid() const;
 
     virtual double eval(const double, const double) = 0;
-    virtual void build_graph() = 0;
 
     // cursor funcs
     typedef enum {UP, DOWN, LEFT, RIGHT} Cursor_dir;
@@ -69,7 +68,6 @@ public:
     virtual std::string cursor_text() const = 0;
     sigc::signal<void> signal_cursor_moved();
 
-public:
     // material properties
     GLuint tex;
     glm::vec4 color;
@@ -81,6 +79,7 @@ public:
     glm::vec3 grid_specular;
 
 protected:
+    virtual void build_graph() = 0;
     std::string _eqn;
     mu::Parser _p;
 

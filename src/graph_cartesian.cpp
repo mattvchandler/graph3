@@ -30,6 +30,8 @@ Graph_cartesian::Graph_cartesian(const std::string & eqn, float x_min, float x_m
     _p.DefineVar("x", &_x);
     _p.DefineVar("y", &_y);
     _p.SetExpr(eqn);
+
+    build_graph();
 }
 
 double Graph_cartesian::eval(const double x, const double y)

@@ -95,7 +95,9 @@ public:
 
     bool input();
 
-    std::unique_ptr<Graph> test_graph;
+    std::vector<std::unique_ptr<Graph>> graphs;
+
+    size_t active_graph;
 
 private:
     GLuint prog_tex;

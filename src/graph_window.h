@@ -23,6 +23,8 @@
 #ifndef __GRAPH_WINDOW_H__
 #define __GRAPH_WINDOW_H__
 
+#include <vector>
+
 #include <gtkmm/colorbutton.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
@@ -37,15 +39,16 @@ class Graph_window final: public Gtk::Window
 public:
     Graph_window();
 
-    void update_cursor_text();
-    void change_graph_color();
+    void update_cursor_text(size_t i);
+    void change_graph_color(size_t i);
+    void add_graphs(); // TODO: delete me
 
 private:
     Graph_disp gl_window;
     Gtk::Grid main_grid;
 
-    Gtk::Label cursor_text;
-    Gtk::ColorButton color_but;
+    std::vector<std::unique_ptr<Gtk::Label>> cursor_texts;
+    std::vector<std::unique_ptr<Gtk::ColorButton>> color_buts;
 };
 
 #endif // __GRAPH_WINDOW_H__
