@@ -41,6 +41,7 @@
 #include "camera.h"
 #include "graph.h"
 #include "graph_cartesian.h"
+#include "graph_cylindrical.h"
 
 struct Light
 {

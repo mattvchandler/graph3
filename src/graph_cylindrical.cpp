@@ -1,5 +1,5 @@
-// graph_cartesian.cpp
-// cartesian coordinate system graph class (Z(X, Y))
+// graph_cylindrical.cpp
+// cylindrical coordinate system graph class (Z(r, theta))
 
 // Copyright 2013 Matthew Chandler
 
@@ -20,23 +20,23 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "graph_cartesian.h"
+#include "graph_cylindrical.h"
 
-Graph_cartesian::Graph_cartesian(const std::string & eqn, float x_min, float x_max, int x_res,
-    float y_min, float y_max, int y_res): Graph(eqn),
-    _x_min(x_min), _x_max(x_max), _x_res(x_res), _y_min(y_min), _y_max(y_max), _y_res(y_res)
+Graph_cylindrical::Graph_cylindrical(const std::string & eqn, float r_min, float r_max, int r_res,
+    float theta_min, float theta_max, int theta_res): Graph(eqn),
+    _r_min(r_min), _r_max(r_max), _r_res(r_res), _theta_min(theta_min), _theta_max(theta_max), _theta_res(theta_res)
 
 {
-    _p.DefineVar("x", &_x);
-    _p.DefineVar("y", &_y);
+    _p.DefineVar("r", &_r);
+    _p.DefineVar("theta", &_theta);
     _p.SetExpr(eqn);
 
     build_graph();
 }
 
-double Graph_cartesian::eval(const double x, const double y)
+double Graph_cylindrical::eval(const double r, const double theta)
 {
-    _x = x; _y = y;
+    _r = r; _theta = theta;
     double result = 0.0;
     try
     {
@@ -56,44 +56,46 @@ double Graph_cartesian::eval(const double x, const double y)
 }
 
 // OpenGL needs to be initialized before this is run, hence it's not in the ctor
-void Graph_cartesian::build_graph()
+void Graph_cylindrical::build_graph()
 {
-    std::vector<glm::vec3> coords(_y_res * _x_res);
-    std::vector<glm::vec2> tex_coords(_y_res * _x_res);
-    std::vector<glm::vec3> normals(_y_res * _x_res);
-    std::vector<bool> defined(_y_res * _x_res);
+    std::vector<glm::vec3> coords(_theta_res * _r_res);
+    std::vector<glm::vec2> tex_coords(_theta_res * _r_res);
+    std::vector<glm::vec3> normals(_theta_res * _r_res);
+    std::vector<bool> defined(_theta_res * _r_res);
 
     // coordinate pass
-    double y = _y_max;
-    for(int y_i = 0; y_i < _y_res; ++y_i, y -= (_y_max - _y_min) / (double)(_y_res - 1))
+    double theta = _theta_max;
+    for(int theta_i = 0; theta_i < _theta_res; ++theta_i, theta -= (_theta_max - _theta_min) / (double)(_theta_res - 1))
     {
-        double x = _x_min;
-        for(int x_i = 0; x_i < _x_res; ++x_i,  x += (_x_max - _x_min) / (double)(_x_res - 1))
+        double r = _r_min;
+        for(int r_i = 0; r_i < _r_res; ++r_i,  r += (_r_max - _r_min) / (double)(_r_res - 1))
         {
-            double z = eval(x, y);
+            double z = eval(r, theta);
 
             if(std::fpclassify(z) != FP_NORMAL &&
                 std::fpclassify(z) != FP_ZERO)
             {
-                coords[y_i * _x_res + x_i] = glm::vec3(0.0f);
-                tex_coords[y_i * _x_res + x_i] = glm::vec2(0.0f);
-                normals[y_i * _x_res + x_i] = glm::vec3(0.0f, 0.0f, 1.0f);
-                defined[y_i * _x_res + x_i] = false;
+                coords[theta_i * _r_res + r_i] = glm::vec3(0.0f);
+                tex_coords[theta_i * _r_res + r_i] = glm::vec2(0.0f);
+                normals[theta_i * _r_res + r_i] = glm::vec3(0.0f, 0.0f, 1.0f);
+                defined[theta_i * _r_res + r_i] = false;
                 continue;
             }
 
-            coords[y_i * _x_res + x_i] = glm::vec3((float)x, (float)y, (float)z);
-            tex_coords[y_i * _x_res + x_i] = glm::vec2((float)((x - _x_min) / (_x_max - _x_min)), (float)((_y_max - y) / (_y_max - _y_min)));
-            defined[y_i * _x_res + x_i] = true;
+            // convert into cartesian coordinates
+            coords[theta_i * _r_res + r_i] = glm::vec3((float)r * cosf(theta), (float)r * sinf(theta), (float)z);
+            tex_coords[theta_i * _r_res + r_i] = glm::vec2((float)((r - _r_min) / (_r_max - _r_min)), (float)((_theta_max - theta) / (_theta_max - _theta_min)));
+            defined[theta_i * _r_res + r_i] = true;
         }
     }
 
+    // TODO: look into calculating partial derivatatives to find normal
     // normal pass
-    for(int y_i = 0; y_i < _y_res; ++y_i)
+    for(int theta_i = 0; theta_i < _theta_res; ++theta_i)
     {
-        for(int x_i = 0; x_i < _x_res; ++x_i)
+        for(int r_i = 0; r_i < _r_res; ++r_i)
         {
-            if(!defined[y_i * _x_res + x_i])
+            if(!defined[theta_i * _r_res + r_i])
                 continue;
 
             // get / calculate coords of surrounding verts
@@ -104,31 +106,31 @@ void Graph_cartesian::build_graph()
 
             double l_x, r_x, u_y, d_y, x, y, z;
 
-            x = coords[y_i * _x_res + x_i].x;
-            y = coords[y_i * _x_res + x_i].y;
+            x = coords[theta_i * _r_res + r_i].x;
+            y = coords[theta_i * _r_res + r_i].y;
 
-            if(x_i == 0)
-                l_x = _x_min - (_x_max - _x_min) / (double)_x_res;
+            if(r_i == 0)
+                l_x = _r_min - (_r_max - _r_min) / (double)_r_res;
             else
-                l_x = coords[y_i * _x_res + x_i - 1].x;
+                l_x = coords[theta_i * _r_res + r_i - 1].x;
 
-            if(x_i == _x_res - 1)
-                r_x = _x_max + (_x_max - _x_min) / (double)_x_res;
+            if(r_i == _r_res - 1)
+                r_x = _r_max + (_r_max - _r_min) / (double)_r_res;
             else
-                r_x = coords[y_i * _x_res + x_i + 1].x;
+                r_x = coords[theta_i * _r_res + r_i + 1].x;
 
-            if(y_i == 0)
-                u_y = _y_max + (_y_max - _y_min) / (double)_y_res;
+            if(theta_i == 0)
+                u_y = _theta_max + (_theta_max - _theta_min) / (double)_theta_res;
             else
-                u_y = coords[(y_i - 1) * _x_res + x_i].y;
+                u_y = coords[(theta_i - 1) * _r_res + r_i].y;
 
-            if(y_i == _y_res - 1)
-                d_y = _y_min - (_y_max - _y_min) / (double)_y_res;
+            if(theta_i == _theta_res - 1)
+                d_y = _theta_min - (_theta_max - _theta_min) / (double)_theta_res;
             else
-                d_y = coords[(y_i + 1) * _x_res + x_i].y;
+                d_y = coords[(theta_i + 1) * _r_res + r_i].y;
 
             // ul
-            if(x_i == 0 || y_i == 0)
+            if(r_i == 0 || theta_i == 0)
             {
                 z = eval(l_x, u_y);
                 if(std::fpclassify(z) == FP_NORMAL ||
@@ -140,12 +142,12 @@ void Graph_cartesian::build_graph()
             }
             else
             {
-                ul_def = defined[(y_i - 1) * _x_res + x_i - 1];
-                ul = coords[(y_i - 1) * _x_res + x_i - 1];
+                ul_def = defined[(theta_i - 1) * _r_res + r_i - 1];
+                ul = coords[(theta_i - 1) * _r_res + r_i - 1];
             }
 
             // u
-            if(y_i == 0)
+            if(theta_i == 0)
             {
                 z = eval(x, u_y);
                 if(std::fpclassify(z) == FP_NORMAL ||
@@ -157,12 +159,12 @@ void Graph_cartesian::build_graph()
             }
             else
             {
-                u_def = defined[(y_i - 1) * _x_res + x_i];
-                u = coords[(y_i - 1) * _x_res + x_i];
+                u_def = defined[(theta_i - 1) * _r_res + r_i];
+                u = coords[(theta_i - 1) * _r_res + r_i];
             }
 
             // ur
-            if(x_i == _x_res - 1 || y_i == 0)
+            if(r_i == _r_res - 1 || theta_i == 0)
             {
                 z = eval(r_x, u_y);
                 if(std::fpclassify(z) == FP_NORMAL ||
@@ -174,12 +176,12 @@ void Graph_cartesian::build_graph()
             }
             else
             {
-                ur_def = defined[(y_i - 1) * _x_res + x_i + 1];
-                ur = coords[(y_i - 1) * _x_res + x_i + 1];
+                ur_def = defined[(theta_i - 1) * _r_res + r_i + 1];
+                ur = coords[(theta_i - 1) * _r_res + r_i + 1];
             }
 
             // r
-            if(x_i == _x_res - 1)
+            if(r_i == _r_res - 1)
             {
                 z = eval(r_x, y);
                 if(std::fpclassify(z) == FP_NORMAL ||
@@ -191,12 +193,12 @@ void Graph_cartesian::build_graph()
             }
             else
             {
-                r_def = defined[y_i * _x_res + x_i + 1];
-                r = coords[y_i * _x_res + x_i + 1];
+                r_def = defined[theta_i * _r_res + r_i + 1];
+                r = coords[theta_i * _r_res + r_i + 1];
             }
 
             // lr
-            if(x_i == _x_res - 1 || y_i == _y_res - 1)
+            if(r_i == _r_res - 1 || theta_i == _theta_res - 1)
             {
                 z = eval(r_x, d_y);
                 if(std::fpclassify(z) == FP_NORMAL ||
@@ -208,12 +210,12 @@ void Graph_cartesian::build_graph()
             }
             else
             {
-                lr_def = defined[(y_i + 1) * _x_res + x_i + 1];
-                lr = coords[(y_i + 1) * _x_res + x_i + 1];
+                lr_def = defined[(theta_i + 1) * _r_res + r_i + 1];
+                lr = coords[(theta_i + 1) * _r_res + r_i + 1];
             }
 
             // d
-            if(y_i == _y_res - 1)
+            if(theta_i == _theta_res - 1)
             {
                 z = eval(x, d_y);
                 if(std::fpclassify(z) == FP_NORMAL ||
@@ -225,12 +227,12 @@ void Graph_cartesian::build_graph()
             }
             else
             {
-                d_def = defined[(y_i + 1) * _x_res + x_i];
-                d = coords[(y_i + 1) * _x_res + x_i];
+                d_def = defined[(theta_i + 1) * _r_res + r_i];
+                d = coords[(theta_i + 1) * _r_res + r_i];
             }
 
             // ll
-            if(x_i == 0 || y_i == _y_res - 1)
+            if(r_i == 0 || theta_i == _theta_res - 1)
             {
                 z = eval(l_x, d_y);
                 if(std::fpclassify(z) == FP_NORMAL ||
@@ -242,12 +244,12 @@ void Graph_cartesian::build_graph()
             }
             else
             {
-                ll_def = defined[(y_i + 1) * _x_res + x_i - 1];
-                ll = coords[(y_i + 1) * _x_res + x_i - 1];
+                ll_def = defined[(theta_i + 1) * _r_res + r_i - 1];
+                ll = coords[(theta_i + 1) * _r_res + r_i - 1];
             }
 
             // l
-            if(x_i == 0)
+            if(r_i == 0)
             {
                 z = eval(l_x, y);
                 if(std::fpclassify(z) == FP_NORMAL ||
@@ -259,13 +261,13 @@ void Graph_cartesian::build_graph()
             }
             else
             {
-                l_def = defined[y_i * _x_res + x_i - 1];
-                l = coords[y_i * _x_res + x_i - 1];
+                l_def = defined[theta_i * _r_res + r_i - 1];
+                l = coords[theta_i * _r_res + r_i - 1];
             }
 
             std::vector<glm::vec3> surrounding;
 
-            glm::vec3 center = coords[y_i * _x_res + x_i];
+            glm::vec3 center = coords[theta_i * _r_res + r_i];
 
             if(u_def && ur_def)
                 surrounding.push_back(glm::normalize(glm::cross(ur - center, u - center)));
@@ -324,9 +326,9 @@ void Graph_cartesian::build_graph()
                 surrounding.push_back(glm::normalize(glm::cross(r - center, ul - center)));
 
             for(auto &i: surrounding)
-                normals[y_i * _x_res + x_i] += i;
+                normals[theta_i * _r_res + r_i] += i;
 
-            normals[y_i * _x_res + x_i] = glm::normalize(normals[y_i * _x_res + x_i]);
+            normals[theta_i * _r_res + r_i] = glm::normalize(normals[theta_i * _r_res + r_i]);
         }
     }
 
@@ -335,14 +337,14 @@ void Graph_cartesian::build_graph()
     bool break_flag = true;
 
     // arrange verts as a triangle strip
-    for(int y_i = 0; y_i < _y_res - 1; ++y_i)
+    for(int theta_i = 0; theta_i < _theta_res - 1; ++theta_i)
     {
-        for(int x_i = 0; x_i < _x_res - 1; ++x_i)
+        for(int r_i = 0; r_i < _r_res - 1; ++r_i)
         {
-            int ul = y_i * _x_res + x_i;
-            int ur = y_i * _x_res + x_i + 1;
-            int ll = (y_i + 1) * _x_res + x_i;
-            int lr = (y_i + 1) * _x_res + x_i + 1;
+            int ul = theta_i * _r_res + r_i;
+            int ur = theta_i * _r_res + r_i + 1;
+            int ll = (theta_i + 1) * _r_res + r_i;
+            int lr = (theta_i + 1) * _r_res + r_i + 1;
 
             if(defined[ul] && defined[ur] && defined[ll] && defined[lr])
             {
@@ -394,8 +396,8 @@ void Graph_cartesian::build_graph()
             }
         }
         // finish row
-        int ul = y_i * _x_res + _x_res - 1;
-        int ll = (y_i + 1) * _x_res + _x_res - 1;
+        int ul = theta_i * _r_res + _r_res - 1;
+        int ll = (theta_i + 1) * _r_res + _r_res - 1;
 
         if(!break_flag && defined[ul] && defined[ll])
         {
@@ -444,9 +446,9 @@ void Graph_cartesian::build_graph()
     // horizontal pass
     for(int i = 1; i < 10; ++i)
     {
-        for(int x_i = 0; x_i < _x_res; ++x_i)
+        for(int r_i = 0; r_i < _r_res; ++r_i)
         {
-            GLuint ind = (int)((float)_y_res * (float)i / 10.0f) * _x_res + x_i;
+            GLuint ind = (int)((float)_theta_res * (float)i / 10.0f) * _r_res + r_i;
             if(defined[ind])
                 grid_index.push_back(ind);
             else
@@ -458,9 +460,9 @@ void Graph_cartesian::build_graph()
     //vertical pass
     for(int i = 1; i < 10; ++i)
     {
-        for(int y_i = 0; y_i < _y_res; ++y_i)
+        for(int theta_i = 0; theta_i < _theta_res; ++theta_i)
         {
-            GLuint ind = y_i * _x_res + (int)((float)_x_res * (float)i / 10.0f);
+            GLuint ind = theta_i * _r_res + (int)((float)_r_res * (float)i / 10.0f);
             if(defined[ind])
                 grid_index.push_back(ind);
             else
@@ -477,56 +479,46 @@ void Graph_cartesian::build_graph()
     _grid_num_indexes = grid_index.size();
 
     // initialize cursor
-    _cursor_pos.x = (_x_max - _x_min) / 2.0 + _x_min;
-    _cursor_pos.y = (_y_max - _y_min) / 2.0 + _y_min;
-    _cursor_pos.z = eval(_cursor_pos.x, _cursor_pos.y);
+    double cursor_r =  (_r_max - _r_min) / 2.0 + _r_min;
+    double cursor_theta =  (_theta_max - _theta_min) / 2.0 + _theta_min;
+    _cursor_pos.x = cursor_r * cosf(cursor_theta);
+    _cursor_pos.y = cursor_r * sinf(cursor_theta);
+    _cursor_pos.z = eval(cursor_r, cursor_theta);
     _cursor_defined = std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO;
     _signal_cursor_moved.emit();
 }
 
-void Graph_cartesian::move_cursor(const Cursor_dir dir)
+// TODO: revist cursor movement - current setup doesn't work with cyl/sphere/parametric coords
+void Graph_cylindrical::move_cursor(const Cursor_dir dir)
 {
     switch(dir)
     {
     case UP:
-        _cursor_pos.y += (_y_max - _y_min) / (double)_y_res;
-        if(_cursor_pos.y > _y_max)
-            _cursor_pos.y -= _y_max - _y_min;
         break;
     case DOWN:
-        _cursor_pos.y -= (_y_max - _y_min) / (double)_y_res;
-        if(_cursor_pos.y < _y_min)
-            _cursor_pos.y += _y_max - _y_min;
         break;
     case LEFT:
-        _cursor_pos.x -= (_x_max - _x_min) / (double)_x_res;
-        if(_cursor_pos.x < _x_min)
-            _cursor_pos.x += _x_max - _x_min;
         break;
     case RIGHT:
-        _cursor_pos.x += (_x_max - _x_min) / (double)_x_res;
-        if(_cursor_pos.x > _x_max)
-            _cursor_pos.x -= _x_max - _x_min;
         break;
     default:
         break;
     }
-    _cursor_pos.z = eval(_cursor_pos.x, _cursor_pos.y);
-    _cursor_defined = std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO;
+
     _signal_cursor_moved.emit();
 }
 
-glm::vec3 Graph_cartesian::cursor_pos() const
+glm::vec3 Graph_cylindrical::cursor_pos() const
 {
     return _cursor_pos;
 }
 
-bool Graph_cartesian::cursor_defined() const
+bool Graph_cylindrical::cursor_defined() const
 {
     return _cursor_defined;
 }
 
-std::string Graph_cartesian::cursor_text() const
+std::string Graph_cylindrical::cursor_text() const
 {
     std::ostringstream str;
     str<<"Z(X: "<<_cursor_pos.x<<", Y: "<<_cursor_pos.y<<") = "<<_cursor_pos.z;

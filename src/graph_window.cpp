@@ -45,32 +45,33 @@ void Graph_window::add_graphs() // TODO: delete me
     cursor_texts.push_back(std::unique_ptr<Gtk::Label>(new Gtk::Label));
     color_buts[0]->signal_color_set().connect(sigc::bind<size_t>(sigc::mem_fun(*this, &Graph_window::change_graph_color), 0));
 
-    color_buts.push_back(std::unique_ptr<Gtk::ColorButton>(new Gtk::ColorButton));
-    cursor_texts.push_back(std::unique_ptr<Gtk::Label>(new Gtk::Label));
-    color_buts[1]->signal_color_set().connect(sigc::bind<size_t>(sigc::mem_fun(*this, &Graph_window::change_graph_color), 1));
+    // color_buts.push_back(std::unique_ptr<Gtk::ColorButton>(new Gtk::ColorButton));
+    // cursor_texts.push_back(std::unique_ptr<Gtk::Label>(new Gtk::Label));
+    // color_buts[1]->signal_color_set().connect(sigc::bind<size_t>(sigc::mem_fun(*this, &Graph_window::change_graph_color), 1));
 
-    gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cartesian("sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)));
-    gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cartesian("-sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)));
+    gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cylindrical("r^2", 0.0f, 2.0f, 50, 0.0f, 2.0f * M_PI, 50)));
+    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cartesian("sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)));
+    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cartesian("-sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)));
     gl_window.graphs[0]->signal_cursor_moved().connect(sigc::bind<size_t>(sigc::mem_fun(*this, &Graph_window::update_cursor_text), 0));
-    gl_window.graphs[1]->signal_cursor_moved().connect(sigc::bind<size_t>(sigc::mem_fun(*this, &Graph_window::update_cursor_text), 1));
+    // gl_window.graphs[1]->signal_cursor_moved().connect(sigc::bind<size_t>(sigc::mem_fun(*this, &Graph_window::update_cursor_text), 1));
 
     main_grid.attach(*cursor_texts[0], 0, 9, 1, 1);
     main_grid.attach(*color_buts[0], 1, 0, 1, 1);
-    main_grid.attach(*cursor_texts[1], 0, 10, 1, 1);
-    main_grid.attach(*color_buts[1], 1, 1, 1, 1);
+    // main_grid.attach(*cursor_texts[1], 0, 10, 1, 1);
+    // main_grid.attach(*color_buts[1], 1, 1, 1, 1);
     show_all_children();
 
     Gdk::RGBA start_rgba;
     start_rgba.set_rgba(0.2, 0.5, 0.2, 1.0);
     color_buts[0]->set_rgba(start_rgba);
     color_buts[0]->set_title("Graph 1 Color");
-    color_buts[1]->set_rgba(start_rgba);
-    color_buts[1]->set_title("Graph 2 Color");
+    // color_buts[1]->set_rgba(start_rgba);
+    // color_buts[1]->set_title("Graph 2 Color");
 
     change_graph_color(0);
     update_cursor_text(0);
-    change_graph_color(1);
-    update_cursor_text(1);
+    // change_graph_color(1);
+    // update_cursor_text(1);
 
     gl_window.invalidate();
 }

@@ -1,6 +1,5 @@
-// graph_cartesian.h
-// cartesian coordinate system graph class (Z(X, Y))
-
+// graph_cylindrical.h
+// cylindrical coordinate system graph class (Z(r, theta))
 
 // Copyright 2013 Matthew Chandler
 
@@ -21,19 +20,19 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __GRAPH_CARTESIAN_H__
-#define __GRAPH_CARTESIAN_H__
+#ifndef __GRAPH_CYLINDRICAL_H__
+#define __GRAPH_CYLINDRICAL_H__
 
 #include "graph.h"
 
-class Graph_cartesian final: public Graph
+class Graph_cylindrical final: public Graph
 {
 public:
-    Graph_cartesian(const std::string & eqn = "",
-        float x_min = -1.0f, float x_max = 1.0f, int x_res = 50,
-        float y_min = -1.0f, float y_max = 1.0f, int y_res = 50);
+    Graph_cylindrical(const std::string & eqn = "",
+        float r_min = -1.0f, float r_max = 1.0f, int r_res = 50,
+        float theta_min = -1.0f, float theta_max = 1.0f, int theta_res = 50);
 
-    double eval(const double x, const double y) override;
+    double eval(const double r, const double theta) override;
     void build_graph() override;
 
     // cursor funcs
@@ -43,14 +42,14 @@ public:
     std::string cursor_text() const override;
 
 private:
-    double _x, _y;
-    double _x_min, _x_max;
-    int _x_res;
-    double _y_min, _y_max;
-    int _y_res;
+    double _r, _theta;
+    double _r_min, _r_max;
+    int _r_res;
+    double _theta_min, _theta_max;
+    int _theta_res;
 
     glm::vec3 _cursor_pos;
     bool _cursor_defined;
 };
 
-#endif // __GRAPH_CARTESIAN_H__
+#endif // __GRAPH_CYLINDRICAL_H__

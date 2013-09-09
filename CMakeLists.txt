@@ -27,6 +27,7 @@ link_directories(${GTKMM_LINK_DIRS})
 add_executable(${PROJECT_NAME}
     src/graph.cpp
     src/graph_cartesian.cpp
+    src/graph_cylindrical.cpp
     src/graph_disp.cpp
     src/graph_window.cpp
     src/main.cpp
