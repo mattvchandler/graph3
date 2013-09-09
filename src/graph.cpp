@@ -42,6 +42,83 @@ std::ostream & operator<<(std::ostream & out, const glm::dvec3 & v)
     return out;
 }
 
+// calculate the normal of a point given surrounding points
+glm::vec3 get_normal (glm::vec3 center,
+    glm::vec3 u, bool u_def,
+    glm::vec3 ur, bool ur_def,
+    glm::vec3 r, bool r_def,
+    glm::vec3 lr, bool lr_def,
+    glm::vec3 d, bool d_def,
+    glm::vec3 ll, bool ll_def,
+    glm::vec3 l, bool l_def,
+    glm::vec3 ul, bool ul_def)
+{
+    std::vector<glm::vec3> surrounding;
+
+    // get cross-products from combinations of surrounding points
+    if(u_def && ur_def)
+        surrounding.push_back(glm::normalize(glm::cross(ur - center, u - center)));
+    if(u_def && r_def)
+        surrounding.push_back(glm::normalize(glm::cross(r - center, u - center)));
+    if(u_def && lr_def)
+        surrounding.push_back(glm::normalize(glm::cross(lr - center, u - center)));
+
+    if(ur_def && r_def)
+        surrounding.push_back(glm::normalize(glm::cross(r - center, ur - center)));
+    if(ur_def && lr_def)
+        surrounding.push_back(glm::normalize(glm::cross(lr - center, ur - center)));
+    if(ur_def && d_def)
+        surrounding.push_back(glm::normalize(glm::cross(d - center, ur - center)));
+
+    if(r_def && lr_def)
+        surrounding.push_back(glm::normalize(glm::cross(lr - center, r - center)));
+    if(r_def && d_def)
+        surrounding.push_back(glm::normalize(glm::cross(d - center, r - center)));
+    if(r_def && ll_def)
+        surrounding.push_back(glm::normalize(glm::cross(ll - center, r - center)));
+
+    if(lr_def && d_def)
+        surrounding.push_back(glm::normalize(glm::cross(d - center, lr - center)));
+    if(lr_def && ll_def)
+        surrounding.push_back(glm::normalize(glm::cross(ll - center, lr - center)));
+    if(lr_def && l_def)
+        surrounding.push_back(glm::normalize(glm::cross(l - center, lr - center)));
+
+    if(d_def && ll_def)
+        surrounding.push_back(glm::normalize(glm::cross(ll - center, d - center)));
+    if(d_def && l_def)
+        surrounding.push_back(glm::normalize(glm::cross(l - center, d - center)));
+    if(d_def && ul_def)
+        surrounding.push_back(glm::normalize(glm::cross(ul - center, d - center)));
+
+    if(ll_def && l_def)
+        surrounding.push_back(glm::normalize(glm::cross(l - center, ll - center)));
+    if(ll_def && ul_def)
+        surrounding.push_back(glm::normalize(glm::cross(ul - center, ll - center)));
+    if(ll_def && u_def)
+        surrounding.push_back(glm::normalize(glm::cross(u - center, ll - center)));
+
+    if(l_def && ul_def)
+        surrounding.push_back(glm::normalize(glm::cross(ul - center, l - center)));
+    if(l_def && u_def)
+        surrounding.push_back(glm::normalize(glm::cross(u - center, l - center)));
+    if(l_def && ur_def)
+        surrounding.push_back(glm::normalize(glm::cross(ur - center, l - center)));
+
+    if(ul_def && u_def)
+        surrounding.push_back(glm::normalize(glm::cross(u - center, ul - center)));
+    if(ul_def && ur_def)
+        surrounding.push_back(glm::normalize(glm::cross(ur - center, ul - center)));
+    if(ul_def && r_def)
+        surrounding.push_back(glm::normalize(glm::cross(r - center, ul - center)));
+
+    glm::vec3 normal(0.0f);
+    for(auto &i: surrounding)
+        normal += i;
+
+    return glm::normalize(normal);
+}
+
 Graph::Graph(const std::string & eqn):
     tex(0), color(1.0f), shininess(50.0f), specular(1.0f),
     grid_color(0.1f, 0.1f, 0.1f, 1.0f), grid_shininess(100.0f), grid_specular(1.0f),

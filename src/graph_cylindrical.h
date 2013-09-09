@@ -28,7 +28,7 @@
 class Graph_cylindrical final: public Graph
 {
 public:
-    Graph_cylindrical(const std::string & eqn = "",
+    explicit Graph_cylindrical(const std::string & eqn = "",
         float r_min = -1.0f, float r_max = 1.0f, int r_res = 50,
         float theta_min = -1.0f, float theta_max = 1.0f, int theta_res = 50);
 

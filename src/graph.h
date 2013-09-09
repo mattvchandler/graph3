@@ -50,10 +50,21 @@ std::ostream & operator<<(std::ostream & out, const glm::vec2 & v);
 std::ostream & operator<<(std::ostream & out, const glm::vec3 & v);
 std::ostream & operator<<(std::ostream & out, const glm::dvec3 & v);
 
+// calculate the normal of a point given surrounding points
+glm::vec3 get_normal (glm::vec3 center,
+    glm::vec3 u, bool u_def,
+    glm::vec3 ur, bool ur_def,
+    glm::vec3 r, bool r_def,
+    glm::vec3 lr, bool lr_def,
+    glm::vec3 d, bool d_def,
+    glm::vec3 ll, bool ll_def,
+    glm::vec3 l, bool l_def,
+    glm::vec3 ul, bool ul_def);
+
 class Graph
 {
 public:
-    Graph(const std::string & eqn = "");
+    explicit Graph(const std::string & eqn = "");
     virtual ~Graph();
 
     void draw() const;

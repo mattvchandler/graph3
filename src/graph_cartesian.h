@@ -28,7 +28,7 @@
 class Graph_cartesian final: public Graph
 {
 public:
-    Graph_cartesian(const std::string & eqn = "",
+    explicit Graph_cartesian(const std::string & eqn = "",
         float x_min = -1.0f, float x_max = 1.0f, int x_res = 50,
         float y_min = -1.0f, float y_max = 1.0f, int y_res = 50);
 

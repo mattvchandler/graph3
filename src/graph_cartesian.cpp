@@ -63,6 +63,9 @@ void Graph_cartesian::build_graph()
     std::vector<glm::vec3> normals(_y_res * _x_res);
     std::vector<bool> defined(_y_res * _x_res);
 
+    float h_x = 1e-3f * (_x_max - _x_min) / (float)_x_res;
+    float h_y = 1e-3f * (_y_max - _y_min) / (float)_y_res;
+
     // coordinate pass
     double y = _y_max;
     for(int y_i = 0; y_i < _y_res; ++y_i, y -= (_y_max - _y_min) / (double)(_y_res - 1))
@@ -85,33 +88,16 @@ void Graph_cartesian::build_graph()
             coords[y_i * _x_res + x_i] = glm::vec3((float)x, (float)y, (float)z);
             tex_coords[y_i * _x_res + x_i] = glm::vec2((float)((x - _x_min) / (_x_max - _x_min)), (float)((_y_max - y) / (_y_max - _y_min)));
             defined[y_i * _x_res + x_i] = true;
-        }
-    }
 
-    // normal pass
-    for(int y_i = 0; y_i < _y_res; ++y_i)
-    {
-        for(int x_i = 0; x_i < _x_res; ++x_i)
-        {
-            if(!defined[y_i * _x_res + x_i])
-                continue;
-
-            // get / calculate surroundinf coords
+            // calculate surrounding points for normal calculation
             glm::vec3 u, d, l, r, ul, ur, ll, lr;
             bool u_def = false, d_def = false, l_def = false, r_def = false,
                  ul_def = false, ur_def = false, ll_def = false, lr_def = false;
 
-            float x = coords[y_i * _x_res + x_i].x;
-            float y = coords[y_i * _x_res + x_i].y;
-            float z;
-
-            float h_x = 1e-3f * (_x_max - _x_min) / (float)_x_res;
-            float h_y = 1e-3f * (_y_max - _y_min) / (float)_y_res;
-
             float l_x = x - h_x;
             float r_x = x + h_x;
-            float u_y = y + h_y; 
-            float d_y = y - h_y; 
+            float u_y = y + h_y;
+            float d_y = y - h_y;
 
             // ul
             z = eval(l_x, u_y);
@@ -185,72 +171,19 @@ void Graph_cartesian::build_graph()
                 l = glm::vec3(l_x, y, z);
             }
 
-            std::vector<glm::vec3> surrounding;
-
-            glm::vec3 center = coords[y_i * _x_res + x_i];
-
-            if(u_def && ur_def)
-                surrounding.push_back(glm::normalize(glm::cross(ur - center, u - center)));
-            if(u_def && r_def)
-                surrounding.push_back(glm::normalize(glm::cross(r - center, u - center)));
-            if(u_def && lr_def)
-                surrounding.push_back(glm::normalize(glm::cross(lr - center, u - center)));
-
-            if(ur_def && r_def)
-                surrounding.push_back(glm::normalize(glm::cross(r - center, ur - center)));
-            if(ur_def && lr_def)
-                surrounding.push_back(glm::normalize(glm::cross(lr - center, ur - center)));
-            if(ur_def && d_def)
-                surrounding.push_back(glm::normalize(glm::cross(d - center, ur - center)));
-
-            if(r_def && lr_def)
-                surrounding.push_back(glm::normalize(glm::cross(lr - center, r - center)));
-            if(r_def && d_def)
-                surrounding.push_back(glm::normalize(glm::cross(d - center, r - center)));
-            if(r_def && ll_def)
-                surrounding.push_back(glm::normalize(glm::cross(ll - center, r - center)));
-
-            if(lr_def && d_def)
-                surrounding.push_back(glm::normalize(glm::cross(d - center, lr - center)));
-            if(lr_def && ll_def)
-                surrounding.push_back(glm::normalize(glm::cross(ll - center, lr - center)));
-            if(lr_def && l_def)
-                surrounding.push_back(glm::normalize(glm::cross(l - center, lr - center)));
-
-            if(d_def && ll_def)
-                surrounding.push_back(glm::normalize(glm::cross(ll - center, d - center)));
-            if(d_def && l_def)
-                surrounding.push_back(glm::normalize(glm::cross(l - center, d - center)));
-            if(d_def && ul_def)
-                surrounding.push_back(glm::normalize(glm::cross(ul - center, d - center)));
-
-            if(ll_def && l_def)
-                surrounding.push_back(glm::normalize(glm::cross(l - center, ll - center)));
-            if(ll_def && ul_def)
-                surrounding.push_back(glm::normalize(glm::cross(ul - center, ll - center)));
-            if(ll_def && u_def)
-                surrounding.push_back(glm::normalize(glm::cross(u - center, ll - center)));
-
-            if(l_def && ul_def)
-                surrounding.push_back(glm::normalize(glm::cross(ul - center, l - center)));
-            if(l_def && u_def)
-                surrounding.push_back(glm::normalize(glm::cross(u - center, l - center)));
-            if(l_def && ur_def)
-                surrounding.push_back(glm::normalize(glm::cross(ur - center, l - center)));
-
-            if(ul_def && u_def)
-                surrounding.push_back(glm::normalize(glm::cross(u - center, ul - center)));
-            if(ul_def && ur_def)
-                surrounding.push_back(glm::normalize(glm::cross(ur - center, ul - center)));
-            if(ul_def && r_def)
-                surrounding.push_back(glm::normalize(glm::cross(r - center, ul - center)));
-
-            for(auto &i: surrounding)
-                normals[y_i * _x_res + x_i] += i;
-
-            normals[y_i * _x_res + x_i] = glm::normalize(normals[y_i * _x_res + x_i]);
+            normals[y_i * _x_res + x_i] = get_normal(coords[y_i * _x_res + x_i],
+                u, u_def,
+                ur, ur_def,
+                r, r_def,
+                lr, lr_def,
+                d, d_def,
+                ll, ll_def,
+                l, l_def,
+                ul, ul_def);
         }
     }
+
+    // TODO: display normals
 
     std::vector<GLuint> index;
 
