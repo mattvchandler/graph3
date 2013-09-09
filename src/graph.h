@@ -1,5 +1,5 @@
 // graph.h
-//
+// generic graphing class
 
 // Copyright 2013 Matthew Chandler
 
@@ -48,6 +48,7 @@
 
 std::ostream & operator<<(std::ostream & out, const glm::vec2 & v);
 std::ostream & operator<<(std::ostream & out, const glm::vec3 & v);
+std::ostream & operator<<(std::ostream & out, const glm::dvec3 & v);
 
 class Graph
 {

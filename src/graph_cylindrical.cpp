@@ -90,6 +90,7 @@ void Graph_cylindrical::build_graph()
     }
 
     // TODO: look into calculating partial derivatatives to find normal
+    // TODO: lol, nope. but maybe get nearby adjacent points, ie: z(x+h, y+h) instead of next point on grid
     // normal pass
     for(int theta_i = 0; theta_i < _theta_res; ++theta_i)
     {

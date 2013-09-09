@@ -1,7 +1,6 @@
 // graph_cartesian.h
 // cartesian coordinate system graph class (Z(X, Y))
 
-
 // Copyright 2013 Matthew Chandler
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy of

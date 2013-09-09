@@ -96,171 +96,93 @@ void Graph_cartesian::build_graph()
             if(!defined[y_i * _x_res + x_i])
                 continue;
 
-            // get / calculate coords of surrounding verts
-            glm::vec3 u, d, l, r;
-            glm::vec3 ul, ur, ll, lr;
-            bool u_def = false, d_def = false, l_def = false, r_def = false;
-            bool ul_def = false, ur_def = false, ll_def = false, lr_def = false;
+            // get / calculate surroundinf coords
+            glm::vec3 u, d, l, r, ul, ur, ll, lr;
+            bool u_def = false, d_def = false, l_def = false, r_def = false,
+                 ul_def = false, ur_def = false, ll_def = false, lr_def = false;
 
-            double l_x, r_x, u_y, d_y, x, y, z;
+            float x = coords[y_i * _x_res + x_i].x;
+            float y = coords[y_i * _x_res + x_i].y;
+            float z;
 
-            x = coords[y_i * _x_res + x_i].x;
-            y = coords[y_i * _x_res + x_i].y;
+            float h_x = 1e-3f * (_x_max - _x_min) / (float)_x_res;
+            float h_y = 1e-3f * (_y_max - _y_min) / (float)_y_res;
 
-            if(x_i == 0)
-                l_x = _x_min - (_x_max - _x_min) / (double)_x_res;
-            else
-                l_x = coords[y_i * _x_res + x_i - 1].x;
-
-            if(x_i == _x_res - 1)
-                r_x = _x_max + (_x_max - _x_min) / (double)_x_res;
-            else
-                r_x = coords[y_i * _x_res + x_i + 1].x;
-
-            if(y_i == 0)
-                u_y = _y_max + (_y_max - _y_min) / (double)_y_res;
-            else
-                u_y = coords[(y_i - 1) * _x_res + x_i].y;
-
-            if(y_i == _y_res - 1)
-                d_y = _y_min - (_y_max - _y_min) / (double)_y_res;
-            else
-                d_y = coords[(y_i + 1) * _x_res + x_i].y;
+            float l_x = x - h_x;
+            float r_x = x + h_x;
+            float u_y = y + h_y; 
+            float d_y = y - h_y; 
 
             // ul
-            if(x_i == 0 || y_i == 0)
+            z = eval(l_x, u_y);
+            if(std::fpclassify(z) == FP_NORMAL ||
+                std::fpclassify(z) == FP_ZERO)
             {
-                z = eval(l_x, u_y);
-                if(std::fpclassify(z) == FP_NORMAL ||
-                    std::fpclassify(z) == FP_ZERO)
-                {
-                    ul_def = true;
-                    ul = glm::vec3(l_x, u_y, z);
-                }
-            }
-            else
-            {
-                ul_def = defined[(y_i - 1) * _x_res + x_i - 1];
-                ul = coords[(y_i - 1) * _x_res + x_i - 1];
+                ul_def = true;
+                ul = glm::vec3(l_x, u_y, z);
             }
 
             // u
-            if(y_i == 0)
+            z = eval(x, u_y);
+            if(std::fpclassify(z) == FP_NORMAL ||
+                std::fpclassify(z) == FP_ZERO)
             {
-                z = eval(x, u_y);
-                if(std::fpclassify(z) == FP_NORMAL ||
-                    std::fpclassify(z) == FP_ZERO)
-                {
-                    u_def = true;
-                    u = glm::vec3(x, u_y, z);
-                }
-            }
-            else
-            {
-                u_def = defined[(y_i - 1) * _x_res + x_i];
-                u = coords[(y_i - 1) * _x_res + x_i];
+                u_def = true;
+                u = glm::vec3(x, u_y, z);
             }
 
             // ur
-            if(x_i == _x_res - 1 || y_i == 0)
+            z = eval(r_x, u_y);
+            if(std::fpclassify(z) == FP_NORMAL ||
+                std::fpclassify(z) == FP_ZERO)
             {
-                z = eval(r_x, u_y);
-                if(std::fpclassify(z) == FP_NORMAL ||
-                    std::fpclassify(z) == FP_ZERO)
-                {
-                    ur_def = true;
-                    ur = glm::vec3(r_x, u_y, z);
-                }
-            }
-            else
-            {
-                ur_def = defined[(y_i - 1) * _x_res + x_i + 1];
-                ur = coords[(y_i - 1) * _x_res + x_i + 1];
+                ur_def = true;
+                ur = glm::vec3(r_x, u_y, z);
             }
 
             // r
-            if(x_i == _x_res - 1)
+            z = eval(r_x, y);
+            if(std::fpclassify(z) == FP_NORMAL ||
+                std::fpclassify(z) == FP_ZERO)
             {
-                z = eval(r_x, y);
-                if(std::fpclassify(z) == FP_NORMAL ||
-                    std::fpclassify(z) == FP_ZERO)
-                {
-                    r_def = true;
-                    r = glm::vec3(r_x, y, z);
-                }
-            }
-            else
-            {
-                r_def = defined[y_i * _x_res + x_i + 1];
-                r = coords[y_i * _x_res + x_i + 1];
+                r_def = true;
+                r = glm::vec3(r_x, y, z);
             }
 
             // lr
-            if(x_i == _x_res - 1 || y_i == _y_res - 1)
+            z = eval(r_x, d_y);
+            if(std::fpclassify(z) == FP_NORMAL ||
+                std::fpclassify(z) == FP_ZERO)
             {
-                z = eval(r_x, d_y);
-                if(std::fpclassify(z) == FP_NORMAL ||
-                    std::fpclassify(z) == FP_ZERO)
-                {
-                    lr_def = true;
-                    lr = glm::vec3(r_x, d_y, z);
-                }
-            }
-            else
-            {
-                lr_def = defined[(y_i + 1) * _x_res + x_i + 1];
-                lr = coords[(y_i + 1) * _x_res + x_i + 1];
+                lr_def = true;
+                lr = glm::vec3(r_x, d_y, z);
             }
 
             // d
-            if(y_i == _y_res - 1)
+            z = eval(x, d_y);
+            if(std::fpclassify(z) == FP_NORMAL ||
+                std::fpclassify(z) == FP_ZERO)
             {
-                z = eval(x, d_y);
-                if(std::fpclassify(z) == FP_NORMAL ||
-                    std::fpclassify(z) == FP_ZERO)
-                {
-                    d_def = true;
-                    d = glm::vec3(x, d_y, z);
-                }
-            }
-            else
-            {
-                d_def = defined[(y_i + 1) * _x_res + x_i];
-                d = coords[(y_i + 1) * _x_res + x_i];
+                d_def = true;
+                d = glm::vec3(x, d_y, z);
             }
 
             // ll
-            if(x_i == 0 || y_i == _y_res - 1)
+            z = eval(l_x, d_y);
+            if(std::fpclassify(z) == FP_NORMAL ||
+                std::fpclassify(z) == FP_ZERO)
             {
-                z = eval(l_x, d_y);
-                if(std::fpclassify(z) == FP_NORMAL ||
-                    std::fpclassify(z) == FP_ZERO)
-                {
-                    ll_def = true;
-                    ll = glm::vec3(l_x, d_y, z);
-                }
-            }
-            else
-            {
-                ll_def = defined[(y_i + 1) * _x_res + x_i - 1];
-                ll = coords[(y_i + 1) * _x_res + x_i - 1];
+                ll_def = true;
+                ll = glm::vec3(l_x, d_y, z);
             }
 
             // l
-            if(x_i == 0)
+            z = eval(l_x, y);
+            if(std::fpclassify(z) == FP_NORMAL ||
+                std::fpclassify(z) == FP_ZERO)
             {
-                z = eval(l_x, y);
-                if(std::fpclassify(z) == FP_NORMAL ||
-                    std::fpclassify(z) == FP_ZERO)
-                {
-                    l_def = true;
-                    l = glm::vec3(l_x, y, z);
-                }
-            }
-            else
-            {
-                l_def = defined[y_i * _x_res + x_i - 1];
-                l = coords[y_i * _x_res + x_i - 1];
+                l_def = true;
+                l = glm::vec3(l_x, y, z);
             }
 
             std::vector<glm::vec3> surrounding;
