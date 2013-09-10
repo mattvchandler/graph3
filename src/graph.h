@@ -23,7 +23,6 @@
 #ifndef __GRAPH_H__
 #define __GRAPH_H__
 
-#include <iostream> // TODO: remove with debug funcs
 #include <string>
 
 #include <GL/glew.h>
@@ -92,6 +91,12 @@ public:
 
 protected:
     virtual void build_graph() = 0;
+    void build_graph_geometry(size_t num_rows, size_t num_columns,
+        const std::vector<glm::vec3> & coords,
+        const std::vector<glm::vec2> & tex_coords,
+        const std::vector<glm::vec3> & normals,
+        const std::vector<bool> & defined);
+
     std::string _eqn;
     mu::Parser _p;
 

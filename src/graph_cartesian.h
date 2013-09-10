@@ -44,9 +44,9 @@ public:
 private:
     double _x, _y;
     double _x_min, _x_max;
-    int _x_res;
+    size_t _x_res;
     double _y_min, _y_max;
-    int _y_res;
+    size_t _y_res;
 
     glm::vec3 _cursor_pos;
     bool _cursor_defined;

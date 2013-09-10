@@ -137,6 +137,9 @@ Graph::~Graph()
         glDeleteVertexArrays(1, &_vao);
     if(_vbo)
         glDeleteBuffers(1, &_vbo);
+
+    if(_grid_ebo)
+        glDeleteBuffers(1, &_grid_ebo);
 }
 
 // drawing code
@@ -162,4 +165,159 @@ void Graph::draw_grid() const
 sigc::signal<void> Graph::signal_cursor_moved()
 {
     return _signal_cursor_moved;
+}
+
+void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
+    const std::vector<glm::vec3> & coords,
+    const std::vector<glm::vec2> & tex_coords,
+    const std::vector<glm::vec3> & normals,
+    const std::vector<bool> & defined)
+{
+    // TODO: display normals
+
+    std::vector<GLuint> index;
+
+    bool break_flag = true;
+
+    // arrange verts as a triangle strip
+    for(size_t row = 0; row < num_rows - 1; ++row)
+    {
+        for(size_t column = 0; column < num_columns - 1; ++column)
+        {
+            int ul = row * num_columns + column;
+            int ur = row * num_columns + column + 1;
+            int ll = (row + 1) * num_columns + column;
+            int lr = (row + 1) * num_columns + column + 1;
+
+            if(defined[ul] && defined[ur] && defined[ll] && defined[lr])
+            {
+                index.push_back(ul);
+                index.push_back(ll);
+                break_flag = false;
+            }
+            else if(defined[ul] && defined[ur] && defined[ll])
+            {
+                index.push_back(ul);
+                index.push_back(ll);
+                index.push_back(ur);
+                index.push_back(0xFFFFFFFF);
+                break_flag = true;
+            }
+            else if(defined[ul] && defined[ur] && defined[lr])
+            {
+                if(!break_flag)
+                    index.push_back(0xFFFFFFFF);
+                index.push_back(ul);
+                index.push_back(lr);
+                index.push_back(ur);
+                index.push_back(0xFFFFFFFF);
+                break_flag = true;
+            }
+            else if(defined[ul] && defined[ll] && defined[lr])
+            {
+                index.push_back(ul);
+                index.push_back(ll);
+                index.push_back(lr);
+                index.push_back(0xFFFFFFFF);
+                break_flag = true;
+            }
+            else if(defined[ur] && defined[ll] && defined[lr])
+            {
+                if(!break_flag)
+                    index.push_back(0xFFFFFFFF);
+                index.push_back(ur);
+                index.push_back(ll);
+                index.push_back(lr);
+                index.push_back(0xFFFFFFFF);
+                break_flag = true;
+            }
+            else
+            {
+                if(!break_flag)
+                    index.push_back(0xFFFFFFFF);
+                break_flag = true;
+            }
+        }
+        // finish row
+        int ul = row * num_columns + num_columns - 1;
+        int ll = (row + 1) * num_columns + num_columns - 1;
+
+        if(!break_flag && defined[ul] && defined[ll])
+        {
+            index.push_back(ul);
+            index.push_back(ll);
+        }
+
+        if(!break_flag)
+            index.push_back(0xFFFFFFFF);
+        break_flag = true;
+    }
+
+    // generate required OpenGL structures
+    glGenBuffers(1, &_ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * index.size(), &index[0], GL_STATIC_DRAW);
+
+    glGenVertexArrays(1, &_vao);
+    glBindVertexArray(_vao);
+
+    glGenBuffers(1, &_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size() +
+        sizeof(glm::vec3) * normals.size(), NULL, GL_STATIC_DRAW);
+
+    // store vertex data
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * coords.size(), &coords[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size(), sizeof(glm::vec2) * tex_coords.size(), &tex_coords[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size(),
+        sizeof(glm::vec3) * normals.size(), &normals[0]);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *)(sizeof(glm::vec3) * coords.size()));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid *)(sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size()));
+    glEnableVertexAttribArray(2);
+
+    _num_indexes = index.size();
+
+    // generate grid lines
+    std::vector<GLuint> grid_index;
+
+    // horizontal pass
+    for(size_t i = 1; i < 10; ++i)
+    {
+        for(size_t column = 0; column < num_columns; ++column)
+        {
+            GLuint ind = (int)((float)num_rows * (float)i / 10.0f) * num_columns + column;
+            if(defined[ind])
+                grid_index.push_back(ind);
+            else
+                grid_index.push_back(0xFFFFFFFF);
+        }
+        grid_index.push_back(0xFFFFFFFF);
+    }
+
+    //vertical pass
+    for(size_t i = 1; i < 10; ++i)
+    {
+        for(size_t row = 0; row < num_rows; ++row)
+        {
+            GLuint ind = row * num_columns + (int)((float)num_columns * (float)i / 10.0f);
+            if(defined[ind])
+                grid_index.push_back(ind);
+            else
+                grid_index.push_back(0xFFFFFFFF);
+        }
+        grid_index.push_back(0xFFFFFFFF);
+    }
+
+    // generate required OpenGL structures
+    glGenBuffers(1, &_grid_ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _grid_ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * grid_index.size(), &grid_index[0], GL_STATIC_DRAW);
+
+    _grid_num_indexes = grid_index.size();
 }

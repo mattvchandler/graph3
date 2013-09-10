@@ -66,12 +66,12 @@ void Graph_cartesian::build_graph()
     float h_x = 1e-3f * (_x_max - _x_min) / (float)_x_res;
     float h_y = 1e-3f * (_y_max - _y_min) / (float)_y_res;
 
-    // coordinate pass
+    // calculate coords, texture cords, and normals
     double y = _y_max;
-    for(int y_i = 0; y_i < _y_res; ++y_i, y -= (_y_max - _y_min) / (double)(_y_res - 1))
+    for(size_t y_i = 0; y_i < _y_res; ++y_i, y -= (_y_max - _y_min) / (double)(_y_res - 1))
     {
         double x = _x_min;
-        for(int x_i = 0; x_i < _x_res; ++x_i,  x += (_x_max - _x_min) / (double)(_x_res - 1))
+        for(size_t x_i = 0; x_i < _x_res; ++x_i,  x += (_x_max - _x_min) / (double)(_x_res - 1))
         {
             double z = eval(x, y);
 
@@ -183,153 +183,7 @@ void Graph_cartesian::build_graph()
         }
     }
 
-    // TODO: display normals
-
-    std::vector<GLuint> index;
-
-    bool break_flag = true;
-
-    // arrange verts as a triangle strip
-    for(int y_i = 0; y_i < _y_res - 1; ++y_i)
-    {
-        for(int x_i = 0; x_i < _x_res - 1; ++x_i)
-        {
-            int ul = y_i * _x_res + x_i;
-            int ur = y_i * _x_res + x_i + 1;
-            int ll = (y_i + 1) * _x_res + x_i;
-            int lr = (y_i + 1) * _x_res + x_i + 1;
-
-            if(defined[ul] && defined[ur] && defined[ll] && defined[lr])
-            {
-                index.push_back(ul);
-                index.push_back(ll);
-                break_flag = false;
-            }
-            else if(defined[ul] && defined[ur] && defined[ll])
-            {
-                index.push_back(ul);
-                index.push_back(ll);
-                index.push_back(ur);
-                index.push_back(0xFFFFFFFF);
-                break_flag = true;
-            }
-            else if(defined[ul] && defined[ur] && defined[lr])
-            {
-                if(!break_flag)
-                    index.push_back(0xFFFFFFFF);
-                index.push_back(ul);
-                index.push_back(lr);
-                index.push_back(ur);
-                index.push_back(0xFFFFFFFF);
-                break_flag = true;
-            }
-            else if(defined[ul] && defined[ll] && defined[lr])
-            {
-                index.push_back(ul);
-                index.push_back(ll);
-                index.push_back(lr);
-                index.push_back(0xFFFFFFFF);
-                break_flag = true;
-            }
-            else if(defined[ur] && defined[ll] && defined[lr])
-            {
-                if(!break_flag)
-                    index.push_back(0xFFFFFFFF);
-                index.push_back(ur);
-                index.push_back(ll);
-                index.push_back(lr);
-                index.push_back(0xFFFFFFFF);
-                break_flag = true;
-            }
-            else
-            {
-                if(!break_flag)
-                    index.push_back(0xFFFFFFFF);
-                break_flag = true;
-            }
-        }
-        // finish row
-        int ul = y_i * _x_res + _x_res - 1;
-        int ll = (y_i + 1) * _x_res + _x_res - 1;
-
-        if(!break_flag && defined[ul] && defined[ll])
-        {
-            index.push_back(ul);
-            index.push_back(ll);
-        }
-
-        if(!break_flag)
-            index.push_back(0xFFFFFFFF);
-        break_flag = true;
-    }
-
-    // generate required OpenGL structures
-    glGenBuffers(1, &_ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * index.size(), &index[0], GL_STATIC_DRAW);
-
-    glGenVertexArrays(1, &_vao);
-    glBindVertexArray(_vao);
-
-    glGenBuffers(1, &_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size() +
-        sizeof(glm::vec3) * normals.size(), NULL, GL_STATIC_DRAW);
-
-    // store vertex data
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * coords.size(), &coords[0]);
-    glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size(), sizeof(glm::vec2) * tex_coords.size(), &tex_coords[0]);
-    glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size(),
-        sizeof(glm::vec3) * normals.size(), &normals[0]);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *)(sizeof(glm::vec3) * coords.size()));
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid *)(sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size()));
-    glEnableVertexAttribArray(2);
-
-    _num_indexes = index.size();
-
-    // generate grid lines
-    std::vector<GLuint> grid_index;
-
-    // horizontal pass
-    for(int i = 1; i < 10; ++i)
-    {
-        for(int x_i = 0; x_i < _x_res; ++x_i)
-        {
-            GLuint ind = (int)((float)_y_res * (float)i / 10.0f) * _x_res + x_i;
-            if(defined[ind])
-                grid_index.push_back(ind);
-            else
-                grid_index.push_back(0xFFFFFFFF);
-        }
-        grid_index.push_back(0xFFFFFFFF);
-    }
-
-    //vertical pass
-    for(int i = 1; i < 10; ++i)
-    {
-        for(int y_i = 0; y_i < _y_res; ++y_i)
-        {
-            GLuint ind = y_i * _x_res + (int)((float)_x_res * (float)i / 10.0f);
-            if(defined[ind])
-                grid_index.push_back(ind);
-            else
-                grid_index.push_back(0xFFFFFFFF);
-        }
-        grid_index.push_back(0xFFFFFFFF);
-    }
-
-    // generate required OpenGL structures
-    glGenBuffers(1, &_grid_ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _grid_ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * grid_index.size(), &grid_index[0], GL_STATIC_DRAW);
-
-    _grid_num_indexes = grid_index.size();
+    build_graph_geometry(_y_res, _x_res, coords, tex_coords, normals, defined);
 
     // initialize cursor
     _cursor_pos.x = (_x_max - _x_min) / 2.0 + _x_min;
