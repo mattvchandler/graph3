@@ -1,5 +1,5 @@
-// line.vert
-// vertex shader for drawing lines. draws slightly in front of actual coords
+// flat_color.frag
+// uniform color fragment shader
 
 // Copyright 2013 Matthew Chandler
 
@@ -22,13 +22,12 @@
 
 #version 330 core
 
-layout(location = 0) in vec3 vert_pos;
+out vec4 frag_color;
 
-uniform mat4 perspective;
-uniform mat4 view_model;
+// material vars
+uniform vec4 color;
 
 void main()
 {
-    // draw vertex slightly in front of its actual coords
-    gl_Position = perspective * (view_model * vec4(vert_pos, 1.0) + vec4(0.0, 0.0, 0.01, 0.0));
+    frag_color = color;
 }

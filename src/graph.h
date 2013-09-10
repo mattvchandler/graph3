@@ -86,8 +86,6 @@ public:
     glm::vec3 specular;
 
     glm::vec4 grid_color;
-    float grid_shininess;
-    glm::vec3 grid_specular;
 
 protected:
     virtual void build_graph() = 0;

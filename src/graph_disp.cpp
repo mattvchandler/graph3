@@ -297,13 +297,14 @@ void Graph_disp::realize()
     GLuint line_vert = compile_shader("src/line.vert", GL_VERTEX_SHADER);
     GLuint tex_frag = compile_shader("src/tex.frag", GL_FRAGMENT_SHADER);
     GLuint color_frag = compile_shader("src/color.frag", GL_FRAGMENT_SHADER);
+    GLuint flat_color_frag = compile_shader("src/flat_color.frag", GL_FRAGMENT_SHADER);
 
-    if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0)
+    if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0 || flat_color_frag == 0)
         exit(EXIT_FAILURE);
 
     prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag});
     prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag});
-    prog_line = link_shader_prog(std::vector<GLuint> {line_vert, color_frag});
+    prog_line = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag});
 
     if(prog_tex == 0 || prog_color == 0 || prog_line == 0)
         exit(EXIT_FAILURE);
@@ -312,6 +313,7 @@ void Graph_disp::realize()
     glDeleteShader(line_vert);
     glDeleteShader(tex_frag);
     glDeleteShader(color_frag);
+    glDeleteShader(flat_color_frag);
 
     // get uniform locations
     prog_tex_uniforms["view_model_perspective"] = glGetUniformLocation(prog_tex, "view_model_perspective");
@@ -345,18 +347,7 @@ void Graph_disp::realize()
 
     prog_line_uniforms["perspective"] = glGetUniformLocation(prog_line, "perspective");
     prog_line_uniforms["view_model"] = glGetUniformLocation(prog_line, "view_model");
-    prog_line_uniforms["normal_transform"] = glGetUniformLocation(prog_line, "normal_transform");
     prog_line_uniforms["color"] = glGetUniformLocation(prog_line, "color");
-    prog_line_uniforms["shininess"] = glGetUniformLocation(prog_line, "shininess");
-    prog_line_uniforms["specular"] = glGetUniformLocation(prog_line, "specular");
-    prog_line_uniforms["ambient_color"] = glGetUniformLocation(prog_line, "ambient_color");
-    prog_line_uniforms["light_color"] = glGetUniformLocation(prog_line, "light_color");
-    prog_line_uniforms["light_pos"] = glGetUniformLocation(prog_line, "light_pos");
-    prog_line_uniforms["light_strength"] = glGetUniformLocation(prog_line, "light_strength");
-    prog_line_uniforms["const_atten"] = glGetUniformLocation(prog_line, "const_atten");
-    prog_line_uniforms["linear_atten"] = glGetUniformLocation(prog_line, "linear_atten");
-    prog_line_uniforms["quad_atten"] = glGetUniformLocation(prog_line, "quad_atten");
-    prog_line_uniforms["cam_forward"] = glGetUniformLocation(prog_line, "cam_forward");
 
     // load images
     glEnable(GL_TEXTURE_2D);
@@ -390,7 +381,7 @@ void Graph_disp::realize()
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
-    // set up un-changing values
+    // set up un-changing lighting values
     glm::vec3 light_pos_eye(0.0f);
     glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
 
@@ -414,18 +405,10 @@ void Graph_disp::realize()
     glUniform1f(prog_color_uniforms["quad_atten"], light.quad_attenuation);
     glUniform3fv(prog_color_uniforms["cam_forward"], 1, &light_forward[0]);
 
-    glUseProgram(prog_line);
-    glUniform3fv(prog_line_uniforms["ambient_color"], 1, &ambient_light[0]);
-    glUniform3fv(prog_line_uniforms["light_color"], 1, &light.color[0]);
-    glUniform3fv(prog_line_uniforms["light_pos"], 1, &light_pos_eye[0]);
-    glUniform1f(prog_line_uniforms["light_strength"], light.strength);
-    glUniform1f(prog_line_uniforms["const_atten"], light.const_attenuation);
-    glUniform1f(prog_line_uniforms["linear_atten"], light.linear_attenuation);
-    glUniform1f(prog_line_uniforms["quad_atten"], light.quad_attenuation);
-    glUniform3fv(prog_line_uniforms["cam_forward"], 1, &light_forward[0]);
-
     cursor.build();
     cursor.tex = textures[1];
+
+    invalidate();
 }
 
 void Graph_disp::resize(Gtk::Allocation & allocation)
@@ -489,12 +472,9 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
 
         glUniformMatrix4fv(prog_line_uniforms["perspective"], 1, GL_FALSE, &perspective_mat[0][0]);
         glUniformMatrix4fv(prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-        glUniformMatrix3fv(prog_line_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
 
         // material properties
         glUniform4fv(prog_line_uniforms["color"], 1, &graph->grid_color[0]);
-        glUniform1f(prog_line_uniforms["shininess"], graph->grid_shininess);
-        glUniform3fv(prog_line_uniforms["specular"], 1, &graph->grid_specular[0]);
 
         graph->draw_grid();
 

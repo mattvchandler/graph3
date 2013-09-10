@@ -121,8 +121,9 @@ glm::vec3 get_normal (glm::vec3 center,
 
 Graph::Graph(const std::string & eqn):
     tex(0), color(1.0f), shininess(50.0f), specular(1.0f),
-    grid_color(0.1f, 0.1f, 0.1f, 1.0f), grid_shininess(100.0f), grid_specular(1.0f),
-     _eqn(eqn), _ebo(0), _vao(0), _vbo(0), _num_indexes(0)
+    grid_color(0.1f, 0.1f, 0.1f, 1.0f),
+     _eqn(eqn), _ebo(0), _vao(0), _vbo(0), _num_indexes(0),
+     _grid_ebo(0), _grid_num_indexes(0)
 
 {
     _p.DefineConst("pi", M_PI);
