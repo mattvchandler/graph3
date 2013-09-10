@@ -44,10 +44,11 @@ public:
 private:
     double _r, _theta;
     double _r_min, _r_max;
-    int _r_res;
+    size_t _r_res;
     double _theta_min, _theta_max;
-    int _theta_res;
+    size_t _theta_res;
 
+    double cursor_r, cursor_theta;
     glm::vec3 _cursor_pos;
     bool _cursor_defined;
 };

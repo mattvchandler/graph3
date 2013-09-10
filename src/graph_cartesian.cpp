@@ -94,10 +94,10 @@ void Graph_cartesian::build_graph()
             bool u_def = false, d_def = false, l_def = false, r_def = false,
                  ul_def = false, ur_def = false, ll_def = false, lr_def = false;
 
-            float l_x = x - h_x;
-            float r_x = x + h_x;
-            float u_y = y + h_y;
-            float d_y = y - h_y;
+            float l_x = (float)x - h_x;
+            float r_x = (float)x + h_x;
+            float u_y = (float)y + h_y;
+            float d_y = (float)y - h_y;
 
             // ul
             z = eval(l_x, u_y);

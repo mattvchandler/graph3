@@ -78,7 +78,7 @@ public:
         _up = glm::normalize(_up * cosf(angle) + glm::cross(axis, _up) * sinf(angle)
             + axis * glm::dot(axis, _up) * (1.0f - cosf(angle)));
     }
-        
+
     // get position
     glm::vec3 pos() const
     {
