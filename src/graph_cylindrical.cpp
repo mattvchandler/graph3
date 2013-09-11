@@ -197,7 +197,6 @@ void Graph_cylindrical::build_graph()
     _signal_cursor_moved.emit();
 }
 
-// TODO: revist cursor movement - current setup doesn't work with cyl/sphere/parametric coords
 void Graph_cylindrical::move_cursor(const Cursor_dir dir)
 {
     switch(dir)
@@ -246,6 +245,6 @@ bool Graph_cylindrical::cursor_defined() const
 std::string Graph_cylindrical::cursor_text() const
 {
     std::ostringstream str;
-    str<<"Z(R: "<<_cursor_r<<", Ø: "<<_cursor_theta<<") = "<<_cursor_pos.z;
+    str<<"Z(R: "<<_cursor_r<<", θ: "<<_cursor_theta<<") = "<<_cursor_pos.z;
     return str.str();
 }

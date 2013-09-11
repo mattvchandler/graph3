@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}
     src/graph_cartesian.cpp
     src/graph_cylindrical.cpp
     src/graph_disp.cpp
+    src/graph_spherical.cpp
     src/graph_window.cpp
     src/main.cpp
     src/SFMLWidget/SFMLWidget.cpp)
