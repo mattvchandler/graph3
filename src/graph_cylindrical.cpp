@@ -186,7 +186,6 @@ void Graph_cylindrical::build_graph()
 
     build_graph_geometry(_theta_res, _r_res, coords, tex_coords, normals, defined);
 
-
     // initialize cursor
     cursor_r =  (_r_max - _r_min) / 2.0 + _r_min;
     cursor_theta =  (_theta_max - _theta_min) / 2.0 + _theta_min;

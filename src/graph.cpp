@@ -114,7 +114,19 @@ glm::vec3 get_normal (glm::vec3 center,
 
     glm::vec3 normal(0.0f);
     for(auto &i: surrounding)
-        normal += i;
+    {
+        // don't use results from colinear or identical vectors
+        if((std::fpclassify(i.x) == FP_NORMAL || std::fpclassify(i.x) == FP_ZERO) &&
+            (std::fpclassify(i.y) == FP_NORMAL || std::fpclassify(i.y) == FP_ZERO) &&
+            (std::fpclassify(i.z) == FP_NORMAL || std::fpclassify(i.z) == FP_ZERO))
+        {
+            // invert inverted normals
+            if(glm::length(normal + i) > glm::length(normal))
+                normal += i;
+            else
+                normal -= i;
+        }
+    }
 
     return glm::normalize(normal);
 }
