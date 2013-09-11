@@ -48,7 +48,7 @@ private:
     double _theta_min, _theta_max;
     size_t _theta_res;
 
-    double cursor_r, cursor_theta;
+    double _cursor_r, _cursor_theta;
     glm::vec3 _cursor_pos;
     bool _cursor_defined;
 };

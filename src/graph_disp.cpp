@@ -237,7 +237,7 @@ void Cursor::build()
 
 Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_reqest, const sf::ContextSettings & context_settings):
     SFMLWidget(mode, size_reqest), active_graph(0),
-    cam(glm::vec3(0.0f, -10.0f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+    cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
     perspective_mat(1.0f),
     light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.8f, 1.0f, 0.5f, 0.0f}),
     ambient_light(0.4f, 0.4f, 0.4f)

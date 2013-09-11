@@ -187,11 +187,11 @@ void Graph_cylindrical::build_graph()
     build_graph_geometry(_theta_res, _r_res, coords, tex_coords, normals, defined);
 
     // initialize cursor
-    cursor_r =  (_r_max - _r_min) / 2.0 + _r_min;
-    cursor_theta =  (_theta_max - _theta_min) / 2.0 + _theta_min;
-    _cursor_pos.x = cursor_r * cosf(cursor_theta);
-    _cursor_pos.y = cursor_r * sinf(cursor_theta);
-    _cursor_pos.z = eval(cursor_r, cursor_theta);
+    _cursor_r =  (_r_max - _r_min) / 2.0 + _r_min;
+    _cursor_theta =  (_theta_max - _theta_min) / 2.0 + _theta_min;
+    _cursor_pos.x = _cursor_r * cosf(_cursor_theta);
+    _cursor_pos.y = _cursor_r * sinf(_cursor_theta);
+    _cursor_pos.z = eval(_cursor_r, _cursor_theta);
     _cursor_defined = std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO;
     _signal_cursor_moved.emit();
 }
@@ -202,17 +202,33 @@ void Graph_cylindrical::move_cursor(const Cursor_dir dir)
     switch(dir)
     {
     case UP:
+        _cursor_theta += (_theta_max - _theta_min) / (double)_theta_res;
+        if(_cursor_theta > _theta_max)
+            _cursor_theta -= _theta_max - _theta_min;
         break;
     case DOWN:
+        _cursor_theta -= (_theta_max - _theta_min) / (double)_theta_res;
+        if(_cursor_theta < _theta_min)
+            _cursor_theta += _theta_max - _theta_min;
         break;
     case LEFT:
+        _cursor_r -= (_r_max - _r_min) / (double)_r_res;
+        if(_cursor_r > _r_max)
+            _cursor_r += _r_max - _r_min;
         break;
     case RIGHT:
+        _cursor_r += (_r_max - _r_min) / (double)_r_res;
+        if(_cursor_r > _r_max)
+            _cursor_r -= _r_max - _r_min;
         break;
     default:
         break;
     }
 
+    _cursor_pos.x = _cursor_r * cosf(_cursor_theta);
+    _cursor_pos.y = _cursor_r * sinf(_cursor_theta);
+    _cursor_pos.z = eval(_cursor_r, _cursor_theta);
+    _cursor_defined = std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO;
     _signal_cursor_moved.emit();
 }
 
@@ -229,6 +245,6 @@ bool Graph_cylindrical::cursor_defined() const
 std::string Graph_cylindrical::cursor_text() const
 {
     std::ostringstream str;
-    str<<"Z(X: "<<_cursor_pos.x<<", Y: "<<_cursor_pos.y<<") = "<<_cursor_pos.z;
+    str<<"Z(R: "<<_cursor_r<<", Ø: "<<_cursor_theta<<") = "<<_cursor_pos.z;
     return str.str();
 }
