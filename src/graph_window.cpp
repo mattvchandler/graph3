@@ -69,6 +69,8 @@ void Graph_window::add_graphs() // TODO: delete me
     color_buts[1]->set_rgba(start_rgba);
     color_buts[1]->set_title("Graph 2 Color");
 
+    gl_window.graphs[0]->tex = gl_window.textures[0];
+
     change_graph_color(0);
     update_cursor_text(0);
     change_graph_color(1);

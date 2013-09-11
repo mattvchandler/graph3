@@ -87,7 +87,8 @@ void Graph_cylindrical::build_graph()
 
             // convert into cartesian coordinates
             coords[theta_i * _r_res + r_i] = glm::vec3((float)radius * cosf(theta), (float)radius * sinf(theta), (float)z);
-            tex_coords[theta_i * _r_res + r_i] = glm::vec2((float)((radius - _r_min) / (_r_max - _r_min)), (float)((_theta_max - theta) / (_theta_max - _theta_min)));
+            tex_coords[theta_i * _r_res + r_i] = glm::vec2((coords[theta_i * _r_res + r_i].x + _r_max) / (float)(2 * _r_max),
+                (_r_max - coords[theta_i * _r_res + r_i].y) / (float)(2 * _r_max));
             defined[theta_i * _r_res + r_i] = true;
 
             // calculate surrounding points for normal calculation

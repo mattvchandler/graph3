@@ -99,6 +99,7 @@ public:
     std::vector<std::unique_ptr<Graph>> graphs;
 
     size_t active_graph;
+    std::vector<GLuint> textures;
 
 private:
     GLuint prog_tex;
@@ -107,7 +108,6 @@ private:
     std::unordered_map<std::string, GLuint> prog_tex_uniforms;
     std::unordered_map<std::string, GLuint> prog_color_uniforms;
     std::unordered_map<std::string, GLuint> prog_line_uniforms;
-    std::vector<GLuint> textures;
 
     Cursor cursor;
     Camera cam;
