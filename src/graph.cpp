@@ -133,10 +133,10 @@ glm::vec3 get_normal (glm::vec3 center,
 
 Graph::Graph(const std::string & eqn):
     tex(0), color(1.0f), shininess(50.0f), specular(1.0f),
-    grid_color(0.1f, 0.1f, 0.1f, 1.0f),
+    grid_color(0.1f, 0.1f, 0.1f, 1.0f), normal_color(0.0f, 1.0f, 1.0f, 1.0f),
      _eqn(eqn), _ebo(0), _vao(0), _vbo(0), _num_indexes(0),
-     _grid_ebo(0), _grid_num_indexes(0)
-
+     _grid_ebo(0), _grid_num_indexes(0),
+      _normal_vao(0), _normal_vbo(0), _normal_num_indexes(0)
 {
     _p.DefineConst("pi", M_PI);
     _p.DefineConst("e", M_E);
@@ -153,6 +153,11 @@ Graph::~Graph()
 
     if(_grid_ebo)
         glDeleteBuffers(1, &_grid_ebo);
+
+    if(_normal_vao)
+        glDeleteVertexArrays(1, &_normal_vao);
+    if(_normal_vbo)
+        glDeleteBuffers(1, &_normal_vbo);
 }
 
 // drawing code
@@ -175,6 +180,14 @@ void Graph::draw_grid() const
     glDrawElements(GL_LINE_STRIP, _grid_num_indexes, GL_UNSIGNED_INT, NULL);
 }
 
+void Graph::draw_normals() const
+{
+    glBindVertexArray(_normal_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, _normal_vbo);
+
+    glDrawArrays(GL_LINES, 0, _normal_num_indexes);
+}
+
 sigc::signal<void> Graph::signal_cursor_moved()
 {
     return _signal_cursor_moved;
@@ -186,8 +199,6 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
     const std::vector<glm::vec3> & normals,
     const std::vector<bool> & defined)
 {
-    // TODO: display normals
-
     std::vector<GLuint> index;
 
     bool break_flag = true;
@@ -333,4 +344,28 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * grid_index.size(), &grid_index[0], GL_STATIC_DRAW);
 
     _grid_num_indexes = grid_index.size();
+
+    // lines for normal vectors
+    std::vector<glm::vec3> normal_coords;
+
+    for(size_t i = 0; i < coords.size(); ++i)
+    {
+        if(defined[i])
+        {
+            normal_coords.push_back(coords[i]);
+            normal_coords.push_back(coords[i] + 0.1f * normals[i]);
+        }
+    }
+
+    glGenVertexArrays(1, &_normal_vao);
+    glBindVertexArray(_normal_vao);
+
+    glGenBuffers(1, &_normal_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, _normal_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * normal_coords.size(), &normal_coords[0], GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(0);
+
+    _normal_num_indexes = normal_coords.size();
 }

@@ -478,6 +478,10 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
 
         graph->draw_grid();
 
+        glUniform4fv(prog_line_uniforms["color"], 1, &graph->normal_color[0]);
+
+        graph->draw_normals();
+
         check_error("draw");
     }
 

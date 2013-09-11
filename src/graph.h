@@ -68,6 +68,7 @@ public:
 
     void draw() const;
     void draw_grid() const;
+    void draw_normals() const;
 
     virtual double eval(const double, const double) = 0;
 
@@ -86,6 +87,7 @@ public:
     glm::vec3 specular;
 
     glm::vec4 grid_color;
+    glm::vec4 normal_color;
 
 protected:
     virtual void build_graph() = 0;
@@ -105,6 +107,10 @@ protected:
 
     GLuint _grid_ebo;
     GLuint _grid_num_indexes;
+
+    GLuint _normal_vao;
+    GLuint _normal_vbo;
+    GLuint _normal_num_indexes;
 
     sigc::signal<void> _signal_cursor_moved;
 
