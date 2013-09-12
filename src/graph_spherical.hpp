@@ -1,5 +1,5 @@
-// graph_cylindrical.h
-// cylindrical coordinate system graph class (Z(r, theta))
+// graph_spherical.hpp
+// spherical coordinate system graph class (Z(r, theta))
 
 // Copyright 2013 Matthew Chandler
 
@@ -20,19 +20,19 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __GRAPH_CYLINDRICAL_H__
-#define __GRAPH_CYLINDRICAL_H__
+#ifndef __GRAPH_SPHERICAL_H__
+#define __GRAPH_SPHERICAL_H__
 
-#include "graph.h"
+#include "graph.hpp"
 
-class Graph_cylindrical final: public Graph
+class Graph_spherical final: public Graph
 {
 public:
-    explicit Graph_cylindrical(const std::string & eqn = "",
-        float r_min = -1.0f, float r_max = 1.0f, int r_res = 50,
-        float theta_min = -1.0f, float theta_max = 1.0f, int theta_res = 50);
+    explicit Graph_spherical(const std::string & eqn = "",
+        float theta_min = -1.0f, float theta_max = 1.0f, int theta_res = 50,
+        float phi_min = -1.0f, float phi_max = 1.0f, int phi_res = 50);
 
-    double eval(const double r, const double theta) override;
+    double eval(const double theta, const double phi) override;
     void build_graph() override;
 
     // cursor funcs
@@ -42,15 +42,15 @@ public:
     std::string cursor_text() const override;
 
 private:
-    double _r, _theta;
-    double _r_min, _r_max;
-    size_t _r_res;
+    double  _theta, _phi;
     double _theta_min, _theta_max;
     size_t _theta_res;
+    double _phi_min, _phi_max;
+    size_t _phi_res;
 
-    double _cursor_r, _cursor_theta;
+    double _cursor_theta, _cursor_phi, _cursor_r;
     glm::vec3 _cursor_pos;
     bool _cursor_defined;
 };
 
-#endif // __GRAPH_CYLINDRICAL_H__
+#endif // __GRAPH_SPHERICAL_H__

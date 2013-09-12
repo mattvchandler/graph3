@@ -1,4 +1,4 @@
-// graph.h
+// graph.hpp
 // generic graphing class
 
 // Copyright 2013 Matthew Chandler

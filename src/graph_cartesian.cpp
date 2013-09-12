@@ -20,7 +20,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "graph_cartesian.h"
+#include "graph_cartesian.hpp"
 
 Graph_cartesian::Graph_cartesian(const std::string & eqn, float x_min, float x_max, int x_res,
     float y_min, float y_max, int y_res): Graph(eqn),

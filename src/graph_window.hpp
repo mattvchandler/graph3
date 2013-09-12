@@ -1,5 +1,5 @@
-// graph_spherical.h
-// spherical coordinate system graph class (Z(r, theta))
+// graph_window.hpp
+// windowing code. Using GTK to create the window, SFML to do openGL graphics.
 
 // Copyright 2013 Matthew Chandler
 
@@ -20,37 +20,35 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __GRAPH_SPHERICAL_H__
-#define __GRAPH_SPHERICAL_H__
+#ifndef __GRAPH_WINDOW_H__
+#define __GRAPH_WINDOW_H__
 
-#include "graph.h"
+#include <vector>
 
-class Graph_spherical final: public Graph
+#include <gtkmm/colorbutton.h>
+#include <gtkmm/grid.h>
+#include <gtkmm/label.h>
+#include <gtkmm/scale.h>
+#include <gtkmm/stock.h>
+#include <gtkmm/window.h>
+
+#include "graph_disp.hpp"
+
+class Graph_window final: public Gtk::Window
 {
 public:
-    explicit Graph_spherical(const std::string & eqn = "",
-        float theta_min = -1.0f, float theta_max = 1.0f, int theta_res = 50,
-        float phi_min = -1.0f, float phi_max = 1.0f, int phi_res = 50);
+    Graph_window();
 
-    double eval(const double theta, const double phi) override;
-    void build_graph() override;
-
-    // cursor funcs
-    void move_cursor(const Cursor_dir dir) override;
-    glm::vec3 cursor_pos() const override;
-    bool cursor_defined() const override;
-    std::string cursor_text() const override;
+    void update_cursor_text(size_t i);
+    void change_graph_color(size_t i);
+    void add_graphs(); // TODO: delete me
 
 private:
-    double  _theta, _phi;
-    double _theta_min, _theta_max;
-    size_t _theta_res;
-    double _phi_min, _phi_max;
-    size_t _phi_res;
+    Graph_disp gl_window;
+    Gtk::Grid main_grid;
 
-    double _cursor_theta, _cursor_phi, _cursor_r;
-    glm::vec3 _cursor_pos;
-    bool _cursor_defined;
+    std::vector<std::unique_ptr<Gtk::Label>> cursor_texts;
+    std::vector<std::unique_ptr<Gtk::ColorButton>> color_buts;
 };
 
-#endif // __GRAPH_SPHERICAL_H__
+#endif // __GRAPH_WINDOW_H__

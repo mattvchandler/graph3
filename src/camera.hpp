@@ -1,4 +1,4 @@
-// camera.h
+// camera.hpp
 // camera class
 
 // Copyright 2013 Matthew Chandler

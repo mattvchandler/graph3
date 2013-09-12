@@ -22,7 +22,7 @@
 
 #include <gtkmm/main.h>
 
-#include "graph_window.h"
+#include "graph_window.hpp"
 
 int main(int argc, char* argv[])
 {

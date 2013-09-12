@@ -20,7 +20,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "graph_cylindrical.h"
+#include "graph_cylindrical.hpp"
 
 Graph_cylindrical::Graph_cylindrical(const std::string & eqn, float r_min, float r_max, int r_res,
     float theta_min, float theta_max, int theta_res): Graph(eqn),

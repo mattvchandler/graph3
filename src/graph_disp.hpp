@@ -1,4 +1,4 @@
-// graph_disp.h
+// graph_disp.hpp
 // Graphics display module
 
 // Copyright 2013 Matthew Chandler
@@ -36,13 +36,13 @@
 
 #include <glm/glm.hpp>
 
-#include "SFMLWidget/SFMLWidget.h"
+#include "SFMLWidget/SFMLWidget.hpp"
 
-#include "camera.h"
-#include "graph.h"
-#include "graph_cartesian.h"
-#include "graph_cylindrical.h"
-#include "graph_spherical.h"
+#include "camera.hpp"
+#include "graph.hpp"
+#include "graph_cartesian.hpp"
+#include "graph_cylindrical.hpp"
+#include "graph_spherical.hpp"
 
 struct Light
 {

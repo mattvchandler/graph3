@@ -22,7 +22,7 @@
 
 #include <sstream>
 
-#include "graph.h"
+#include "graph.hpp"
 
 std::ostream & operator<<(std::ostream & out, const glm::vec2 & v)
 {

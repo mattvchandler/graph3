@@ -1,5 +1,5 @@
-// graph_window.h
-// windowing code. Using GTK to create the window, SFML to do openGL graphics.
+// graph_cylindrical.hpp
+// cylindrical coordinate system graph class (Z(r, theta))
 
 // Copyright 2013 Matthew Chandler
 
@@ -20,35 +20,37 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __GRAPH_WINDOW_H__
-#define __GRAPH_WINDOW_H__
+#ifndef __GRAPH_CYLINDRICAL_H__
+#define __GRAPH_CYLINDRICAL_H__
 
-#include <vector>
+#include "graph.hpp"
 
-#include <gtkmm/colorbutton.h>
-#include <gtkmm/grid.h>
-#include <gtkmm/label.h>
-#include <gtkmm/scale.h>
-#include <gtkmm/stock.h>
-#include <gtkmm/window.h>
-
-#include "graph_disp.h"
-
-class Graph_window final: public Gtk::Window
+class Graph_cylindrical final: public Graph
 {
 public:
-    Graph_window();
+    explicit Graph_cylindrical(const std::string & eqn = "",
+        float r_min = -1.0f, float r_max = 1.0f, int r_res = 50,
+        float theta_min = -1.0f, float theta_max = 1.0f, int theta_res = 50);
 
-    void update_cursor_text(size_t i);
-    void change_graph_color(size_t i);
-    void add_graphs(); // TODO: delete me
+    double eval(const double r, const double theta) override;
+    void build_graph() override;
+
+    // cursor funcs
+    void move_cursor(const Cursor_dir dir) override;
+    glm::vec3 cursor_pos() const override;
+    bool cursor_defined() const override;
+    std::string cursor_text() const override;
 
 private:
-    Graph_disp gl_window;
-    Gtk::Grid main_grid;
+    double _r, _theta;
+    double _r_min, _r_max;
+    size_t _r_res;
+    double _theta_min, _theta_max;
+    size_t _theta_res;
 
-    std::vector<std::unique_ptr<Gtk::Label>> cursor_texts;
-    std::vector<std::unique_ptr<Gtk::ColorButton>> color_buts;
+    double _cursor_r, _cursor_theta;
+    glm::vec3 _cursor_pos;
+    bool _cursor_defined;
 };
 
-#endif // __GRAPH_WINDOW_H__
+#endif // __GRAPH_CYLINDRICAL_H__

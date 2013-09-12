@@ -29,7 +29,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "graph_disp.h"
+#include "graph_disp.hpp"
 
 void check_error(const char * at)
 {

@@ -21,7 +21,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "graph_spherical.h"
+#include "graph_spherical.hpp"
 
 Graph_spherical::Graph_spherical(const std::string & eqn,
     float theta_min, float theta_max, int theta_res,

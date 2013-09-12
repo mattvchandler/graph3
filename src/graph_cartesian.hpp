@@ -1,4 +1,4 @@
-// graph_cartesian.h
+// graph_cartesian.hpp
 // cartesian coordinate system graph class (Z(X, Y))
 
 // Copyright 2013 Matthew Chandler
@@ -23,7 +23,7 @@
 #ifndef __GRAPH_CARTESIAN_H__
 #define __GRAPH_CARTESIAN_H__
 
-#include "graph.h"
+#include "graph.hpp"
 
 class Graph_cartesian final: public Graph
 {
