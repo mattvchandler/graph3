@@ -49,7 +49,7 @@ void Graph_window::add_graphs() // TODO: delete me
     // cursor_texts.push_back(std::unique_ptr<Gtk::Label>(new Gtk::Label));
     // color_buts[1]->signal_color_set().connect(sigc::bind<size_t>(sigc::mem_fun(*this, &Graph_window::change_graph_color), 1));
 
-    gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_spherical("sin(phi)", 0.0f, M_PI, 50, 0.0f, 2.0f * M_PI, 50)));
+    gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_spherical("1", 0.0f, 2.0f * M_PI, 50, 0.0f, M_PI, 50)));
     // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cylindrical("sqrt(r)", 0.0f, 10.0f, 50, 0.0f, 2.0f * M_PI, 50)));
     // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cylindrical("-sqrt(r)", 0.0f, 10.0f, 50, 0.0f, 2.0f * M_PI, 50)));
     // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cartesian("sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)));

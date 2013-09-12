@@ -29,10 +29,10 @@ class Graph_spherical final: public Graph
 {
 public:
     explicit Graph_spherical(const std::string & eqn = "",
-        float phi_min = -1.0f, float phi_max = 1.0f, int phi_res = 50,
-        float theta_min = -1.0f, float theta_max = 1.0f, int theta_res = 50);
+        float theta_min = -1.0f, float theta_max = 1.0f, int theta_res = 50,
+        float phi_min = -1.0f, float phi_max = 1.0f, int phi_res = 50);
 
-    double eval(const double phi, const double theta) override;
+    double eval(const double theta, const double phi) override;
     void build_graph() override;
 
     // cursor funcs
@@ -42,13 +42,13 @@ public:
     std::string cursor_text() const override;
 
 private:
-    double _phi, _theta;
-    double _phi_min, _phi_max;
-    size_t _phi_res;
+    double  _theta, _phi;
     double _theta_min, _theta_max;
     size_t _theta_res;
+    double _phi_min, _phi_max;
+    size_t _phi_res;
 
-    double _cursor_phi, _cursor_theta, _cursor_r;
+    double _cursor_theta, _cursor_phi, _cursor_r;
     glm::vec3 _cursor_pos;
     bool _cursor_defined;
 };
