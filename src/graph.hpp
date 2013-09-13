@@ -70,8 +70,6 @@ public:
     void draw_grid() const;
     void draw_normals() const;
 
-    virtual double eval(const double, const double) = 0;
-
     // cursor funcs
     typedef enum {UP, DOWN, LEFT, RIGHT} Cursor_dir;
     virtual void move_cursor(const Cursor_dir dir) = 0;

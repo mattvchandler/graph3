@@ -1,5 +1,5 @@
-// graph_cartesian.hpp
-// cartesian coordinate system graph class (Z(X, Y))
+// graph_parametric.hpp
+// parametric coordinate system graph class (x(u,v), y(u,v), z(u,v))
 
 // Copyright 2013 Matthew Chandler
 
@@ -20,19 +20,19 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __GRAPH_CARTESIAN_H__
-#define __GRAPH_CARTESIAN_H__
+#ifndef __GRAPH_PARAMETRIC_H__
+#define __GRAPH_PARAMETRIC_H__
 
 #include "graph.hpp"
 
-class Graph_cartesian final: public Graph
+class Graph_parametric final: public Graph
 {
 public:
-    explicit Graph_cartesian(const std::string & eqn = "",
-        float x_min = -1.0f, float x_max = 1.0f, int x_res = 50,
-        float y_min = -1.0f, float y_max = 1.0f, int y_res = 50);
+    explicit Graph_parametric(const std::string & eqn = "",
+        float u_min = -1.0f, float u_max = 1.0f, int u_res = 50,
+        float v_min = -1.0f, float v_max = 1.0f, int v_res = 50);
 
-    double eval(const double x, const double y);
+    glm::vec3 eval(const double u, const double v);
     void build_graph() override;
 
     // cursor funcs
@@ -42,14 +42,15 @@ public:
     std::string cursor_text() const override;
 
 private:
-    double _x, _y;
-    double _x_min, _x_max;
-    size_t _x_res;
-    double _y_min, _y_max;
-    size_t _y_res;
+    double _u, _v;
+    double _u_min, _u_max;
+    size_t _u_res;
+    double _v_min, _v_max;
+    size_t _v_res;
 
+    double _cursor_u, _cursor_v;
     glm::vec3 _cursor_pos;
     bool _cursor_defined;
 };
 
-#endif // __GRAPH_CARTESIAN_H__
+#endif // __GRAPH_PARAMETRIC_H__

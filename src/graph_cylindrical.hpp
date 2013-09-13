@@ -32,7 +32,7 @@ public:
         float r_min = -1.0f, float r_max = 1.0f, int r_res = 50,
         float theta_min = -1.0f, float theta_max = 1.0f, int theta_res = 50);
 
-    double eval(const double r, const double theta) override;
+    double eval(const double r, const double theta);
     void build_graph() override;
 
     // cursor funcs
