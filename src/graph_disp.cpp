@@ -156,6 +156,20 @@ std::pair<std::vector<float>, glm::uvec2> read_img(const std::string & filename)
     return ret;
 }
 
+// get a list of supported filename extensions (not .<ext>, just <ext>)
+std::vector<std::string> get_img_extensions()
+{
+    std::vector<std::string> exts;
+    for(auto &i: Gdk::Pixbuf::get_formats())
+    {
+        for(auto & ext:i.get_extensions())
+        {
+            exts.push_back(ext);
+        }
+    }
+    return exts;
+}
+
 Cursor::Cursor(): tex(0), shininess(90.0f), specular(1.0f),
     _vao(0), _vbo(0), _num_indexes(0)
 {

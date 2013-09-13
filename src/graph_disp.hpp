@@ -41,6 +41,9 @@
 #include "camera.hpp"
 #include "graph.hpp"
 
+// get a list of supported filename extensions (not .<ext>, just <ext>)
+std::vector<std::string> get_img_extensions();
+
 struct Light
 {
     glm::vec3 pos;
