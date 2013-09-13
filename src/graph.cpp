@@ -44,73 +44,73 @@ std::ostream & operator<<(std::ostream & out, const glm::dvec3 & v)
 
 // calculate the normal of a point given surrounding points
 glm::vec3 get_normal (glm::vec3 center,
-    glm::vec3 u, bool u_def,
+    glm::vec3 up, bool up_def,
     glm::vec3 ur, bool ur_def,
-    glm::vec3 r, bool r_def,
+    glm::vec3 rt, bool rt_def,
     glm::vec3 lr, bool lr_def,
-    glm::vec3 d, bool d_def,
+    glm::vec3 dn, bool dn_def,
     glm::vec3 ll, bool ll_def,
-    glm::vec3 l, bool l_def,
+    glm::vec3 lf, bool lf_def,
     glm::vec3 ul, bool ul_def)
 {
     std::vector<glm::vec3> surrounding;
 
     // get cross-products from combinations of surrounding points
-    if(u_def && ur_def)
-        surrounding.push_back(glm::normalize(glm::cross(ur - center, u - center)));
-    if(u_def && r_def)
-        surrounding.push_back(glm::normalize(glm::cross(r - center, u - center)));
-    if(u_def && lr_def)
-        surrounding.push_back(glm::normalize(glm::cross(lr - center, u - center)));
+    if(up_def && ur_def)
+        surrounding.push_back(glm::normalize(glm::cross(ur - center, up - center)));
+    if(up_def && rt_def)
+        surrounding.push_back(glm::normalize(glm::cross(rt - center, up - center)));
+    if(up_def && lr_def)
+        surrounding.push_back(glm::normalize(glm::cross(lr - center, up - center)));
 
-    if(ur_def && r_def)
-        surrounding.push_back(glm::normalize(glm::cross(r - center, ur - center)));
+    if(ur_def && rt_def)
+        surrounding.push_back(glm::normalize(glm::cross(rt - center, ur - center)));
     if(ur_def && lr_def)
         surrounding.push_back(glm::normalize(glm::cross(lr - center, ur - center)));
-    if(ur_def && d_def)
-        surrounding.push_back(glm::normalize(glm::cross(d - center, ur - center)));
+    if(ur_def && dn_def)
+        surrounding.push_back(glm::normalize(glm::cross(dn - center, ur - center)));
 
-    if(r_def && lr_def)
-        surrounding.push_back(glm::normalize(glm::cross(lr - center, r - center)));
-    if(r_def && d_def)
-        surrounding.push_back(glm::normalize(glm::cross(d - center, r - center)));
-    if(r_def && ll_def)
-        surrounding.push_back(glm::normalize(glm::cross(ll - center, r - center)));
+    if(rt_def && lr_def)
+        surrounding.push_back(glm::normalize(glm::cross(lr - center, rt - center)));
+    if(rt_def && dn_def)
+        surrounding.push_back(glm::normalize(glm::cross(dn - center, rt - center)));
+    if(rt_def && ll_def)
+        surrounding.push_back(glm::normalize(glm::cross(ll - center, rt - center)));
 
-    if(lr_def && d_def)
-        surrounding.push_back(glm::normalize(glm::cross(d - center, lr - center)));
+    if(lr_def && dn_def)
+        surrounding.push_back(glm::normalize(glm::cross(dn - center, lr - center)));
     if(lr_def && ll_def)
         surrounding.push_back(glm::normalize(glm::cross(ll - center, lr - center)));
-    if(lr_def && l_def)
-        surrounding.push_back(glm::normalize(glm::cross(l - center, lr - center)));
+    if(lr_def && lf_def)
+        surrounding.push_back(glm::normalize(glm::cross(lf - center, lr - center)));
 
-    if(d_def && ll_def)
-        surrounding.push_back(glm::normalize(glm::cross(ll - center, d - center)));
-    if(d_def && l_def)
-        surrounding.push_back(glm::normalize(glm::cross(l - center, d - center)));
-    if(d_def && ul_def)
-        surrounding.push_back(glm::normalize(glm::cross(ul - center, d - center)));
+    if(dn_def && ll_def)
+        surrounding.push_back(glm::normalize(glm::cross(ll - center, dn - center)));
+    if(dn_def && lf_def)
+        surrounding.push_back(glm::normalize(glm::cross(lf - center, dn - center)));
+    if(dn_def && ul_def)
+        surrounding.push_back(glm::normalize(glm::cross(ul - center, dn - center)));
 
-    if(ll_def && l_def)
-        surrounding.push_back(glm::normalize(glm::cross(l - center, ll - center)));
+    if(ll_def && lf_def)
+        surrounding.push_back(glm::normalize(glm::cross(lf - center, ll - center)));
     if(ll_def && ul_def)
         surrounding.push_back(glm::normalize(glm::cross(ul - center, ll - center)));
-    if(ll_def && u_def)
-        surrounding.push_back(glm::normalize(glm::cross(u - center, ll - center)));
+    if(ll_def && up_def)
+        surrounding.push_back(glm::normalize(glm::cross(up - center, ll - center)));
 
-    if(l_def && ul_def)
-        surrounding.push_back(glm::normalize(glm::cross(ul - center, l - center)));
-    if(l_def && u_def)
-        surrounding.push_back(glm::normalize(glm::cross(u - center, l - center)));
-    if(l_def && ur_def)
-        surrounding.push_back(glm::normalize(glm::cross(ur - center, l - center)));
+    if(lf_def && ul_def)
+        surrounding.push_back(glm::normalize(glm::cross(ul - center, lf - center)));
+    if(lf_def && up_def)
+        surrounding.push_back(glm::normalize(glm::cross(up - center, lf - center)));
+    if(lf_def && ur_def)
+        surrounding.push_back(glm::normalize(glm::cross(ur - center, lf - center)));
 
-    if(ul_def && u_def)
-        surrounding.push_back(glm::normalize(glm::cross(u - center, ul - center)));
+    if(ul_def && up_def)
+        surrounding.push_back(glm::normalize(glm::cross(up - center, ul - center)));
     if(ul_def && ur_def)
         surrounding.push_back(glm::normalize(glm::cross(ur - center, ul - center)));
-    if(ul_def && r_def)
-        surrounding.push_back(glm::normalize(glm::cross(r - center, ul - center)));
+    if(ul_def && rt_def)
+        surrounding.push_back(glm::normalize(glm::cross(rt - center, ul - center)));
 
     glm::vec3 normal(0.0f);
     for(auto &i: surrounding)

@@ -76,10 +76,10 @@ void Graph_spherical::build_graph()
         double theta = _theta_max;
         for(size_t theta_i = 0; theta_i < _theta_res; ++theta_i, theta -= (_theta_max - _theta_min) / (double)(_theta_res - 1))
         {
-            double rho = eval(theta, phi);
+            double r = eval(theta, phi);
 
-            if(std::fpclassify(rho) != FP_NORMAL &&
-                std::fpclassify(rho) != FP_ZERO)
+            if(std::fpclassify(r) != FP_NORMAL &&
+                std::fpclassify(r) != FP_ZERO)
             {
                 coords[phi_i * _theta_res + theta_i] = glm::vec3(0.0f);
                 tex_coords[phi_i * _theta_res + theta_i] = glm::vec2(0.0f);
@@ -89,16 +89,16 @@ void Graph_spherical::build_graph()
             }
 
             // convert into cartesian coordinates
-            coords[phi_i * _theta_res + theta_i] = glm::vec3((float)rho * sinf(phi) * cosf(theta),
-                (float)rho * sinf(phi) * sinf(theta), (float)rho * cosf(phi));
+            coords[phi_i * _theta_res + theta_i] = glm::vec3((float)r * sinf(phi) * cosf(theta),
+                (float)r * sinf(phi) * sinf(theta), (float)r * cosf(phi));
             tex_coords[phi_i * _theta_res + theta_i] = glm::vec2(
                     (float)((theta - _theta_min) / (_theta_max - _theta_min)),
                     (float)((phi - _phi_min) / (_phi_max - _phi_min)));
             defined[phi_i * _theta_res + theta_i] = true;
 
             // calculate surrounding points for normal calculation
-            glm::vec3 u, d, l, r, ul, ur, ll, lr;
-            bool u_def = false, d_def = false, l_def = false, r_def = false,
+            glm::vec3 up, dn, lf, rt, ul, ur, ll, lr;
+            bool up_def = false, dn_def = false, lf_def = false, rt_def = false,
                  ul_def = false, ur_def = false, ll_def = false, lr_def = false;
 
             float l_theta = (float)theta - h_theta;
@@ -107,85 +107,85 @@ void Graph_spherical::build_graph()
             float d_phi = (float)phi - h_phi;
 
             // ul
-            rho = eval(l_theta, u_phi);
-            if(std::fpclassify(rho) == FP_NORMAL ||
-                std::fpclassify(rho) == FP_ZERO)
+            r = eval(l_theta, u_phi);
+            if(std::fpclassify(r) == FP_NORMAL ||
+                std::fpclassify(r) == FP_ZERO)
             {
                 ul_def = true;
-                ul = glm::vec3(rho * sinf(u_phi) * cosf(l_theta), rho * sinf(u_phi) * sinf(l_theta), rho * cosf(u_phi));
+                ul = glm::vec3(r * sinf(u_phi) * cosf(l_theta), r * sinf(u_phi) * sinf(l_theta), r * cosf(u_phi));
             }
 
-            // u
-            rho = eval(theta, u_phi);
-            if(std::fpclassify(rho) == FP_NORMAL ||
-                std::fpclassify(rho) == FP_ZERO)
+            // up
+            r = eval(theta, u_phi);
+            if(std::fpclassify(r) == FP_NORMAL ||
+                std::fpclassify(r) == FP_ZERO)
             {
-                u_def = true;
-                u = glm::vec3(rho * sinf(u_phi) * cosf(theta), rho * sinf(u_phi) * sinf(theta), rho * cosf(u_phi));
+                up_def = true;
+                up = glm::vec3(r * sinf(u_phi) * cosf(theta), r * sinf(u_phi) * sinf(theta), r * cosf(u_phi));
             }
 
             // ur
-            rho = eval(r_theta, u_phi);
-            if(std::fpclassify(rho) == FP_NORMAL ||
-                std::fpclassify(rho) == FP_ZERO)
+            r = eval(r_theta, u_phi);
+            if(std::fpclassify(r) == FP_NORMAL ||
+                std::fpclassify(r) == FP_ZERO)
             {
                 ur_def = true;
-                ur = glm::vec3(rho * sinf(u_phi) * cosf(r_theta), rho * sinf(u_phi) * sinf(r_theta), rho * cosf(u_phi));
+                ur = glm::vec3(r * sinf(u_phi) * cosf(r_theta), r * sinf(u_phi) * sinf(r_theta), r * cosf(u_phi));
             }
 
-            // r
-            rho = eval(r_theta, phi);
-            if(std::fpclassify(rho) == FP_NORMAL ||
-                std::fpclassify(rho) == FP_ZERO)
+            // rt
+            r = eval(r_theta, phi);
+            if(std::fpclassify(r) == FP_NORMAL ||
+                std::fpclassify(r) == FP_ZERO)
             {
-                r_def = true;
-                r = glm::vec3(rho * sinf(phi) * cosf(r_theta), rho * sinf(phi) * sinf(r_theta), rho * cosf(phi));
+                rt_def = true;
+                rt = glm::vec3(r * sinf(phi) * cosf(r_theta), r * sinf(phi) * sinf(r_theta), r * cosf(phi));
             }
 
             // lr
-            rho = eval(r_theta, d_phi);
-            if(std::fpclassify(rho) == FP_NORMAL ||
-                std::fpclassify(rho) == FP_ZERO)
+            r = eval(r_theta, d_phi);
+            if(std::fpclassify(r) == FP_NORMAL ||
+                std::fpclassify(r) == FP_ZERO)
             {
                 lr_def = true;
-                lr = glm::vec3(rho * sinf(d_phi) * cosf(r_theta), rho * sinf(d_phi) * sinf(r_theta), rho * cosf(d_phi));
+                lr = glm::vec3(r * sinf(d_phi) * cosf(r_theta), r * sinf(d_phi) * sinf(r_theta), r * cosf(d_phi));
             }
 
-            // d
-            rho = eval(theta, d_phi);
-            if(std::fpclassify(rho) == FP_NORMAL ||
-                std::fpclassify(rho) == FP_ZERO)
+            // dn
+            r = eval(theta, d_phi);
+            if(std::fpclassify(r) == FP_NORMAL ||
+                std::fpclassify(r) == FP_ZERO)
             {
-                d_def = true;
-                d = glm::vec3(rho * sinf(d_phi) * cosf(theta), rho * sinf(d_phi) * sinf(theta), rho * cosf(d_phi));
+                dn_def = true;
+                dn = glm::vec3(r * sinf(d_phi) * cosf(theta), r * sinf(d_phi) * sinf(theta), r * cosf(d_phi));
             }
 
             // ll
-            rho = eval(l_theta, d_phi);
-            if(std::fpclassify(rho) == FP_NORMAL ||
-                std::fpclassify(rho) == FP_ZERO)
+            r = eval(l_theta, d_phi);
+            if(std::fpclassify(r) == FP_NORMAL ||
+                std::fpclassify(r) == FP_ZERO)
             {
                 ll_def = true;
-                ll = glm::vec3(rho * sinf(d_phi) * cosf(l_theta), rho * sinf(d_phi) * sinf(l_theta), rho * cosf(d_phi));
+                ll = glm::vec3(r * sinf(d_phi) * cosf(l_theta), r * sinf(d_phi) * sinf(l_theta), r * cosf(d_phi));
             }
 
-            // l
-            rho = eval(l_theta, phi);
-            if(std::fpclassify(rho) == FP_NORMAL ||
-                std::fpclassify(rho) == FP_ZERO)
+            // lf
+            r = eval(l_theta, phi);
+            if(std::fpclassify(r) == FP_NORMAL ||
+                std::fpclassify(r) == FP_ZERO)
             {
-                l_def = true;
-                l = glm::vec3(rho * sinf(phi) * cosf(l_theta), rho * sinf(phi) * sinf(l_theta), rho * cosf(phi));
+                lf_def = true;
+                lf = glm::vec3(r * sinf(phi) * cosf(l_theta), r * sinf(phi) * sinf(l_theta), r * cosf(phi));
             }
 
             normals[phi_i * _theta_res + theta_i] = get_normal(coords[phi_i * _theta_res + theta_i],
-                u, u_def,
+                up, up_def,
                 ur, ur_def,
-                r, r_def,
+                rt, rt_def,
                 lr, lr_def,
-                d, d_def,
+                dn, dn_def,
                 ll, ll_def,
-                l, l_def,
+                lf, lf_def,
                 ul, ul_def);
         }
     }

@@ -90,8 +90,8 @@ void Graph_cartesian::build_graph()
             defined[y_i * _x_res + x_i] = true;
 
             // calculate surrounding points for normal calculation
-            glm::vec3 u, d, l, r, ul, ur, ll, lr;
-            bool u_def = false, d_def = false, l_def = false, r_def = false,
+            glm::vec3 up, dn, lf, rt, ul, ur, ll, lr;
+            bool up_def = false, dn_def = false, lf_def = false, rt_def = false,
                  ul_def = false, ur_def = false, ll_def = false, lr_def = false;
 
             float l_x = (float)x - h_x;
@@ -108,13 +108,13 @@ void Graph_cartesian::build_graph()
                 ul = glm::vec3(l_x, u_y, z);
             }
 
-            // u
+            // up
             z = eval(x, u_y);
             if(std::fpclassify(z) == FP_NORMAL ||
                 std::fpclassify(z) == FP_ZERO)
             {
-                u_def = true;
-                u = glm::vec3(x, u_y, z);
+                up_def = true;
+                up = glm::vec3(x, u_y, z);
             }
 
             // ur
@@ -126,13 +126,13 @@ void Graph_cartesian::build_graph()
                 ur = glm::vec3(r_x, u_y, z);
             }
 
-            // r
+            // rt
             z = eval(r_x, y);
             if(std::fpclassify(z) == FP_NORMAL ||
                 std::fpclassify(z) == FP_ZERO)
             {
-                r_def = true;
-                r = glm::vec3(r_x, y, z);
+                rt_def = true;
+                rt = glm::vec3(r_x, y, z);
             }
 
             // lr
@@ -144,13 +144,13 @@ void Graph_cartesian::build_graph()
                 lr = glm::vec3(r_x, d_y, z);
             }
 
-            // d
+            // dn
             z = eval(x, d_y);
             if(std::fpclassify(z) == FP_NORMAL ||
                 std::fpclassify(z) == FP_ZERO)
             {
-                d_def = true;
-                d = glm::vec3(x, d_y, z);
+                dn_def = true;
+                dn = glm::vec3(x, d_y, z);
             }
 
             // ll
@@ -162,23 +162,23 @@ void Graph_cartesian::build_graph()
                 ll = glm::vec3(l_x, d_y, z);
             }
 
-            // l
+            // lf
             z = eval(l_x, y);
             if(std::fpclassify(z) == FP_NORMAL ||
                 std::fpclassify(z) == FP_ZERO)
             {
-                l_def = true;
-                l = glm::vec3(l_x, y, z);
+                lf_def = true;
+                lf = glm::vec3(l_x, y, z);
             }
 
             normals[y_i * _x_res + x_i] = get_normal(coords[y_i * _x_res + x_i],
-                u, u_def,
+                up, up_def,
                 ur, ur_def,
-                r, r_def,
+                rt, rt_def,
                 lr, lr_def,
-                d, d_def,
+                dn, dn_def,
                 ll, ll_def,
-                l, l_def,
+                lf, lf_def,
                 ul, ul_def);
         }
     }
@@ -238,6 +238,6 @@ bool Graph_cartesian::cursor_defined() const
 std::string Graph_cartesian::cursor_text() const
 {
     std::ostringstream str;
-    str<<"Z(X: "<<_cursor_pos.x<<", Y: "<<_cursor_pos.y<<") = "<<_cursor_pos.z;
+    str<<"z(x: "<<_cursor_pos.x<<", y: "<<_cursor_pos.y<<") = "<<_cursor_pos.z;
     return str.str();
 }

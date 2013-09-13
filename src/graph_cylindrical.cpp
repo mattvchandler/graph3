@@ -70,10 +70,10 @@ void Graph_cylindrical::build_graph()
     double theta = _theta_max;
     for(size_t theta_i = 0; theta_i < _theta_res; ++theta_i, theta -= (_theta_max - _theta_min) / (double)(_theta_res - 1))
     {
-        double radius = _r_min;
-        for(size_t r_i = 0; r_i < _r_res; ++r_i,  radius += (_r_max - _r_min) / (double)(_r_res - 1))
+        double r = _r_min;
+        for(size_t r_i = 0; r_i < _r_res; ++r_i,  r += (_r_max - _r_min) / (double)(_r_res - 1))
         {
-            double z = eval(radius, theta);
+            double z = eval(r, theta);
 
             if(std::fpclassify(z) != FP_NORMAL &&
                 std::fpclassify(z) != FP_ZERO)
@@ -86,18 +86,18 @@ void Graph_cylindrical::build_graph()
             }
 
             // convert into cartesian coordinates
-            coords[theta_i * _r_res + r_i] = glm::vec3((float)radius * cosf(theta), (float)radius * sinf(theta), (float)z);
+            coords[theta_i * _r_res + r_i] = glm::vec3((float)r * cosf(theta), (float)r * sinf(theta), (float)z);
             tex_coords[theta_i * _r_res + r_i] = glm::vec2((coords[theta_i * _r_res + r_i].x + _r_max) / (float)(2 * _r_max),
                 (_r_max - coords[theta_i * _r_res + r_i].y) / (float)(2 * _r_max));
             defined[theta_i * _r_res + r_i] = true;
 
             // calculate surrounding points for normal calculation
-            glm::vec3 u, d, l, r, ul, ur, ll, lr;
-            bool u_def = false, d_def = false, l_def = false, r_def = false,
+            glm::vec3 up, dn, lf, rt, ul, ur, ll, lr;
+            bool up_def = false, dn_def = false, lf_def = false, rt_def = false,
                  ul_def = false, ur_def = false, ll_def = false, lr_def = false;
 
-            float l_r = (float)radius - h_r;
-            float r_r = (float)radius + h_r;
+            float l_r = (float)r - h_r;
+            float r_r = (float)r + h_r;
             float u_theta = (float)theta + h_theta;
             float d_theta = (float)theta - h_theta;
 
@@ -110,13 +110,13 @@ void Graph_cylindrical::build_graph()
                 ul = glm::vec3(l_r * cosf(u_theta), l_r * sinf(u_theta), z);
             }
 
-            // u
-            z = eval(radius, u_theta);
+            // up
+            z = eval(r, u_theta);
             if(std::fpclassify(z) == FP_NORMAL ||
                 std::fpclassify(z) == FP_ZERO)
             {
-                u_def = true;
-                u = glm::vec3(radius * cosf(u_theta), radius * sinf(u_theta), z);
+                up_def = true;
+                up = glm::vec3(r * cosf(u_theta), r * sinf(u_theta), z);
             }
 
             // ur
@@ -128,13 +128,13 @@ void Graph_cylindrical::build_graph()
                 ur = glm::vec3(r_r * cosf(u_theta), r_r * sinf(u_theta), z);
             }
 
-            // r
+            // rt
             z = eval(r_r, theta);
             if(std::fpclassify(z) == FP_NORMAL ||
                 std::fpclassify(z) == FP_ZERO)
             {
-                r_def = true;
-                r = glm::vec3(r_r * cosf(theta), r_r * sinf(theta), z);
+                rt_def = true;
+                rt = glm::vec3(r_r * cosf(theta), r_r * sinf(theta), z);
             }
 
             // lr
@@ -146,13 +146,13 @@ void Graph_cylindrical::build_graph()
                 lr = glm::vec3(r_r * cosf(d_theta), r_r * sinf(d_theta), z);
             }
 
-            // d
-            z = eval(radius, d_theta);
+            // dn
+            z = eval(r, d_theta);
             if(std::fpclassify(z) == FP_NORMAL ||
                 std::fpclassify(z) == FP_ZERO)
             {
-                d_def = true;
-                d = glm::vec3(radius * cosf(d_theta), radius * sinf(d_theta), z);
+                dn_def = true;
+                dn = glm::vec3(r * cosf(d_theta), r * sinf(d_theta), z);
             }
 
             // ll
@@ -164,23 +164,23 @@ void Graph_cylindrical::build_graph()
                 ll = glm::vec3(l_r * cosf(d_theta), l_r * sinf(d_theta), z);
             }
 
-            // l
+            // lf
             z = eval(l_r, theta);
             if(std::fpclassify(z) == FP_NORMAL ||
                 std::fpclassify(z) == FP_ZERO)
             {
-                l_def = true;
-                l = glm::vec3(l_r * cosf(theta), l_r * sinf(theta), z);
+                lf_def = true;
+                lf = glm::vec3(l_r * cosf(theta), l_r * sinf(theta), z);
             }
 
             normals[theta_i * _r_res + r_i] = get_normal(coords[theta_i * _r_res + r_i],
-                u, u_def,
+                up, up_def,
                 ur, ur_def,
-                r, r_def,
+                rt, rt_def,
                 lr, lr_def,
-                d, d_def,
+                dn, dn_def,
                 ll, ll_def,
-                l, l_def,
+                lf, lf_def,
                 ul, ul_def);
         }
     }
@@ -245,6 +245,6 @@ bool Graph_cylindrical::cursor_defined() const
 std::string Graph_cylindrical::cursor_text() const
 {
     std::ostringstream str;
-    str<<"Z(R: "<<_cursor_r<<", θ: "<<_cursor_theta<<") = "<<_cursor_pos.z;
+    str<<"z(r: "<<_cursor_r<<", θ: "<<_cursor_theta<<") = "<<_cursor_pos.z;
     return str.str();
 }
