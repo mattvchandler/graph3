@@ -25,8 +25,7 @@
 #include <utility>
 #include <cmath>
 
-#include <png++/png.hpp> // TODO: look into using gtk or sfml for loading arbitrary images
-
+#include <gdkmm.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "graph_disp.hpp"
@@ -117,20 +116,41 @@ GLuint link_shader_prog(const std::vector<GLuint> & shaders)
     return prog;
 }
 
-std::pair<std::vector<float>, glm::ivec2> read_png(const char * filename)
+std::pair<std::vector<float>, glm::uvec2> read_img(const std::string & filename)
 {
-    const png::image<png::rgba_pixel> image(filename);
-    std::pair<std::vector<float>, glm::ivec2> ret(std::vector<float>(image.get_height() * image.get_width() * 4),
-        glm::ivec2(image.get_height(), image.get_width()));
+    const Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create_from_file(filename);
+    std::pair<std::vector<float>, glm::uvec2> ret(std::vector<float>(image->get_width() * image->get_height() * 4),
+        glm::uvec2(image->get_width(), image->get_height()));
 
-    for(size_t r = 0; r < image.get_height(); ++r)
+    const guint8 * data = image->get_pixels();
+    for(int r = 0; r < image->get_height(); ++r)
     {
-        for(size_t c = 0; c < image.get_width(); ++c)
+        for(int c = 0; c < image->get_width(); ++c)
         {
-            ret.first[(image.get_width() * r + c) * 4 + 0] = (float)image[r][c].red / 255.0f;
-            ret.first[(image.get_width() * r + c) * 4 + 1] = (float)image[r][c].green / 255.0f;
-            ret.first[(image.get_width() * r + c) * 4 + 2] = (float)image[r][c].blue / 255.0f;
-            ret.first[(image.get_width() * r + c) * 4 + 3] = (float)image[r][c].alpha / 255.0f;
+            const guint8 * pix = data + r * image->get_rowstride() + c * image->get_n_channels();
+            switch(image->get_n_channels())
+            {
+            case 1:
+                ret.first[(image->get_width() * r + c) * 4 + 0] = pix[0] / 255.0f;
+                ret.first[(image->get_width() * r + c) * 4 + 1] = pix[0] / 255.0f;
+                ret.first[(image->get_width() * r + c) * 4 + 2] = pix[0] / 255.0f;
+                ret.first[(image->get_width() * r + c) * 4 + 3] = 1.0f;
+                break;
+            case 3:
+                ret.first[(image->get_width() * r + c) * 4 + 0] = pix[0] / 255.0f;
+                ret.first[(image->get_width() * r + c) * 4 + 1] = pix[1] / 255.0f;
+                ret.first[(image->get_width() * r + c) * 4 + 2] = pix[2] / 255.0f;
+                ret.first[(image->get_width() * r + c) * 4 + 3] = 1.0f;
+                break;
+            case 4:
+                ret.first[(image->get_width() * r + c) * 4 + 0] = pix[0] / 255.0f;
+                ret.first[(image->get_width() * r + c) * 4 + 1] = pix[1] / 255.0f;
+                ret.first[(image->get_width() * r + c) * 4 + 2] = pix[2] / 255.0f;
+                ret.first[(image->get_width() * r + c) * 4 + 3] = pix[3] / 255.0f;
+                break;
+            default:
+                break;
+            }
         }
     }
     return ret;
@@ -352,16 +372,16 @@ void Graph_disp::realize()
     // load images
     glEnable(GL_TEXTURE_2D);
 
-    std::vector<std::pair<std::vector<float>, glm::ivec2>> texture_data;
+    std::vector<std::pair<std::vector<float>, glm::uvec2>> texture_data;
 
     try
     {
-        texture_data.push_back(read_png("img/test.png"));
-        texture_data.push_back(read_png("img/cursor.png"));
+        texture_data.push_back(read_img("img/test.png"));
+        texture_data.push_back(read_img("img/cursor.png"));
     }
-    catch(std::exception &e)
+    catch(Glib::Exception &e)
     {
-        std::cerr<<"Error reading image file: "<<e.what()<<std::endl;
+        std::cerr<<"Error reading image file:"<<std::endl<<e.what()<<std::endl;
         exit(EXIT_FAILURE);
     }
 
