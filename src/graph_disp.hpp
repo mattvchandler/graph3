@@ -40,9 +40,6 @@
 
 #include "camera.hpp"
 #include "graph.hpp"
-#include "graph_cartesian.hpp"
-#include "graph_cylindrical.hpp"
-#include "graph_spherical.hpp"
 
 struct Light
 {

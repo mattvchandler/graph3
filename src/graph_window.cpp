@@ -23,6 +23,11 @@
 // TODO: axes
 #include "graph_window.hpp"
 
+#include "graph.hpp"
+#include "graph_cartesian.hpp"
+#include "graph_cylindrical.hpp"
+#include "graph_spherical.hpp"
+
 Graph_window::Graph_window(): gl_window(sf::VideoMode(800, 600), -1, sf::ContextSettings(0, 0, 4, 4, 0)) // these do nothing yet - future SFML version should enable them
 {
     set_title("Graph 3");
@@ -49,6 +54,7 @@ void Graph_window::add_graphs() // TODO: delete me
     // cursor_texts.push_back(std::unique_ptr<Gtk::Label>(new Gtk::Label));
     // color_buts[1]->signal_color_set().connect(sigc::bind<size_t>(sigc::mem_fun(*this, &Graph_window::change_graph_color), 1));
 
+    // TODO error handling
     gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_spherical("1", 0.0f, 2.0f * M_PI, 50, 0.0f, M_PI, 50)));
     // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cylindrical("sqrt(r)", 0.0f, 10.0f, 50, 0.0f, 2.0f * M_PI, 50)));
     // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cylindrical("-sqrt(r)", 0.0f, 10.0f, 50, 0.0f, 2.0f * M_PI, 50)));
