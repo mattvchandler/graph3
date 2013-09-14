@@ -98,7 +98,7 @@ void Graph_parametric::build_graph()
             }
 
             coords[v_i * _u_res + u_i] = pos;
-            tex_coords[v_i * _u_res + u_i] = glm::vec2((float)((pos.x - _u_min) / (_u_max - _u_min)), (float)((_v_max - pos.y) / (_v_max - _v_min)));
+            tex_coords[v_i * _u_res + u_i] = glm::vec2((float)((u - _u_min) / (_u_max - _u_min)), (float)((_v_max - v) / (_v_max - _v_min)));
             defined[v_i * _u_res + u_i] = true;
 
             // calculate surrounding points for normal calculation
