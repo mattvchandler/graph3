@@ -637,8 +637,8 @@ bool Graph_disp::input()
                 int d_x = new_mouse_pos.x - old_mouse_pos.x;
                 int d_y = new_mouse_pos.y - old_mouse_pos.y;
 
-                cam.rotate(0.01f * scale * d_y, cam.right());
-                cam.rotate(0.01f * scale * d_x, glm::vec3(0.0f, 0.0f, 1.0f));
+                cam.rotate(0.01f * d_y, cam.right());
+                cam.rotate(0.01f * d_x, glm::vec3(0.0f, 0.0f, 1.0f));
 
                 invalidate();
             }
