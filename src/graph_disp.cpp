@@ -271,10 +271,10 @@ void Cursor::build()
 
 Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_reqest, const sf::ContextSettings & context_settings):
     SFMLWidget(mode, size_reqest), active_graph(0),
-    cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-    perspective_mat(1.0f),
-    light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.8f, 1.0f, 0.5f, 0.0f}),
-    ambient_light(0.4f, 0.4f, 0.4f)
+    _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+    _perspective_mat(1.0f),
+    _light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.8f, 1.0f, 0.5f, 0.0f}),
+    _ambient_light(0.4f, 0.4f, 0.4f)
 {
     signal_realize().connect(sigc::mem_fun(*this, &Graph_disp::realize));
     signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
@@ -336,11 +336,11 @@ void Graph_disp::realize()
     if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0 || flat_color_frag == 0)
         exit(EXIT_FAILURE);
 
-    prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag});
-    prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag});
-    prog_line = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag});
+    _prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag});
+    _prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag});
+    _prog_line = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag});
 
-    if(prog_tex == 0 || prog_color == 0 || prog_line == 0)
+    if(_prog_tex == 0 || _prog_color == 0 || _prog_line == 0)
         exit(EXIT_FAILURE);
 
     glDeleteShader(graph_vert);
@@ -350,38 +350,38 @@ void Graph_disp::realize()
     glDeleteShader(flat_color_frag);
 
     // get uniform locations
-    prog_tex_uniforms["view_model_perspective"] = glGetUniformLocation(prog_tex, "view_model_perspective");
-    prog_tex_uniforms["view_model"] = glGetUniformLocation(prog_tex, "view_model");
-    prog_tex_uniforms["normal_transform"] = glGetUniformLocation(prog_tex, "normal_transform");
-    prog_tex_uniforms["shininess"] = glGetUniformLocation(prog_tex, "shininess");
-    prog_tex_uniforms["specular"] = glGetUniformLocation(prog_tex, "specular");
-    prog_tex_uniforms["ambient_color"] = glGetUniformLocation(prog_tex, "ambient_color");
-    prog_tex_uniforms["light_color"] = glGetUniformLocation(prog_tex, "light_color");
-    prog_tex_uniforms["light_pos"] = glGetUniformLocation(prog_tex, "light_pos");
-    prog_tex_uniforms["light_strength"] = glGetUniformLocation(prog_tex, "light_strength");
-    prog_tex_uniforms["const_atten"] = glGetUniformLocation(prog_tex, "const_atten");
-    prog_tex_uniforms["linear_atten"] = glGetUniformLocation(prog_tex, "linear_atten");
-    prog_tex_uniforms["quad_atten"] = glGetUniformLocation(prog_tex, "quad_atten");
-    prog_tex_uniforms["cam_forward"] = glGetUniformLocation(prog_tex, "cam_forward");
+    _prog_tex_uniforms["view_model_perspective"] = glGetUniformLocation(_prog_tex, "view_model_perspective");
+    _prog_tex_uniforms["view_model"] = glGetUniformLocation(_prog_tex, "view_model");
+    _prog_tex_uniforms["normal_transform"] = glGetUniformLocation(_prog_tex, "normal_transform");
+    _prog_tex_uniforms["shininess"] = glGetUniformLocation(_prog_tex, "shininess");
+    _prog_tex_uniforms["specular"] = glGetUniformLocation(_prog_tex, "specular");
+    _prog_tex_uniforms["ambient_color"] = glGetUniformLocation(_prog_tex, "ambient_color");
+    _prog_tex_uniforms["light_color"] = glGetUniformLocation(_prog_tex, "light_color");
+    _prog_tex_uniforms["light_pos"] = glGetUniformLocation(_prog_tex, "light_pos");
+    _prog_tex_uniforms["light_strength"] = glGetUniformLocation(_prog_tex, "light_strength");
+    _prog_tex_uniforms["const_atten"] = glGetUniformLocation(_prog_tex, "const_atten");
+    _prog_tex_uniforms["linear_atten"] = glGetUniformLocation(_prog_tex, "linear_atten");
+    _prog_tex_uniforms["quad_atten"] = glGetUniformLocation(_prog_tex, "quad_atten");
+    _prog_tex_uniforms["cam_forward"] = glGetUniformLocation(_prog_tex, "cam_forward");
 
-    prog_color_uniforms["view_model_perspective"] = glGetUniformLocation(prog_color, "view_model_perspective");
-    prog_color_uniforms["view_model"] = glGetUniformLocation(prog_color, "view_model");
-    prog_color_uniforms["normal_transform"] = glGetUniformLocation(prog_color, "normal_transform");
-    prog_color_uniforms["color"] = glGetUniformLocation(prog_color, "color");
-    prog_color_uniforms["shininess"] = glGetUniformLocation(prog_color, "shininess");
-    prog_color_uniforms["specular"] = glGetUniformLocation(prog_color, "specular");
-    prog_color_uniforms["ambient_color"] = glGetUniformLocation(prog_color, "ambient_color");
-    prog_color_uniforms["light_color"] = glGetUniformLocation(prog_color, "light_color");
-    prog_color_uniforms["light_pos"] = glGetUniformLocation(prog_color, "light_pos");
-    prog_color_uniforms["light_strength"] = glGetUniformLocation(prog_color, "light_strength");
-    prog_color_uniforms["const_atten"] = glGetUniformLocation(prog_color, "const_atten");
-    prog_color_uniforms["linear_atten"] = glGetUniformLocation(prog_color, "linear_atten");
-    prog_color_uniforms["quad_atten"] = glGetUniformLocation(prog_color, "quad_atten");
-    prog_color_uniforms["cam_forward"] = glGetUniformLocation(prog_color, "cam_forward");
+    _prog_color_uniforms["view_model_perspective"] = glGetUniformLocation(_prog_color, "view_model_perspective");
+    _prog_color_uniforms["view_model"] = glGetUniformLocation(_prog_color, "view_model");
+    _prog_color_uniforms["normal_transform"] = glGetUniformLocation(_prog_color, "normal_transform");
+    _prog_color_uniforms["color"] = glGetUniformLocation(_prog_color, "color");
+    _prog_color_uniforms["shininess"] = glGetUniformLocation(_prog_color, "shininess");
+    _prog_color_uniforms["specular"] = glGetUniformLocation(_prog_color, "specular");
+    _prog_color_uniforms["ambient_color"] = glGetUniformLocation(_prog_color, "ambient_color");
+    _prog_color_uniforms["light_color"] = glGetUniformLocation(_prog_color, "light_color");
+    _prog_color_uniforms["light_pos"] = glGetUniformLocation(_prog_color, "light_pos");
+    _prog_color_uniforms["light_strength"] = glGetUniformLocation(_prog_color, "light_strength");
+    _prog_color_uniforms["const_atten"] = glGetUniformLocation(_prog_color, "const_atten");
+    _prog_color_uniforms["linear_atten"] = glGetUniformLocation(_prog_color, "linear_atten");
+    _prog_color_uniforms["quad_atten"] = glGetUniformLocation(_prog_color, "quad_atten");
+    _prog_color_uniforms["cam_forward"] = glGetUniformLocation(_prog_color, "cam_forward");
 
-    prog_line_uniforms["perspective"] = glGetUniformLocation(prog_line, "perspective");
-    prog_line_uniforms["view_model"] = glGetUniformLocation(prog_line, "view_model");
-    prog_line_uniforms["color"] = glGetUniformLocation(prog_line, "color");
+    _prog_line_uniforms["perspective"] = glGetUniformLocation(_prog_line, "perspective");
+    _prog_line_uniforms["view_model"] = glGetUniformLocation(_prog_line, "view_model");
+    _prog_line_uniforms["color"] = glGetUniformLocation(_prog_line, "color");
 
     // load images
     glEnable(GL_TEXTURE_2D);
@@ -419,28 +419,28 @@ void Graph_disp::realize()
     glm::vec3 light_pos_eye(0.0f);
     glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
 
-    glUseProgram(prog_tex);
-    glUniform3fv(prog_tex_uniforms["ambient_color"], 1, &ambient_light[0]);
-    glUniform3fv(prog_tex_uniforms["light_color"], 1, &light.color[0]);
-    glUniform3fv(prog_tex_uniforms["light_pos"], 1, &light_pos_eye[0]);
-    glUniform1f(prog_tex_uniforms["light_strength"], light.strength);
-    glUniform1f(prog_tex_uniforms["const_atten"], light.const_attenuation);
-    glUniform1f(prog_tex_uniforms["linear_atten"], light.linear_attenuation);
-    glUniform1f(prog_tex_uniforms["quad_atten"], light.quad_attenuation);
-    glUniform3fv(prog_tex_uniforms["cam_forward"], 1, &light_forward[0]);
+    glUseProgram(_prog_tex);
+    glUniform3fv(_prog_tex_uniforms["ambient_color"], 1, &_ambient_light[0]);
+    glUniform3fv(_prog_tex_uniforms["light_color"], 1, &_light.color[0]);
+    glUniform3fv(_prog_tex_uniforms["light_pos"], 1, &light_pos_eye[0]);
+    glUniform1f(_prog_tex_uniforms["light_strength"], _light.strength);
+    glUniform1f(_prog_tex_uniforms["const_atten"], _light.const_attenuation);
+    glUniform1f(_prog_tex_uniforms["linear_atten"], _light.linear_attenuation);
+    glUniform1f(_prog_tex_uniforms["quad_atten"], _light.quad_attenuation);
+    glUniform3fv(_prog_tex_uniforms["cam_forward"], 1, &light_forward[0]);
 
-    glUseProgram(prog_color);
-    glUniform3fv(prog_color_uniforms["ambient_color"], 1, &ambient_light[0]);
-    glUniform3fv(prog_color_uniforms["light_color"], 1, &light.color[0]);
-    glUniform3fv(prog_color_uniforms["light_pos"], 1, &light_pos_eye[0]);
-    glUniform1f(prog_color_uniforms["light_strength"], light.strength);
-    glUniform1f(prog_color_uniforms["const_atten"], light.const_attenuation);
-    glUniform1f(prog_color_uniforms["linear_atten"], light.linear_attenuation);
-    glUniform1f(prog_color_uniforms["quad_atten"], light.quad_attenuation);
-    glUniform3fv(prog_color_uniforms["cam_forward"], 1, &light_forward[0]);
+    glUseProgram(_prog_color);
+    glUniform3fv(_prog_color_uniforms["ambient_color"], 1, &_ambient_light[0]);
+    glUniform3fv(_prog_color_uniforms["light_color"], 1, &_light.color[0]);
+    glUniform3fv(_prog_color_uniforms["light_pos"], 1, &light_pos_eye[0]);
+    glUniform1f(_prog_color_uniforms["light_strength"], _light.strength);
+    glUniform1f(_prog_color_uniforms["const_atten"], _light.const_attenuation);
+    glUniform1f(_prog_color_uniforms["linear_atten"], _light.linear_attenuation);
+    glUniform1f(_prog_color_uniforms["quad_atten"], _light.quad_attenuation);
+    glUniform3fv(_prog_color_uniforms["cam_forward"], 1, &light_forward[0]);
 
-    cursor.build();
-    cursor.tex = textures[1];
+    _cursor.build();
+    _cursor.tex = textures[1];
 
     invalidate();
 }
@@ -450,7 +450,7 @@ void Graph_disp::resize(Gtk::Allocation & allocation)
     if(m_refGdkWindow)
     {
         glViewport(0, 0, glWindow.getSize().x, glWindow.getSize().y);
-        perspective_mat = glm::perspective(30.0f, (float)glWindow.getSize().x / (float)glWindow.getSize().y,
+        _perspective_mat = glm::perspective(30.0f, (float)glWindow.getSize().x / (float)glWindow.getSize().y,
             0.1f, 100.0f);
         invalidate();
     }
@@ -464,8 +464,8 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
     glPrimitiveRestartIndex(0xFFFFFFFF);
 
     // set up transformation matrices
-    glm::mat4 view_model = cam.view_mat();
-    glm::mat4 view_model_perspective = perspective_mat * view_model;
+    glm::mat4 view_model = _cam.view_mat();
+    glm::mat4 view_model_perspective = _perspective_mat * view_model;
     glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
 
@@ -473,28 +473,28 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
     {
         if(graph->tex != 0)
         {
-            glUseProgram(prog_tex);
+            glUseProgram(_prog_tex);
 
-            glUniformMatrix4fv(prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-            glUniformMatrix4fv(prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-            glUniformMatrix3fv(prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+            glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(_prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(_prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
 
             // material properties
-            glUniform1f(prog_tex_uniforms["shininess"], graph->shininess);
-            glUniform3fv(prog_tex_uniforms["specular"], 1, &graph->specular[0]);
+            glUniform1f(_prog_tex_uniforms["shininess"], graph->shininess);
+            glUniform3fv(_prog_tex_uniforms["specular"], 1, &graph->specular[0]);
         }
         else
         {
-            glUseProgram(prog_color);
+            glUseProgram(_prog_color);
 
-            glUniformMatrix4fv(prog_color_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-            glUniformMatrix4fv(prog_color_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-            glUniformMatrix3fv(prog_color_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+            glUniformMatrix4fv(_prog_color_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(_prog_color_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(_prog_color_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
 
             // material properties
-            glUniform4fv(prog_color_uniforms["color"], 1, &graph->color[0]);
-            glUniform1f(prog_color_uniforms["shininess"], graph->shininess);
-            glUniform3fv(prog_color_uniforms["specular"], 1, &graph->specular[0]);
+            glUniform4fv(_prog_color_uniforms["color"], 1, &graph->color[0]);
+            glUniform1f(_prog_color_uniforms["shininess"], graph->shininess);
+            glUniform3fv(_prog_color_uniforms["specular"], 1, &graph->specular[0]);
         }
 
         check_error("pre draw");
@@ -502,19 +502,19 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
         graph->draw();
 
         // switch to line shader
-        glUseProgram(prog_line);
+        glUseProgram(_prog_line);
 
-        glUniformMatrix4fv(prog_line_uniforms["perspective"], 1, GL_FALSE, &perspective_mat[0][0]);
-        glUniformMatrix4fv(prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+        glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective_mat[0][0]);
+        glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
 
         // material properties
-        glUniform4fv(prog_line_uniforms["color"], 1, &graph->grid_color[0]);
+        glUniform4fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
 
         graph->draw_grid();
 
         if(false)
         {
-            glUniform4fv(prog_line_uniforms["color"], 1, &graph->normal_color[0]);
+            glUniform4fv(_prog_line_uniforms["color"], 1, &graph->normal_color[0]);
 
             graph->draw_normals();
 
@@ -527,21 +527,21 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
         // draw cursor
         if(graphs[active_graph]->cursor_defined())
         {
-            glUseProgram(prog_tex);
+            glUseProgram(_prog_tex);
 
-            view_model = glm::translate(cam.view_mat(), graphs[active_graph]->cursor_pos()) * glm::scale(glm::mat4(), glm::vec3(0.25f));
-            view_model_perspective = perspective_mat * view_model;
+            view_model = glm::translate(_cam.view_mat(), graphs[active_graph]->cursor_pos()) * glm::scale(glm::mat4(), glm::vec3(0.25f));
+            view_model_perspective = _perspective_mat * view_model;
             normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
-            glUniformMatrix4fv(prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-            glUniformMatrix4fv(prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-            glUniformMatrix3fv(prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+            glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+            glUniformMatrix4fv(_prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+            glUniformMatrix3fv(_prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
 
             // material properties
-            glUniform1f(prog_tex_uniforms["shininess"], cursor.shininess);
-            glUniform3fv(prog_tex_uniforms["specular"], 1, &cursor.specular[0]);
+            glUniform1f(_prog_tex_uniforms["shininess"], _cursor.shininess);
+            glUniform3fv(_prog_tex_uniforms["specular"], 1, &_cursor.specular[0]);
 
-            cursor.draw();
+            _cursor.draw();
         }
     }
 
@@ -578,7 +578,7 @@ bool Graph_disp::input()
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
             {
                 key_lock[sf::Keyboard::R] = true;
-                cam.set();
+                _cam.set();
                 invalidate();
             }
             else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
@@ -598,37 +598,37 @@ bool Graph_disp::input()
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
             {
-                cam.translate(scale * glm::normalize(glm::vec3(cam.forward().x, cam.forward().y, 0.0f)));
+                _cam.translate(scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
                 invalidate();
             }
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
             {
-                cam.translate(-scale * glm::normalize(glm::vec3(cam.forward().x, cam.forward().y, 0.0f)));
+                _cam.translate(-scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
                 invalidate();
             }
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
             {
-                cam.translate(-scale * cam.right());
+                _cam.translate(-scale * _cam.right());
                 invalidate();
             }
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
             {
-                cam.translate(scale * cam.right());
+                _cam.translate(scale * _cam.right());
                 invalidate();
             }
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
             {
-                cam.translate(scale * glm::vec3(0.0f, 0.0f, 1.0f));
+                _cam.translate(scale * glm::vec3(0.0f, 0.0f, 1.0f));
                 invalidate();
             }
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::E))
             {
-                cam.translate(-scale * glm::vec3(0.0f, 0.0f, 1.0f));
+                _cam.translate(-scale * glm::vec3(0.0f, 0.0f, 1.0f));
                 invalidate();
             }
 
@@ -637,8 +637,8 @@ bool Graph_disp::input()
                 int d_x = new_mouse_pos.x - old_mouse_pos.x;
                 int d_y = new_mouse_pos.y - old_mouse_pos.y;
 
-                cam.rotate(0.01f * d_y, cam.right());
-                cam.rotate(0.01f * d_x, glm::vec3(0.0f, 0.0f, 1.0f));
+                _cam.rotate(0.01f * d_y, _cam.right());
+                _cam.rotate(0.01f * d_x, glm::vec3(0.0f, 0.0f, 1.0f));
 
                 invalidate();
             }

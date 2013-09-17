@@ -44,11 +44,11 @@ public:
     void add_graphs(); // TODO: delete me
 
 private:
-    Graph_disp gl_window;
-    Gtk::Grid main_grid;
+    Graph_disp _gl_window;
+    Gtk::Grid _main_grid;
 
-    std::vector<std::unique_ptr<Gtk::Label>> cursor_texts;
-    std::vector<std::unique_ptr<Gtk::ColorButton>> color_buts;
+    std::vector<std::unique_ptr<Gtk::Label>> _cursor_texts;
+    std::vector<std::unique_ptr<Gtk::ColorButton>> _color_buts;
 };
 
 #endif // __GRAPH_WINDOW_H__

@@ -94,7 +94,6 @@ public:
     void realize();
     void resize(Gtk::Allocation & allocation);
     bool draw(const Cairo::RefPtr<Cairo::Context> & cr);
-
     bool input();
 
     std::vector<std::unique_ptr<Graph>> graphs;
@@ -103,24 +102,24 @@ public:
     std::vector<GLuint> textures;
 
 private:
-    GLuint prog_tex;
-    GLuint prog_color;
-    GLuint prog_line;
-    std::unordered_map<std::string, GLuint> prog_tex_uniforms;
-    std::unordered_map<std::string, GLuint> prog_color_uniforms;
-    std::unordered_map<std::string, GLuint> prog_line_uniforms;
+    GLuint _prog_tex;
+    GLuint _prog_color;
+    GLuint _prog_line;
+    std::unordered_map<std::string, GLuint> _prog_tex_uniforms;
+    std::unordered_map<std::string, GLuint> _prog_color_uniforms;
+    std::unordered_map<std::string, GLuint> _prog_line_uniforms;
 
-    Cursor cursor;
-    Camera cam;
-    glm::mat4 perspective_mat;
-    Light light;
-    glm::vec3 ambient_light;
+    Cursor _cursor;
+    Camera _cam;
+    glm::mat4 _perspective_mat;
+    Light _light;
+    glm::vec3 _ambient_light;
 
     // make non-copyable
     Graph_disp(const Graph_disp &) = delete;
     Graph_disp(const Graph_disp &&) = delete;
-    Graph_disp & operator=(const Graph_disp &) = delete;
-    Graph_disp & operator=(const Graph_disp &&) = delete;
+    Graph_disp & operator =(const Graph_disp &) = delete;
+    Graph_disp & operator =(const Graph_disp &&) = delete;
 };
 
 #endif // __GRAPH_DISP_H__
