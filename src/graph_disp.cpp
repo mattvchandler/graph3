@@ -270,11 +270,13 @@ void Cursor::build()
 }
 
 Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_reqest, const sf::ContextSettings & context_settings):
-    SFMLWidget(mode, size_reqest), active_graph(0),
+    SFMLWidget(mode, size_reqest),
     _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
     _perspective_mat(1.0f),
     _light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.8f, 1.0f, 0.5f, 0.0f}),
-    _ambient_light(0.4f, 0.4f, 0.4f)
+    _ambient_light(0.4f, 0.4f, 0.4f),
+    _active_graph(nullptr)
+
 {
     signal_realize().connect(sigc::mem_fun(*this, &Graph_disp::realize));
     signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
@@ -469,7 +471,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
     glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
 
-    for(auto &graph: graphs)
+    for(auto &graph: _graphs)
     {
         if(graph->tex != 0)
         {
@@ -522,27 +524,24 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
         }
     }
 
-    if(active_graph < graphs.size())
+    // draw cursor
+    if(_active_graph && _active_graph->cursor_defined())
     {
-        // draw cursor
-        if(graphs[active_graph]->cursor_defined())
-        {
-            glUseProgram(_prog_tex);
+        glUseProgram(_prog_tex);
 
-            view_model = glm::translate(_cam.view_mat(), graphs[active_graph]->cursor_pos()) * glm::scale(glm::mat4(), glm::vec3(0.25f));
-            view_model_perspective = _perspective_mat * view_model;
-            normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
+        view_model = glm::translate(_cam.view_mat(), _active_graph->cursor_pos()) * glm::scale(glm::mat4(), glm::vec3(0.25f));
+        view_model_perspective = _perspective_mat * view_model;
+        normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
-            glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-            glUniformMatrix4fv(_prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-            glUniformMatrix3fv(_prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+        glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+        glUniformMatrix4fv(_prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+        glUniformMatrix3fv(_prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
 
-            // material properties
-            glUniform1f(_prog_tex_uniforms["shininess"], _cursor.shininess);
-            glUniform3fv(_prog_tex_uniforms["specular"], 1, &_cursor.specular[0]);
+        // material properties
+        glUniform1f(_prog_tex_uniforms["shininess"], _cursor.shininess);
+        glUniform3fv(_prog_tex_uniforms["specular"], 1, &_cursor.specular[0]);
 
-            _cursor.draw();
-        }
+        _cursor.draw();
     }
 
     check_error("post draw");
@@ -643,62 +642,84 @@ bool Graph_disp::input()
                 invalidate();
             }
 
-            if(active_graph < graphs.size())
+            if(_active_graph)
             {
                 // Cursor controls
                 int cursor_timeout = 200;
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
                 {
-                    graphs[active_graph]->move_cursor(Graph::UP);
+                    _active_graph->move_cursor(Graph::UP);
                     cursor_delay.restart();
                     invalidate();
                 }
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
                 {
-                    graphs[active_graph]->move_cursor(Graph::DOWN);
+                    _active_graph->move_cursor(Graph::DOWN);
                     cursor_delay.restart();
                     invalidate();
                 }
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
                 {
-                    graphs[active_graph]->move_cursor(Graph::LEFT);
+                    _active_graph->move_cursor(Graph::LEFT);
                     cursor_delay.restart();
                     invalidate();
                 }
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
                 {
-                    graphs[active_graph]->move_cursor(Graph::RIGHT);
+                    _active_graph->move_cursor(Graph::RIGHT);
                     cursor_delay.restart();
                     invalidate();
                 }
 
                 // change active graph w/ page up/down
-                if(graphs.size() > 1)
-                {
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::PageUp) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
-                    {
-                        if(++active_graph == graphs.size())
-                            active_graph = 0;
+                // if(graphs.size() > 1)
+                // {
+                //     if(sf::Keyboard::isKeyPressed(sf::Keyboard::PageUp) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
+                //     {
+                //         if(++active_graph == graphs.size())
+                //             active_graph = 0;
 
-                        cursor_delay.restart();
-                        invalidate();
-                    }
+                //         cursor_delay.restart();
+                //         invalidate();
+                //     }
 
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
-                    {
-                        if(active_graph-- == 0)
-                            active_graph = graphs.size() - 1;
+                //     if(sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
+                //     {
+                //         if(active_graph-- == 0)
+                //             active_graph = graphs.size() - 1;
 
-                        cursor_delay.restart();
-                        invalidate();
-                    }
-                }
+                //         cursor_delay.restart();
+                //         invalidate();
+                //     }
+                // }
             }
         }
         old_mouse_pos = new_mouse_pos;
     }
     return true;
+}
+
+// set and get the active graph (the one w/ the cursor on it)
+void Graph_disp::set_active_graph(Graph * graph)
+{
+    _active_graph = graph;
+}
+
+Graph * Graph_disp::get_active_graph() const
+{
+    return _active_graph;
+}
+
+// give and take graphs from the display
+void Graph_disp::add_graph(const Graph * graph)
+{
+    _graphs.insert(graph);
+}
+
+void Graph_disp::remove_graph(const Graph * graph)
+{
+    _graphs.erase(graph);
 }

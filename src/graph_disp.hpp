@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <set>
 #include <vector>
 
 #include <GL/glew.h>
@@ -96,9 +97,14 @@ public:
     bool draw(const Cairo::RefPtr<Cairo::Context> & cr);
     bool input();
 
-    std::vector<std::unique_ptr<Graph>> graphs;
+    // set and get the active graph (the one w/ the cursor on it)
+    void set_active_graph(Graph * graph);
+    Graph * get_active_graph() const;
 
-    size_t active_graph;
+    // give and take graphs from the display
+    void add_graph(const Graph * graph);
+    void remove_graph(const Graph * graph);
+
     std::vector<GLuint> textures;
 
 private:
@@ -114,6 +120,10 @@ private:
     glm::mat4 _perspective_mat;
     Light _light;
     glm::vec3 _ambient_light;
+
+    // non-owned storage for graphs
+    Graph * _active_graph;
+    std::set<const Graph *> _graphs;
 
     // make non-copyable
     Graph_disp(const Graph_disp &) = delete;

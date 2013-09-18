@@ -29,6 +29,67 @@
 #include "graph_spherical.hpp"
 #include "graph_parametric.hpp"
 
+Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nullptr), _apply_butt(Gtk::Stock::APPLY)
+{
+    attach(_color_butt, 0, 0, 1, 1);
+    attach(_apply_butt, 0, 1, 1, 1);
+
+    _apply_butt.signal_pressed().connect(sigc::mem_fun(*this, &Graph_page::apply));
+    _color_butt.signal_color_set().connect(sigc::mem_fun(*this, &Graph_page::change_color));
+
+    Gdk::RGBA start_rgba;
+    start_rgba.set_rgba(0.2, 0.5, 0.2, 1.0);
+    _color_butt.set_rgba(start_rgba);
+
+    show_all_children();
+}
+
+void Graph_page::apply()
+{
+    _gl_window->remove_graph(_graph.get());
+
+    _graph = std::unique_ptr<Graph>(new Graph_parametric(
+        "-2/15 * cos(u) * (3 * cos(v) - 30 * sin(u) + 90*cos(u)^4 * sin(u) - 60 * cos(u)^6 * sin(u) + 5 * cos(u) * cos(v) * sin(u)),"
+        "-1/15 * sin(u) * (3 * cos(v) - 3 * cos(u)^2 * cos(v) - 48 * cos(u)^4 * cos(v) + 48 * cos(u)^6 * cos(v) - 60 * sin(u) + 5 * cos(u) * cos(v) * sin(u) -5 * cos(u)^3 * cos(v) * sin(u) - 80 * cos(u)^5 * cos(v) * sin(u) + 80 * cos(u)^7 * cos(v) * sin(u)),"
+        "2/15 * (3 + 5 * cos(u) * sin(u)) * sin(v)",
+        0.0f, M_PI, 50, 0.0f, 2.0f * M_PI, 50)); // klein bottle
+
+    change_color();
+    update_cursor(_graph->cursor_text());
+
+    _gl_window->add_graph(_graph.get());
+    _gl_window->set_active_graph(_graph.get());
+
+    _graph->signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_page::update_cursor));
+    // _signal_graph_regen.emit(_graph.get());
+}
+
+void Graph_page::change_color()
+{
+    if(_graph)
+    {
+        _graph->color.r = _color_butt.get_rgba().get_red();
+        _graph->color.g = _color_butt.get_rgba().get_green();
+        _graph->color.b = _color_butt.get_rgba().get_blue();
+        _graph->color.a = 1.0f;
+    }
+}
+
+void Graph_page::update_cursor(const std::string & text)
+{
+    _signal_cursor_moved.emit(text);
+}
+
+// sigc::signal<void, Graph *> Graph_page::signal_graph_regen()
+// {
+//     return _signal_graph_regen;
+// }
+
+sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved()
+{
+    return _signal_cursor_moved;
+}
+
 Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::ContextSettings(0, 0, 4, 4, 0)) // these do nothing yet - future SFML version should enable them
 {
     set_title("Graph 3");
@@ -39,67 +100,37 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
     add(_main_grid);
     _main_grid.set_column_spacing(5);
 
-    _main_grid.attach(_gl_window, 0, 0, 1, 9);
-    show_all_children();
+    _main_grid.attach(_gl_window, 0, 0, 1, 1);
+    _main_grid.attach(_notebook, 1, 0, 1, 1);
+    _main_grid.attach(_cursor_text, 0, 1, 1, 1);
 
-    _gl_window.signal_realize().connect(sigc::mem_fun(*this, &Graph_window::add_graphs)); // TODO: delete me!
+
+    _pages.push_back(std::unique_ptr<Graph_page>(new Graph_page(&_gl_window)));
+    _notebook.append_page(*_pages[0]);
+
+    _pages[0]->signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_window::update_cursor));
+
+    _gl_window.invalidate();
+    show_all_children();
 }
 
-void Graph_window::add_graphs() // TODO: delete me
+void Graph_window::update_cursor(const std::string & text)
 {
-    _color_buts.push_back(std::unique_ptr<Gtk::ColorButton>(new Gtk::ColorButton));
-    _cursor_texts.push_back(std::unique_ptr<Gtk::Label>(new Gtk::Label));
-    _color_buts[0]->signal_color_set().connect(sigc::bind<size_t>(sigc::mem_fun(*this, &Graph_window::change_graph_color), 0));
-
-    // _color_buts.push_back(std::unique_ptr<Gtk::ColorButton>(new Gtk::ColorButton));
-    // _cursor_texts.push_back(std::unique_ptr<Gtk::Label>(new Gtk::Label));
-    // _color_buts[1]->signal_color_set().connect(sigc::bind<size_t>(sigc::mem_fun(*this, &Graph_window::change_graph_color), 1));
+    _cursor_text.set_text(text);
+}
 
     // TODO error handling
-    _gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("(1 + v / 2 * cos(u / 2)) * cos(u),(1 + v / 2 * cos(u / 2)) * sin(u),v / 2 * sin(u / 2)", 0.0f, 2.0f * M_PI, 50, -1.0f, 1.0f, 50))); // möbius strip
-    // _gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("(2 + .5 * cos(v)) * cos(u),(2 + .5 * cos(v)) * sin(u),.5 * sin(v)", 0.0f, 2.0f * M_PI, 50, 0.0f, 2.0f * M_PI, 50))); // torus
-    // _gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_spherical("1", 0.0f, 2.0f * M_PI, 50, 0.0f, M_PI, 50)));
-    // _gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cylindrical("sqrt(r)", 0.0f, 10.0f, 50, 0.0f, 2.0f * M_PI, 50)));
-    // _gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cylindrical("-sqrt(r)", 0.0f, 10.0f, 50, 0.0f, 2.0f * M_PI, 50)));
-    // _gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cartesian("sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)));
-    // _gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cartesian("-sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)));
-
-    _gl_window.graphs[0]->signal_cursor_moved().connect(sigc::bind<size_t>(sigc::mem_fun(*this, &Graph_window::update_cursor_text), 0));
-    // _gl_window.graphs[1]->signal_cursor_moved().connect(sigc::bind<size_t>(sigc::mem_fun(*this, &Graph_window::update_cursor_text), 1));
-
-    _main_grid.attach(*_cursor_texts[0], 0, 9, 1, 1);
-    _main_grid.attach(*_color_buts[0], 1, 0, 1, 1);
-    // _main_grid.attach(*_cursor_texts[1], 0, 10, 1, 1);
-    // _main_grid.attach(*_color_buts[1], 1, 1, 1, 1);
-    show_all_children();
-
-    Gdk::RGBA start_rgba;
-    start_rgba.set_rgba(0.2, 0.5, 0.2, 1.0);
-    _color_buts[0]->set_rgba(start_rgba);
-    _color_buts[0]->set_title("Graph 1 Color");
-    // _color_buts[1]->set_rgba(start_rgba);
-    // _color_buts[1]->set_title("Graph 2 Color");
-
-    _gl_window.graphs[0]->tex = _gl_window.textures[0];
-
-    change_graph_color(0);
-    update_cursor_text(0);
-    // change_graph_color(1);
-    // update_cursor_text(1);
-
-    _gl_window.invalidate();
-}
-void Graph_window::update_cursor_text(size_t i)
-{
-    _cursor_texts[i]->set_label(_gl_window.graphs[i]->cursor_text());
-}
-
-void Graph_window::change_graph_color(size_t i)
-{
-    _gl_window.graphs[i]->color.r = _color_buts[i]->get_rgba().get_red();
-    _gl_window.graphs[i]->color.g = _color_buts[i]->get_rgba().get_green();
-    _gl_window.graphs[i]->color.b = _color_buts[i]->get_rgba().get_blue();
-    _gl_window.graphs[i]->color.a = 1.0f;
-    _gl_window.invalidate();
-}
-
+    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("sin(v) * cos(u),sin(v) * sin(u),cos(v)", 0.0f, 2.0f * M_PI, 50, 0.0f, M_PI, 50))); // sphere
+    // gl_window.graphs.push_back(std::unique_ptr<G:raph>(new Graph_parametric(
+    //     "-2/15 * cos(u) * (3 * cos(v) - 30 * sin(u) + 90*cos(u)^4 * sin(u) - 60 * cos(u)^6 * sin(u) + 5 * cos(u) * cos(v) * sin(u)),"
+    //     "-1/15 * sin(u) * (3 * cos(v) - 3 * cos(u)^2 * cos(v) - 48 * cos(u)^4 * cos(v) + 48 * cos(u)^6 * cos(v) - 60 * sin(u) + 5 * cos(u) * cos(v) * sin(u) -5 * cos(u)^3 * cos(v) * sin(u) - 80 * cos(u)^5 * cos(v) * sin(u) + 80 * cos(u)^7 * cos(v) * sin(u)),"
+    //     "2/15 * (3 + 5 * cos(u) * sin(u)) * sin(v)",
+    //     0.0f, M_PI, 50, 0.0f, 2.0f * M_PI, 50))); // klein bottle
+    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("(2 + cos(u/2) * cos(v) - sin(u/2) * sin(2*v)) * cos(u),(2 + cos(u/2) * cos(v) - sin(u/2) * sin(2*v)) * sin(u),sin(u/2) * cos(v) + cos(u/2) * sin(2*v)", 0.0f, 2.0f * M_PI, 50, 0.0f, 2.0f * M_PI, 50))); // klein bagel
+    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("(1 + v / 2 * cos(u / 2)) * cos(u),(1 + v / 2 * cos(u / 2)) * sin(u),v / 2 * sin(u / 2)", 0.0f, 2.0f * M_PI, 50, -1.0f, 1.0f, 50))); // möbius strip
+    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("(2 + .5 * cos(v)) * cos(u),(2 + .5 * cos(v)) * sin(u),.5 * sin(v)", 0.0f, 2.0f * M_PI, 50, 0.0f, 2.0f * M_PI, 50))); // torus
+    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_spherical("1", 0.0f, 2.0f * M_PI, 50, 0.0f, M_PI, 50)));
+    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cylindrical("sqrt(r)", 0.0f, 10.0f, 50, 0.0f, 2.0f * M_PI, 50)));
+    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cylindrical("-sqrt(r)", 0.0f, 10.0f, 50, 0.0f, 2.0f * M_PI, 50)));
+    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cartesian("sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)));
+    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cartesian("-sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)));

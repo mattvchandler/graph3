@@ -236,7 +236,7 @@ void Graph_parametric::build_graph()
     _cursor_defined = (std::fpclassify(_cursor_pos.x) == FP_NORMAL || std::fpclassify(_cursor_pos.x) == FP_ZERO) &&
         (std::fpclassify(_cursor_pos.y) == FP_NORMAL || std::fpclassify(_cursor_pos.y) == FP_ZERO) &&
         (std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO);
-    _signal_cursor_moved.emit();
+    _signal_cursor_moved.emit(cursor_text());
 }
 
 void Graph_parametric::move_cursor(const Cursor_dir dir)
@@ -272,7 +272,7 @@ void Graph_parametric::move_cursor(const Cursor_dir dir)
         (std::fpclassify(_cursor_pos.y) == FP_NORMAL || std::fpclassify(_cursor_pos.y) == FP_ZERO) &&
         (std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO);
 
-    _signal_cursor_moved.emit();
+    _signal_cursor_moved.emit(cursor_text());
 }
 
 glm::vec3 Graph_parametric::cursor_pos() const

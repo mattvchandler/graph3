@@ -190,7 +190,7 @@ void Graph_cartesian::build_graph()
     _cursor_pos.y = (_y_max - _y_min) / 2.0 + _y_min;
     _cursor_pos.z = eval(_cursor_pos.x, _cursor_pos.y);
     _cursor_defined = std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO;
-    _signal_cursor_moved.emit();
+    _signal_cursor_moved.emit(cursor_text());
 }
 
 void Graph_cartesian::move_cursor(const Cursor_dir dir)
@@ -222,7 +222,7 @@ void Graph_cartesian::move_cursor(const Cursor_dir dir)
     }
     _cursor_pos.z = eval(_cursor_pos.x, _cursor_pos.y);
     _cursor_defined = std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO;
-    _signal_cursor_moved.emit();
+    _signal_cursor_moved.emit(cursor_text());
 }
 
 glm::vec3 Graph_cartesian::cursor_pos() const

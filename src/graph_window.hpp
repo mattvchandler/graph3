@@ -23,32 +23,71 @@
 #ifndef __GRAPH_WINDOW_H__
 #define __GRAPH_WINDOW_H__
 
+#include <memory>
 #include <vector>
 
+#include <gtkmm/button.h>
 #include <gtkmm/colorbutton.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
-#include <gtkmm/scale.h>
+#include <gtkmm/notebook.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/window.h>
 
+#include <sigc++/sigc++.h>
+
 #include "graph_disp.hpp"
+
+class Graph_page final: public Gtk::Grid
+{
+public:
+    Graph_page(Graph_disp * gl_window);
+
+    // void update_cursor(const std::string & text);
+    void apply();
+    void change_color();
+    void update_cursor(const std::string & text);
+
+    // sigc::signal<void, Graph *> signal_graph_regen();
+    sigc::signal<void, const std::string &> signal_cursor_moved();
+
+private:
+    Graph_disp * _gl_window;
+    std::unique_ptr<Graph> _graph;
+    Gtk::ColorButton _color_butt;
+    Gtk::Button _apply_butt;
+
+    // sigc::signal<void, Graph *> _signal_graph_regen;
+    sigc::signal<void, const std::string &> _signal_cursor_moved;
+
+    // make non-copyable
+    Graph_page(const Graph_page &) = delete;
+    Graph_page(const Graph_page &&) = delete;
+    Graph_page & operator =(const Graph_page &) = delete;
+    Graph_page & operator =(const Graph_page &&) = delete;
+};
+
+/* TODO:
+
+   when (re)generating a graph, emit a signal w/ graph * as parm
+   catch signal at window, call graph_disp.add
+
+   when tab changes, catch signal, pass to graph_disp::set_active
+*/
 
 class Graph_window final: public Gtk::Window
 {
 public:
     Graph_window();
 
-    void update_cursor_text(size_t i);
-    void change_graph_color(size_t i);
-    void add_graphs(); // TODO: delete me
+    void update_cursor(const std::string & text);
 
 private:
     Graph_disp _gl_window;
     Gtk::Grid _main_grid;
-
-    std::vector<std::unique_ptr<Gtk::Label>> _cursor_texts;
-    std::vector<std::unique_ptr<Gtk::ColorButton>> _color_buts;
+    Gtk::Notebook _notebook;
+    std::vector<std::unique_ptr<Graph_page>> _pages;
+    Gtk::Label _cursor_text;
 };
 
 #endif // __GRAPH_WINDOW_H__

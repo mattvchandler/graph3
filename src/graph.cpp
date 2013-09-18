@@ -188,7 +188,7 @@ void Graph::draw_normals() const
     glDrawArrays(GL_LINES, 0, _normal_num_indexes);
 }
 
-sigc::signal<void> Graph::signal_cursor_moved()
+sigc::signal<void, const std::string &> Graph::signal_cursor_moved()
 {
     return _signal_cursor_moved;
 }

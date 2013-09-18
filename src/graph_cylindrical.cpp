@@ -194,7 +194,7 @@ void Graph_cylindrical::build_graph()
     _cursor_pos.y = _cursor_r * sinf(_cursor_theta);
     _cursor_pos.z = eval(_cursor_r, _cursor_theta);
     _cursor_defined = std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO;
-    _signal_cursor_moved.emit();
+    _signal_cursor_moved.emit(cursor_text());
 }
 
 void Graph_cylindrical::move_cursor(const Cursor_dir dir)
@@ -229,7 +229,7 @@ void Graph_cylindrical::move_cursor(const Cursor_dir dir)
     _cursor_pos.y = _cursor_r * sinf(_cursor_theta);
     _cursor_pos.z = eval(_cursor_r, _cursor_theta);
     _cursor_defined = std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO;
-    _signal_cursor_moved.emit();
+    _signal_cursor_moved.emit(cursor_text());
 }
 
 glm::vec3 Graph_cylindrical::cursor_pos() const

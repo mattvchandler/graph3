@@ -76,7 +76,7 @@ public:
     virtual glm::vec3 cursor_pos() const = 0;
     virtual bool cursor_defined() const = 0;
     virtual std::string cursor_text() const = 0;
-    sigc::signal<void> signal_cursor_moved();
+    sigc::signal<void, const std::string &> signal_cursor_moved();
 
     // material properties
     GLuint tex;
@@ -110,7 +110,7 @@ protected:
     GLuint _normal_vbo;
     GLuint _normal_num_indexes;
 
-    sigc::signal<void> _signal_cursor_moved;
+    sigc::signal<void, const std::string &> _signal_cursor_moved;
 
 private:
     // make non-copyable
