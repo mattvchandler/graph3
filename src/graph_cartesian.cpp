@@ -238,6 +238,11 @@ bool Graph_cartesian::cursor_defined() const
 std::string Graph_cartesian::cursor_text() const
 {
     std::ostringstream str;
-    str<<"z(x: "<<_cursor_pos.x<<", y: "<<_cursor_pos.y<<") = "<<_cursor_pos.z;
+    std::string eqn = _eqn;
+
+    if(_eqn.size() > 20)
+        eqn = _eqn.substr(0, 19) + "…";
+
+    str<<"z(x, y) = "<<eqn<<"; z("<<_cursor_pos.x<<", "<<_cursor_pos.y<<") = "<<_cursor_pos.z;
     return str.str();
 }

@@ -245,6 +245,11 @@ bool Graph_cylindrical::cursor_defined() const
 std::string Graph_cylindrical::cursor_text() const
 {
     std::ostringstream str;
-    str<<"z(r: "<<_cursor_r<<", θ: "<<_cursor_theta<<") = "<<_cursor_pos.z;
+    std::string eqn = _eqn;
+
+    if(_eqn.size() > 20)
+        eqn = _eqn.substr(0, 19) + "…";
+
+    str<<u8"z(r, θ)  = "<<eqn<<"; z("<<_cursor_r<<", "<<_cursor_theta<<") = "<<_cursor_pos.z;
     return str.str();
 }

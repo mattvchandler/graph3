@@ -252,6 +252,11 @@ bool Graph_spherical::cursor_defined() const
 std::string Graph_spherical::cursor_text() const
 {
     std::ostringstream str;
-    str<<"r( θ: "<<_cursor_theta<<", ϕ: "<<_cursor_phi<<") = "<<_cursor_r;
+    std::string eqn = _eqn;
+
+    if(_eqn.size() > 20)
+        eqn = _eqn.substr(0, 19) + "…";
+
+    str<<u8"r(θ, ϕ) = "<<eqn<<"; r("<<_cursor_theta<<", "<<_cursor_phi<<") = "<<_cursor_r;
     return str.str();
 }

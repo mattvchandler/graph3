@@ -288,8 +288,12 @@ bool Graph_parametric::cursor_defined() const
 std::string Graph_parametric::cursor_text() const
 {
     std::ostringstream str;
-    str<<"x(u: "<<_cursor_u<<", v: "<<_cursor_v<<") = "<<_cursor_pos.x<<", ";
-    str<<"y(u: "<<_cursor_u<<", v: "<<_cursor_v<<") = "<<_cursor_pos.y<<", ";
-    str<<"z(u: "<<_cursor_u<<", v: "<<_cursor_v<<") = "<<_cursor_pos.z<<std::endl;
+    std::string eqn = _eqn;
+
+    if(_eqn.size() > 20)
+        eqn = _eqn.substr(0, 19) + "…";
+
+    str<<"(x, y, z)(u ,v) = "<<eqn<<" (x, y, z)("<<_cursor_u<<", "<<_cursor_v<<") = (";
+    str<<_cursor_pos.x<<", "<<_cursor_pos.y<<", "<<_cursor_pos.z<<")"<<std::endl;
     return str.str();
 }
