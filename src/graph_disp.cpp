@@ -721,5 +721,7 @@ void Graph_disp::add_graph(const Graph * graph)
 
 void Graph_disp::remove_graph(const Graph * graph)
 {
+    if(graph == _active_graph)
+        _active_graph = nullptr;
     _graphs.erase(graph);
 }

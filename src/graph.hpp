@@ -60,7 +60,7 @@ glm::vec3 get_normal (glm::vec3 center,
     glm::vec3 lf, bool lf_def,
     glm::vec3 ul, bool ul_def);
 
-class Graph
+class Graph: public sigc::trackable
 {
 public:
     explicit Graph(const std::string & eqn = "");

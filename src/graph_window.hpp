@@ -24,7 +24,7 @@
 #define __GRAPH_WINDOW_H__
 
 #include <memory>
-#include <vector>
+#include <list>
 
 #include <gtkmm/button.h>
 #include <gtkmm/colorbutton.h>
@@ -42,11 +42,14 @@ class Graph_page final: public Gtk::Grid
 {
 public:
     Graph_page(Graph_disp * gl_window);
+    ~Graph_page();
+
 
     // void update_cursor(const std::string & text);
     void apply();
     void change_color();
     void update_cursor(const std::string & text);
+    void set_active();
 
     // sigc::signal<void, Graph *> signal_graph_regen();
     sigc::signal<void, const std::string &> signal_cursor_moved();
@@ -67,27 +70,40 @@ private:
     Graph_page & operator =(const Graph_page &&) = delete;
 };
 
-/* TODO:
 
-   when (re)generating a graph, emit a signal w/ graph * as parm
-   catch signal at window, call graph_disp.add
+class Tab_label final: public Gtk::Grid
+{
+public:
+    Tab_label();
+    sigc::signal<void> signal_close_tab();
+private:
+    void on_button_press();
 
-   when tab changes, catch signal, pass to graph_disp::set_active
-*/
+    Gtk::Label _tab_text;
+    Gtk::Button _close_butt;
+    Gtk::Image _close_img;
+    sigc::signal<void> _signal_close_tab;
+};
 
 class Graph_window final: public Gtk::Window
 {
 public:
     Graph_window();
 
+    void tab_new();
+    void tab_close(Graph_page * page);
+    void tab_change(Widget * page, guint page_no);
     void update_cursor(const std::string & text);
 
 private:
     Graph_disp _gl_window;
     Gtk::Grid _main_grid;
     Gtk::Notebook _notebook;
-    std::vector<std::unique_ptr<Graph_page>> _pages;
+    std::list<std::unique_ptr<Graph_page>> _pages;
     Gtk::Label _cursor_text;
+    Gtk::Button _add_tab_butt;
+
+    sigc::connection _cursor_conn;
 };
 
 #endif // __GRAPH_WINDOW_H__
