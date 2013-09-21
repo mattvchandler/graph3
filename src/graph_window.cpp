@@ -20,7 +20,6 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// TODO: axes
 #include "graph_window.hpp"
 
 #include "graph.hpp"
@@ -31,9 +30,19 @@
 
 Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nullptr), _apply_butt(Gtk::Stock::APPLY)
 {
-    attach(_color_butt, 0, 0, 1, 1);
-    attach(_apply_butt, 1, 0, 1, 1);
+    attach(_eqn, 0, 0, 2, 1);
+    attach(_row_min, 0, 1, 1, 1);
+    attach(_row_max, 1, 1, 1, 1);
+    attach(_col_min, 0, 2, 1, 1);
+    attach(_col_max, 1, 2, 1, 1);
+    attach(_color_butt, 0, 3, 1, 1);
+    attach(_apply_butt, 1, 3, 1, 1);
 
+    _eqn.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
+    _row_min.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
+    _row_min.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
+    _col_max.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
+    _col_max.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _color_butt.signal_color_set().connect(sigc::mem_fun(*this, &Graph_page::change_color));
 
@@ -56,11 +65,19 @@ void Graph_page::apply()
     _gl_window->remove_graph(_graph.get());
     _graph.reset();
 
-    _graph = std::unique_ptr<Graph>(new Graph_parametric(
-        "-2/15 * cos(u) * (3 * cos(v) - 30 * sin(u) + 90*cos(u)^4 * sin(u) - 60 * cos(u)^6 * sin(u) + 5 * cos(u) * cos(v) * sin(u)),"
-        "-1/15 * sin(u) * (3 * cos(v) - 3 * cos(u)^2 * cos(v) - 48 * cos(u)^4 * cos(v) + 48 * cos(u)^6 * cos(v) - 60 * sin(u) + 5 * cos(u) * cos(v) * sin(u) -5 * cos(u)^3 * cos(v) * sin(u) - 80 * cos(u)^5 * cos(v) * sin(u) + 80 * cos(u)^7 * cos(v) * sin(u)),"
-        "2/15 * (3 + 5 * cos(u) * sin(u)) * sin(v)",
-        "0.0", "pi", 50, "0.0", "2.0 * pi", 50)); // klein bottle
+    if(_eqn.get_text_length() == 0 ||
+        _row_min.get_text_length() == 0 || _row_max.get_text_length() == 0 ||
+        _col_min.get_text_length() == 0 || _col_max.get_text_length() == 0)
+    {
+        update_cursor("");
+        _gl_window->invalidate();
+        _gl_window->set_active_graph(nullptr);
+        return;
+    }
+
+    _graph = std::unique_ptr<Graph>(new Graph_parametric(_eqn.get_text(),
+        _row_max.get_text(), _row_min.get_text(), 50,
+        _col_max.get_text(), _col_min.get_text(), 50));
 
     change_color();
     update_cursor(_graph->cursor_text());

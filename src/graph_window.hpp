@@ -28,6 +28,7 @@
 
 #include <gtkmm/button.h>
 #include <gtkmm/colorbutton.h>
+#include <gtkmm/entry.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
@@ -45,7 +46,6 @@ public:
     ~Graph_page();
 
 
-    // void update_cursor(const std::string & text);
     void apply();
     void change_color();
     void update_cursor(const std::string & text);
@@ -57,6 +57,10 @@ public:
 private:
     Graph_disp * _gl_window;
     std::unique_ptr<Graph> _graph;
+
+    Gtk::Entry _eqn;
+    Gtk::Entry _row_min, _row_max;
+    Gtk::Entry _col_min, _col_max;
     Gtk::ColorButton _color_butt;
     Gtk::Button _apply_butt;
 
