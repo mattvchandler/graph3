@@ -28,23 +28,37 @@
 #include "graph_spherical.hpp"
 #include "graph_parametric.hpp"
 
-Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nullptr), _apply_butt(Gtk::Stock::APPLY)
+Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nullptr),
+    _r_car("Cartesian"),
+    _r_cyl("Cylindrical"),
+    _r_sph("Spherical"),
+    _r_par("Parametric"),
+    _apply_butt(Gtk::Stock::APPLY)
 {
-    attach(_eqn, 0, 0, 2, 1);
-    attach(_row_min, 0, 1, 1, 1);
-    attach(_row_max, 1, 1, 1, 1);
-    attach(_col_min, 0, 2, 1, 1);
-    attach(_col_max, 1, 2, 1, 1);
-    attach(_color_butt, 0, 3, 1, 1);
-    attach(_apply_butt, 1, 3, 1, 1);
+    attach(_r_car, 0, 1, 1, 1);
+    attach(_r_cyl, 1, 1, 1, 1);
+    attach(_r_sph, 0, 2, 1, 1);
+    attach(_r_par, 1, 2, 1, 1);
+    attach(_eqn, 0, 3, 2, 1);
+    attach(_row_min, 0, 4, 1, 1);
+    attach(_row_max, 1, 4, 1, 1);
+    attach(_col_min, 0, 5, 1, 1);
+    attach(_col_max, 1, 5, 1, 1);
+    attach(_color_butt, 0, 6, 1, 1);
+    attach(_apply_butt, 1, 6, 1, 1);
 
     _eqn.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _row_min.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
-    _row_min.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
-    _col_max.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
+    _row_max.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
+    _col_min.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _col_max.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _color_butt.signal_color_set().connect(sigc::mem_fun(*this, &Graph_page::change_color));
+
+    Gtk::RadioButton::Group radio_g = _r_car.get_group();
+    _r_cyl.set_group(radio_g);
+    _r_sph.set_group(radio_g);
+    _r_par.set_group(radio_g);
 
     Gdk::RGBA start_rgba;
     start_rgba.set_rgba(0.2, 0.5, 0.2, 1.0);
@@ -75,9 +89,30 @@ void Graph_page::apply()
         return;
     }
 
-    _graph = std::unique_ptr<Graph>(new Graph_parametric(_eqn.get_text(),
-        _row_max.get_text(), _row_min.get_text(), 50,
-        _col_max.get_text(), _col_min.get_text(), 50));
+    if(_r_car.get_active())
+    {
+        _graph = std::unique_ptr<Graph>(new Graph_cartesian(_eqn.get_text(),
+            _row_max.get_text(), _row_min.get_text(), 50,
+            _col_max.get_text(), _col_min.get_text(), 50));
+    }
+    else if(_r_cyl.get_active())
+    {
+        _graph = std::unique_ptr<Graph>(new Graph_cylindrical(_eqn.get_text(),
+            _row_max.get_text(), _row_min.get_text(), 50,
+            _col_max.get_text(), _col_min.get_text(), 50));
+    }
+    else if(_r_sph.get_active())
+    {
+        _graph = std::unique_ptr<Graph>(new Graph_spherical(_eqn.get_text(),
+            _row_max.get_text(), _row_min.get_text(), 50,
+            _col_max.get_text(), _col_min.get_text(), 50));
+    }
+    else if(_r_par.get_active())
+    {
+        _graph = std::unique_ptr<Graph>(new Graph_parametric(_eqn.get_text(),
+            _row_max.get_text(), _row_min.get_text(), 50,
+            _col_max.get_text(), _col_min.get_text(), 50));
+    }
 
     change_color();
     update_cursor(_graph->cursor_text());

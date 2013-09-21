@@ -32,6 +32,7 @@
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
+#include <gtkmm/radiobutton.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/window.h>
 
@@ -58,6 +59,7 @@ private:
     Graph_disp * _gl_window;
     std::unique_ptr<Graph> _graph;
 
+    Gtk::RadioButton _r_car, _r_cyl, _r_sph, _r_par;
     Gtk::Entry _eqn;
     Gtk::Entry _row_min, _row_max;
     Gtk::Entry _col_min, _col_max;
