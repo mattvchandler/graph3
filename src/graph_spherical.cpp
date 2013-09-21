@@ -24,12 +24,22 @@
 #include "graph_spherical.hpp"
 
 Graph_spherical::Graph_spherical(const std::string & eqn,
-    float theta_min, float theta_max, int theta_res,
-    float phi_min, float phi_max, int phi_res): Graph(eqn),
-    _theta_min(theta_min), _theta_max(theta_max), _theta_res(theta_res),
-    _phi_min(phi_min), _phi_max(phi_max), _phi_res(phi_res)
+    const std::string & theta_min, const std::string & theta_max, int theta_res,
+    const std::string & phi_min, const std::string & phi_max, int phi_res):
+    Graph(eqn), _theta(0.0), _phi(0.0), _theta_res(theta_res), _phi_res(phi_res)
 
 {
+    // TODO: error checks
+    _p.SetExpr(theta_min);
+    _theta_min = _p.Eval();
+    _p.SetExpr(theta_max);
+    _theta_max = _p.Eval();
+
+    _p.SetExpr(phi_min);
+    _phi_min = _p.Eval();
+    _p.SetExpr(phi_max);
+    _phi_max = _p.Eval();
+
     _p.DefineVar("theta", &_theta);
     _p.DefineVar("phi", &_phi);
     _p.SetExpr(eqn);

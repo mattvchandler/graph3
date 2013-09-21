@@ -22,11 +22,22 @@
 
 #include "graph_cartesian.hpp"
 
-Graph_cartesian::Graph_cartesian(const std::string & eqn, float x_min, float x_max, int x_res,
-    float y_min, float y_max, int y_res): Graph(eqn),
-    _x_min(x_min), _x_max(x_max), _x_res(x_res), _y_min(y_min), _y_max(y_max), _y_res(y_res)
-
+Graph_cartesian::Graph_cartesian(const std::string & eqn,
+    const std::string & x_min, const std::string & x_max, int x_res,
+    const std::string & y_min, const std::string & y_max, int y_res):
+    Graph(eqn), _x(0.0), _y(0.0), _x_res(x_res), _y_res(y_res)
 {
+    // TODO: error checks
+    _p.SetExpr(x_min);
+    _x_min = _p.Eval();
+    _p.SetExpr(x_max);
+    _x_max = _p.Eval();
+
+    _p.SetExpr(y_min);
+    _y_min = _p.Eval();
+    _p.SetExpr(y_max);
+    _y_max = _p.Eval();
+
     _p.DefineVar("x", &_x);
     _p.DefineVar("y", &_y);
     _p.SetExpr(eqn);

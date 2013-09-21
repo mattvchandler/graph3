@@ -50,15 +50,17 @@ Graph_page::~Graph_page()
     _gl_window->invalidate();
 }
 
+// TODO: error handling
 void Graph_page::apply()
 {
     _gl_window->remove_graph(_graph.get());
+    _graph.reset();
 
     _graph = std::unique_ptr<Graph>(new Graph_parametric(
         "-2/15 * cos(u) * (3 * cos(v) - 30 * sin(u) + 90*cos(u)^4 * sin(u) - 60 * cos(u)^6 * sin(u) + 5 * cos(u) * cos(v) * sin(u)),"
         "-1/15 * sin(u) * (3 * cos(v) - 3 * cos(u)^2 * cos(v) - 48 * cos(u)^4 * cos(v) + 48 * cos(u)^6 * cos(v) - 60 * sin(u) + 5 * cos(u) * cos(v) * sin(u) -5 * cos(u)^3 * cos(v) * sin(u) - 80 * cos(u)^5 * cos(v) * sin(u) + 80 * cos(u)^7 * cos(v) * sin(u)),"
         "2/15 * (3 + 5 * cos(u) * sin(u)) * sin(v)",
-        0.0f, M_PI, 50, 0.0f, 2.0f * M_PI, 50)); // klein bottle
+        "0.0", "pi", 50, "0.0", "2.0 * pi", 50)); // klein bottle
 
     change_color();
     update_cursor(_graph->cursor_text());
@@ -165,8 +167,8 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
     _add_tab_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
     _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &Graph_window::tab_change));
 
-    _gl_window.invalidate();
     show_all_children();
+    _gl_window.invalidate();
 }
 
 void Graph_window::tab_new()

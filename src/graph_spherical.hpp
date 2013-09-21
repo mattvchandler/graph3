@@ -28,9 +28,9 @@
 class Graph_spherical final: public Graph
 {
 public:
-    explicit Graph_spherical(const std::string & eqn = "",
-        float theta_min = -1.0f, float theta_max = 1.0f, int theta_res = 50,
-        float phi_min = -1.0f, float phi_max = 1.0f, int phi_res = 50);
+    explicit Graph_spherical(const std::string & eqn,
+        const std::string & theta_min, const std::string & theta_max, int theta_res,
+        const std::string & phi_min, const std::string & phi_max, int phi_res);
 
     double eval(const double theta, const double phi);
     void build_graph() override;

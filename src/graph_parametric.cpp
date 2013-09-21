@@ -22,11 +22,22 @@
 
 #include "graph_parametric.hpp"
 
-Graph_parametric::Graph_parametric(const std::string & eqn, float u_min, float u_max, int u_res,
-    float v_min, float v_max, int v_res): Graph(eqn),
-    _u_min(u_min), _u_max(u_max), _u_res(u_res), _v_min(v_min), _v_max(v_max), _v_res(v_res)
-
+Graph_parametric::Graph_parametric(const std::string & eqn,
+    const std::string & u_min, const std::string & u_max, int u_res,
+    const std::string & v_min, const std::string & v_max, int v_res):
+    Graph(eqn), _u(0.0), _v(0.0), _u_res(u_res),_v_res(v_res)
 {
+    // TODO: error checks
+    _p.SetExpr(u_min);
+    _u_min = _p.Eval();
+    _p.SetExpr(u_max);
+    _u_max = _p.Eval();
+
+    _p.SetExpr(v_min);
+    _v_min = _p.Eval();
+    _p.SetExpr(v_max);
+    _v_max = _p.Eval();
+
     _p.DefineVar("u", &_u);
     _p.DefineVar("v", &_v);
     _p.SetExpr(eqn);

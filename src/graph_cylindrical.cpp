@@ -22,11 +22,23 @@
 
 #include "graph_cylindrical.hpp"
 
-Graph_cylindrical::Graph_cylindrical(const std::string & eqn, float r_min, float r_max, int r_res,
-    float theta_min, float theta_max, int theta_res): Graph(eqn),
-    _r_min(r_min), _r_max(r_max), _r_res(r_res), _theta_min(theta_min), _theta_max(theta_max), _theta_res(theta_res)
+Graph_cylindrical::Graph_cylindrical(const std::string & eqn,
+    const std::string & r_min, const std::string & r_max, int r_res,
+    const std::string & theta_min, const std::string & theta_max, int theta_res):
+    Graph(eqn), _r(0.0), _theta(0.0), _r_res(r_res), _theta_res(theta_res)
 
 {
+    // TODO: error checks
+    _p.SetExpr(r_min);
+    _r_min = _p.Eval();
+    _p.SetExpr(r_max);
+    _r_max = _p.Eval();
+
+    _p.SetExpr(theta_min);
+    _theta_min = _p.Eval();
+    _p.SetExpr(theta_max);
+    _theta_max = _p.Eval();
+
     _p.DefineVar("r", &_r);
     _p.DefineVar("theta", &_theta);
     _p.SetExpr(eqn);
