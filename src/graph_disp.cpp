@@ -269,8 +269,57 @@ void Cursor::build()
     _num_indexes = coords.size();
 }
 
+Axes::Axes(): color(0.0f, 0.0f, 0.0f, 1.0f), _vao(0), _vbo(0), _num_indexes(0)
+{
+}
+
+Axes::~Axes()
+{
+    if(_vao)
+        glDeleteVertexArrays(1, &_vao);
+    if(_vbo)
+        glDeleteBuffers(1, &_vbo);
+}
+void Axes::draw() const
+{
+    glBindVertexArray(_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+
+    glDrawArrays(GL_LINES, 0, _num_indexes);
+}
+
+void Axes::build()
+{
+    std::vector<glm::vec3> coords = 
+    {
+        // X axis
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(1.0f, 0.0f, 0.0f),
+        // Y axis
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f),
+        // Z axis
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 0.0f, 1.0f)
+    };
+
+    // OpenGL structs
+    glGenVertexArrays(1, &_vao);
+    glBindVertexArray(_vao);
+
+    glGenBuffers(1, &_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size(), &coords[0], GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(0);
+
+    _num_indexes = coords.size();
+}
+
 Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_reqest, const sf::ContextSettings & context_settings):
     SFMLWidget(mode, size_reqest),
+    draw_normals(false), draw_cursor(true), draw_axes(true),
     _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
     _perspective_mat(1.0f),
     _light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.8f, 1.0f, 0.5f, 0.0f}),
@@ -444,6 +493,9 @@ void Graph_disp::realize()
     _cursor.build();
     _cursor.tex = textures[1];
 
+    _axes.build();
+    _axes.color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
     invalidate();
 }
 
@@ -470,6 +522,19 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
     glm::mat4 view_model_perspective = _perspective_mat * view_model;
     glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
+    // draw axes
+    if(draw_axes)
+    {
+        glUseProgram(_prog_line);
+
+        glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective_mat[0][0]);
+        glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+        glUniform4fv(_prog_line_uniforms["color"], 1, &_axes.color[0]);
+
+        _axes.draw();
+
+        check_error("axes draw"); // TODO: clean these up
+    }
 
     for(auto &graph: _graphs)
     {
@@ -508,24 +573,22 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
 
         glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective_mat[0][0]);
         glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-
-        // material properties
         glUniform4fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
 
         graph->draw_grid();
 
-        if(false)
+        if(draw_normals)
         {
             glUniform4fv(_prog_line_uniforms["color"], 1, &graph->normal_color[0]);
 
             graph->draw_normals();
-
-            check_error("draw");
         }
+
+        check_error("draw");
     }
 
     // draw cursor
-    if(_active_graph && _active_graph->cursor_defined())
+    if(draw_cursor && _active_graph && _active_graph->cursor_defined())
     {
         glUseProgram(_prog_tex);
 

@@ -82,6 +82,29 @@ private:
     Cursor & operator=(const Cursor &&) = delete;
 };
 
+class Axes
+{
+public:
+    Axes();
+    ~Axes();
+
+    void draw() const;
+    void build();
+
+    glm::vec4 color;
+private:
+    // OpenGL stuff
+    GLuint _vao;
+    GLuint _vbo;
+    GLuint _num_indexes;
+
+    // make non-copyable
+    Axes(const Axes &) = delete;
+    Axes(const Axes &&) = delete;
+    Axes & operator=(const Axes &) = delete;
+    Axes & operator=(const Axes &&) = delete;
+};
+
 class Graph_disp final: public SFMLWidget
 {
 public:
@@ -107,6 +130,10 @@ public:
 
     std::vector<GLuint> textures;
 
+    bool draw_normals;
+    bool draw_cursor;
+    bool draw_axes;
+
 private:
     GLuint _prog_tex;
     GLuint _prog_color;
@@ -116,6 +143,8 @@ private:
     std::unordered_map<std::string, GLuint> _prog_line_uniforms;
 
     Cursor _cursor;
+    Axes _axes;
+
     Camera _cam;
     glm::mat4 _perspective_mat;
     Light _light;
