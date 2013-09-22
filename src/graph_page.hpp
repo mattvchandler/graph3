@@ -1,5 +1,5 @@
-// graph_window.hpp
-// windowing code. Using GTK to create the window, SFML to do openGL graphics.
+// graph_page.hpp
+// widgets for creating graphs
 
 // Copyright 2013 Matthew Chandler
 
@@ -20,57 +20,53 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __GRAPH_WINDOW_H__
-#define __GRAPH_WINDOW_H__
+#ifndef __GRAPH_PAGE_H__
+#define __GRAPH_PAGE_H__
 
 #include <memory>
-#include <list>
 
 #include <gtkmm/button.h>
+#include <gtkmm/colorbutton.h>
+#include <gtkmm/entry.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
-#include <gtkmm/notebook.h>
-#include <gtkmm/stock.h>
-#include <gtkmm/window.h>
+#include <gtkmm/radiobutton.h>
 
 #include <sigc++/sigc++.h>
 
 #include "graph_disp.hpp"
-#include "graph_page.hpp"
 
-class Tab_label final: public Gtk::Grid
+class Graph_page final: public Gtk::Grid
 {
 public:
-    Tab_label();
-    sigc::signal<void> signal_close_tab();
-private:
-    void on_button_press();
+    Graph_page(Graph_disp * gl_window);
+    ~Graph_page();
 
-    Gtk::Label _tab_text;
-    Gtk::Button _close_butt;
-    Gtk::Image _close_img;
-    sigc::signal<void> _signal_close_tab;
-};
-
-class Graph_window final: public Gtk::Window
-{
-public:
-    Graph_window();
-
-    void tab_new();
-    void tab_close(Graph_page * page);
-    void tab_change(Widget * page, guint page_no);
+    void apply();
+    void change_color();
     void update_cursor(const std::string & text);
+    void set_active();
+
+    sigc::signal<void, const std::string &> signal_cursor_moved();
 
 private:
-    Graph_disp _gl_window;
-    Gtk::Grid _main_grid;
-    Gtk::Notebook _notebook;
-    std::list<std::unique_ptr<Graph_page>> _pages;
-    Gtk::Label _cursor_text;
-    Gtk::Button _add_tab_butt;
+    Graph_disp * _gl_window;
+    std::unique_ptr<Graph> _graph;
 
-    sigc::connection _cursor_conn;
+    Gtk::RadioButton _r_car, _r_cyl, _r_sph, _r_par;
+    Gtk::Entry _eqn;
+    Gtk::Entry _row_min, _row_max;
+    Gtk::Entry _col_min, _col_max;
+    Gtk::ColorButton _color_butt;
+    Gtk::Button _apply_butt;
+
+    sigc::signal<void, const std::string &> _signal_cursor_moved;
+
+    // make non-copyable
+    Graph_page(const Graph_page &) = delete;
+    Graph_page(const Graph_page &&) = delete;
+    Graph_page & operator =(const Graph_page &) = delete;
+    Graph_page & operator =(const Graph_page &&) = delete;
 };
 
-#endif // __GRAPH_WINDOW_H__
+#endif // __GRAPH_PAGE_H__
