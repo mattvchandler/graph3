@@ -40,14 +40,18 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     attach(_r_sph, 0, 2, 1, 1);
     attach(_r_par, 1, 2, 1, 1);
     attach(_eqn, 0, 3, 2, 1);
-    attach(_row_min, 0, 4, 1, 1);
-    attach(_row_max, 1, 4, 1, 1);
-    attach(_col_min, 0, 5, 1, 1);
-    attach(_col_max, 1, 5, 1, 1);
-    attach(_color_butt, 0, 6, 1, 1);
-    attach(_apply_butt, 1, 6, 1, 1);
+    attach(_eqn_par_y, 0, 4, 2, 1);
+    attach(_eqn_par_z, 0, 5, 2, 1);
+    attach(_row_min, 0, 6, 1, 1);
+    attach(_row_max, 1, 6, 1, 1);
+    attach(_col_min, 0, 7, 1, 1);
+    attach(_col_max, 1, 7, 1, 1);
+    attach(_color_butt, 0, 8, 1, 1);
+    attach(_apply_butt, 1, 8, 1, 1);
 
     _eqn.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
+    _eqn_par_y.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
+    _eqn_par_z.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _row_min.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _row_max.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _col_min.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
@@ -60,17 +64,54 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _r_sph.set_group(radio_g);
     _r_par.set_group(radio_g);
 
+    // TODO: there's got to be a better signal to catch
+    _r_car.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
+    _r_cyl.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
+    _r_sph.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
+    _r_par.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
+
     Gdk::RGBA start_rgba;
     start_rgba.set_rgba(0.2, 0.5, 0.2, 1.0);
     _color_butt.set_rgba(start_rgba);
 
     show_all_children();
+    _eqn_par_y.hide();
+    _eqn_par_z.hide();
 }
 
 Graph_page::~Graph_page()
 {
     _gl_window->remove_graph(_graph.get());
     _gl_window->invalidate();
+}
+
+void Graph_page::change_type()
+{
+    // prevent being run when leaving one and again while entering another
+    static bool change_in = false;
+    change_in = !change_in;
+    if(!change_in)
+        return;
+
+    // if(_r_car.get_active())
+    // {
+    // }
+    // else if(_r_cyl.get_active())
+    // {
+    // }
+    // else if(_r_sph.get_active())
+    // {
+    // }
+    if(_r_par.get_active())
+    {
+        _eqn_par_y.show();
+        _eqn_par_z.show();
+    }
+    else
+    {
+        _eqn_par_y.hide();
+        _eqn_par_z.hide();
+    }
 }
 
 // TODO: error handling
@@ -81,7 +122,9 @@ void Graph_page::apply()
 
     if(_eqn.get_text_length() == 0 ||
         _row_min.get_text_length() == 0 || _row_max.get_text_length() == 0 ||
-        _col_min.get_text_length() == 0 || _col_max.get_text_length() == 0)
+        _col_min.get_text_length() == 0 || _col_max.get_text_length() == 0 ||
+        (_r_par.get_active() &&
+        (_eqn_par_y.get_text_length() == 0 || _eqn_par_z.get_text_length() == 0)))
     {
         update_cursor("");
         _gl_window->invalidate();
@@ -109,7 +152,8 @@ void Graph_page::apply()
     }
     else if(_r_par.get_active())
     {
-        _graph = std::unique_ptr<Graph>(new Graph_parametric(_eqn.get_text(),
+        _graph = std::unique_ptr<Graph>(new Graph_parametric(_eqn.get_text()
+            + "," + _eqn_par_y.get_text() + "," + _eqn_par_z.get_text(),
             _row_max.get_text(), _row_min.get_text(), 50,
             _col_max.get_text(), _col_min.get_text(), 50));
     }

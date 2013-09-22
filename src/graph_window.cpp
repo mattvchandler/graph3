@@ -68,17 +68,19 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
     _main_grid.attach(_notebook, 1, 1, 1, 100);
     _main_grid.attach(_cursor_text, 0, 100, 1, 1);
 
+    _add_tab_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
+    _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &Graph_window::tab_change));
+
+    show_all_children();
+
     _pages.push_back(std::unique_ptr<Graph_page>(new Graph_page(&_gl_window)));
     _notebook.append_page(*_pages.back(), *Gtk::manage(new Tab_label));
 
     dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back()))
         ->signal_close_tab().connect(sigc::bind<Graph_page *>(sigc::mem_fun(*this, &Graph_window::tab_close),
         _pages.back().get()));
+    _pages.back()->show();
 
-    _add_tab_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
-    _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &Graph_window::tab_change));
-
-    show_all_children();
     _gl_window.invalidate();
 }
 

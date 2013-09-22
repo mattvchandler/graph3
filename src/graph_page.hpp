@@ -42,6 +42,7 @@ public:
     Graph_page(Graph_disp * gl_window);
     ~Graph_page();
 
+    void change_type();
     void apply();
     void change_color();
     void update_cursor(const std::string & text);
@@ -55,6 +56,7 @@ private:
 
     Gtk::RadioButton _r_car, _r_cyl, _r_sph, _r_par;
     Gtk::Entry _eqn;
+    Gtk::Entry _eqn_par_y, _eqn_par_z;
     Gtk::Entry _row_min, _row_max;
     Gtk::Entry _col_min, _col_max;
     Gtk::ColorButton _color_butt;
