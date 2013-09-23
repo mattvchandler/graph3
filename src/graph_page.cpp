@@ -33,6 +33,8 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _r_cyl("Cylindrical"),
     _r_sph("Spherical"),
     _r_par("Parametric"),
+    _draw_grid("Draw Gridlines"),
+    _draw_normals("Draw normals"),
     _apply_butt(Gtk::Stock::APPLY)
 {
     attach(_r_car, 0, 1, 1, 1);
@@ -46,8 +48,10 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     attach(_row_max, 1, 6, 1, 1);
     attach(_col_min, 0, 7, 1, 1);
     attach(_col_max, 1, 7, 1, 1);
-    attach(_color_butt, 0, 8, 1, 1);
-    attach(_apply_butt, 1, 8, 1, 1);
+    attach(_draw_grid, 0, 8, 1, 1);
+    attach(_draw_normals, 1, 8, 1, 1);
+    attach(_color_butt, 0, 9, 1, 1);
+    attach(_apply_butt, 1, 9, 1, 1);
 
     _eqn.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _eqn_par_y.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
@@ -56,23 +60,27 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _row_max.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _col_min.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _col_max.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
-    _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
-    _color_butt.signal_color_set().connect(sigc::mem_fun(*this, &Graph_page::change_color));
 
     Gtk::RadioButton::Group radio_g = _r_car.get_group();
     _r_cyl.set_group(radio_g);
     _r_sph.set_group(radio_g);
     _r_par.set_group(radio_g);
 
-    // TODO: there's got to be a better signal to catch
     _r_car.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
     _r_cyl.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
     _r_sph.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
     _r_par.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
 
+    _draw_grid.set_active(true);
+    _draw_grid.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
+    _draw_normals.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
+
     Gdk::RGBA start_rgba;
     start_rgba.set_rgba(0.2, 0.5, 0.2, 1.0);
     _color_butt.set_rgba(start_rgba);
+
+    _color_butt.signal_color_set().connect(sigc::mem_fun(*this, &Graph_page::change_color));
+    _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
     show_all_children();
     _eqn_par_y.hide();
@@ -158,6 +166,9 @@ void Graph_page::apply()
             _col_max.get_text(), _col_min.get_text(), 50));
     }
 
+    _graph->draw_grid_flag = _draw_grid.get_active();
+    _graph->draw_normals_flag = _draw_normals.get_active();
+
     change_color();
     update_cursor(_graph->cursor_text());
 
@@ -167,6 +178,16 @@ void Graph_page::apply()
     _graph->signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_page::update_cursor));
     // _signal_graph_regen.emit(_graph.get());
     _gl_window->invalidate();
+}
+
+void Graph_page::change_flags()
+{
+    if(_graph.get())
+    {
+        _graph->draw_grid_flag = _draw_grid.get_active();
+        _graph->draw_normals_flag = _draw_normals.get_active();
+        _gl_window->invalidate();
+    }
 }
 
 void Graph_page::change_color()

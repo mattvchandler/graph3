@@ -130,9 +130,8 @@ public:
 
     std::vector<GLuint> textures;
 
-    bool draw_normals;
-    bool draw_cursor;
-    bool draw_axes;
+    bool draw_cursor_flag;
+    bool draw_axes_flag;
 
 private:
     GLuint _prog_tex;

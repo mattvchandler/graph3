@@ -87,6 +87,9 @@ public:
     glm::vec4 grid_color;
     glm::vec4 normal_color;
 
+    bool draw_grid_flag;
+    bool draw_normals_flag;
+
 protected:
     virtual void build_graph() = 0;
     void build_graph_geometry(size_t num_rows, size_t num_columns,

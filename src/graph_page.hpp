@@ -26,6 +26,7 @@
 #include <memory>
 
 #include <gtkmm/button.h>
+#include <gtkmm/checkbutton.h>
 #include <gtkmm/colorbutton.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/grid.h>
@@ -44,6 +45,7 @@ public:
 
     void change_type();
     void apply();
+    void change_flags();
     void change_color();
     void update_cursor(const std::string & text);
     void set_active();
@@ -59,6 +61,7 @@ private:
     Gtk::Entry _eqn_par_y, _eqn_par_z;
     Gtk::Entry _row_min, _row_max;
     Gtk::Entry _col_min, _col_max;
+    Gtk::CheckButton _draw_grid, _draw_normals;
     Gtk::ColorButton _color_butt;
     Gtk::Button _apply_butt;
 

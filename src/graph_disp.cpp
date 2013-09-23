@@ -319,7 +319,7 @@ void Axes::build()
 
 Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_reqest, const sf::ContextSettings & context_settings):
     SFMLWidget(mode, size_reqest),
-    draw_normals(false), draw_cursor(true), draw_axes(true),
+    draw_cursor_flag(true), draw_axes_flag(true),
     _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
     _perspective_mat(1.0f),
     _light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.8f, 1.0f, 0.5f, 0.0f}),
@@ -523,7 +523,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
     glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
     // draw axes
-    if(draw_axes)
+    if(draw_axes_flag)
     {
         glUseProgram(_prog_line);
 
@@ -568,17 +568,24 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
 
         graph->draw();
 
-        // switch to line shader
-        glUseProgram(_prog_line);
 
-        glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective_mat[0][0]);
-        glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-        glUniform4fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
-
-        graph->draw_grid();
-
-        if(draw_normals)
+        if(graph->draw_grid_flag)
         {
+            // switch to line shader
+            glUseProgram(_prog_line);
+            glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective_mat[0][0]);
+            glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+            glUniform4fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
+
+            graph->draw_grid();
+        }
+
+        if(graph->draw_normals_flag)
+        {
+            // switch to line shader
+            glUseProgram(_prog_line);
+            glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective_mat[0][0]);
+            glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
             glUniform4fv(_prog_line_uniforms["color"], 1, &graph->normal_color[0]);
 
             graph->draw_normals();
@@ -588,7 +595,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
     }
 
     // draw cursor
-    if(draw_cursor && _active_graph && _active_graph->cursor_defined())
+    if(draw_cursor_flag && _active_graph && _active_graph->cursor_defined())
     {
         glUseProgram(_prog_tex);
 
