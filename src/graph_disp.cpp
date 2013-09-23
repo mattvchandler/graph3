@@ -327,12 +327,13 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_reqest, const 
     _active_graph(nullptr)
 
 {
+    // All OpenGL initialization has to wait until the drawing context actually exists
+    // move it to the realize method
     signal_realize().connect(sigc::mem_fun(*this, &Graph_disp::realize));
     signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
     signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::draw));
     signal_key_press_event().connect(sigc::mem_fun(*this, &Graph_disp::key_press));
     Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_disp::input), 10);
-    // Glib::signal_idle().connect(sigc::mem_fun(*this, &Graph_disp::idle));
 
     set_can_focus();
     set_can_default();
@@ -350,7 +351,8 @@ Graph_disp::~Graph_disp()
 // key press handler
 bool Graph_disp::key_press(GdkEventKey * e)
 {
-    // don't propagate key presses up - capture them in this widget
+    // returning true means we don't propagate key presses up - keep them in this widget
+    // (and disregard them entirely because we're using SFML for handling the keyboard, not GTK)
     return true;
 }
 
