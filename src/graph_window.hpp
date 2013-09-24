@@ -63,14 +63,16 @@ public:
     void update_cursor(const std::string & text);
 
 private:
-    Graph_disp _gl_window;
     Gtk::Grid _main_grid;
-    Gtk::Notebook _notebook;
-    std::list<std::unique_ptr<Graph_page>> _pages;
+
+    sigc::connection _cursor_conn;
+
+    Graph_disp _gl_window;
     Gtk::Label _cursor_text;
     Gtk::Button _add_tab_butt;
 
-    sigc::connection _cursor_conn;
+    std::list<std::unique_ptr<Graph_page>> _pages;
+    Gtk::Notebook _notebook; // this needs to be last, as several of the above are referenced during its destruction, due to dumbness. (I don't want to switch pages, I want to destroy them *all*)
 };
 
 #endif // __GRAPH_WINDOW_H__

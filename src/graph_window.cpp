@@ -100,7 +100,8 @@ void Graph_window::tab_close(Graph_page * page)
 {
     if(_notebook.get_n_pages() == 1)
     {
-        _cursor_conn.disconnect();
+        if(_cursor_conn.connected())
+            _cursor_conn.disconnect();
         _cursor_text.set_text("");
     }
     guint page_no = _notebook.page_num(*page);
@@ -110,9 +111,11 @@ void Graph_window::tab_close(Graph_page * page)
 
 void Graph_window::tab_change(Gtk::Widget * page, guint page_no)
 {
-    _cursor_conn.disconnect();
+    if(_cursor_conn.connected())
+        _cursor_conn.disconnect();
 
-    _cursor_conn = (*(std::next(_pages.begin(), page_no)))->signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_window::update_cursor));
+    _cursor_conn = dynamic_cast<Graph_page *>(page)->signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_window::update_cursor));
+
     dynamic_cast<Graph_page *>(page)->set_active();
 }
 
