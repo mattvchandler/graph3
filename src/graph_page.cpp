@@ -20,7 +20,9 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "graph_window.hpp"
+#include <gtkmm/stock.h>
+
+#include "graph_page.hpp"
 
 #include "graph.hpp"
 #include "graph_cartesian.hpp"

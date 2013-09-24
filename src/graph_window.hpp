@@ -30,7 +30,6 @@
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
-#include <gtkmm/stock.h>
 #include <gtkmm/window.h>
 
 #include <sigc++/sigc++.h>
