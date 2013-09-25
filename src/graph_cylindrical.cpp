@@ -20,6 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <utility>
+
 #include "graph_cylindrical.hpp"
 
 Graph_cylindrical::Graph_cylindrical(const std::string & eqn,
@@ -30,14 +32,20 @@ Graph_cylindrical::Graph_cylindrical(const std::string & eqn,
 {
     // TODO: error checks
     _p.SetExpr(r_min);
-    _r_min = _p.Eval();
+    float min = _p.Eval();
     _p.SetExpr(r_max);
-    _r_max = _p.Eval();
+    float max = _p.Eval();
+
+    _r_min = std::min(min, max);
+    _r_max = std::max(min, max);
 
     _p.SetExpr(theta_min);
-    _theta_min = _p.Eval();
+    min = _p.Eval();
     _p.SetExpr(theta_max);
-    _theta_max = _p.Eval();
+    max = _p.Eval();
+
+    _theta_min = std::min(min, max);
+    _theta_max = std::max(min, max);
 
     _p.DefineVar("r", &_r);
     _p.DefineVar("theta", &_theta);

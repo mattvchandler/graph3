@@ -20,6 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <utility>
+
 #include "graph_cartesian.hpp"
 
 Graph_cartesian::Graph_cartesian(const std::string & eqn,
@@ -29,14 +31,20 @@ Graph_cartesian::Graph_cartesian(const std::string & eqn,
 {
     // TODO: error checks
     _p.SetExpr(x_min);
-    _x_min = _p.Eval();
+    float min = _p.Eval();
     _p.SetExpr(x_max);
-    _x_max = _p.Eval();
+    float max = _p.Eval();
+
+    _x_min = std::min(min, max);
+    _x_max = std::max(min, max);
 
     _p.SetExpr(y_min);
-    _y_min = _p.Eval();
+    min = _p.Eval();
     _p.SetExpr(y_max);
-    _y_max = _p.Eval();
+    max = _p.Eval();
+
+    _y_min = std::min(min, max);
+    _y_max = std::max(min, max);
 
     _p.DefineVar("x", &_x);
     _p.DefineVar("y", &_y);

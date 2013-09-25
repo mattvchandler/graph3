@@ -60,7 +60,6 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
     _notebook.set_hexpand(true);
     _notebook.set_scrollable(true);
 
-
     add(_main_grid);
     _main_grid.set_column_spacing(5);
 

@@ -20,6 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <utility>
+
 #include "graph_parametric.hpp"
 
 Graph_parametric::Graph_parametric(const std::string & eqn,
@@ -29,14 +31,20 @@ Graph_parametric::Graph_parametric(const std::string & eqn,
 {
     // TODO: error checks
     _p.SetExpr(u_min);
-    _u_min = _p.Eval();
+    float min = _p.Eval();
     _p.SetExpr(u_max);
-    _u_max = _p.Eval();
+    float max = _p.Eval();
+
+    _u_min = std::min(min, max);
+    _u_max = std::max(min, max);
 
     _p.SetExpr(v_min);
-    _v_min = _p.Eval();
+    min = _p.Eval();
     _p.SetExpr(v_max);
-    _v_max = _p.Eval();
+    max = _p.Eval();
+
+    _v_min = std::min(min, max);
+    _v_max = std::max(min, max);
 
     _p.DefineVar("u", &_u);
     _p.DefineVar("v", &_v);

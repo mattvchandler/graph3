@@ -145,27 +145,27 @@ void Graph_page::apply()
     if(_r_car.get_active())
     {
         _graph = std::unique_ptr<Graph>(new Graph_cartesian(_eqn.get_text(),
-            _row_max.get_text(), _row_min.get_text(), 50,
-            _col_max.get_text(), _col_min.get_text(), 50));
+            _row_min.get_text(), _row_max.get_text(), 50,
+            _col_min.get_text(), _col_max.get_text(), 50));
     }
     else if(_r_cyl.get_active())
     {
         _graph = std::unique_ptr<Graph>(new Graph_cylindrical(_eqn.get_text(),
-            _row_max.get_text(), _row_min.get_text(), 50,
-            _col_max.get_text(), _col_min.get_text(), 50));
+            _row_min.get_text(), _row_max.get_text(), 50,
+            _col_min.get_text(), _col_max.get_text(), 50));
     }
     else if(_r_sph.get_active())
     {
         _graph = std::unique_ptr<Graph>(new Graph_spherical(_eqn.get_text(),
-            _row_max.get_text(), _row_min.get_text(), 50,
-            _col_max.get_text(), _col_min.get_text(), 50));
+            _row_min.get_text(), _row_max.get_text(), 50,
+            _col_min.get_text(), _col_max.get_text(), 50));
     }
     else if(_r_par.get_active())
     {
         _graph = std::unique_ptr<Graph>(new Graph_parametric(_eqn.get_text()
             + "," + _eqn_par_y.get_text() + "," + _eqn_par_z.get_text(),
-            _row_max.get_text(), _row_min.get_text(), 50,
-            _col_max.get_text(), _col_min.get_text(), 50));
+            _row_min.get_text(), _row_max.get_text(), 50,
+            _col_min.get_text(), _col_max.get_text(), 50));
     }
 
     _graph->draw_grid_flag = _draw_grid.get_active();

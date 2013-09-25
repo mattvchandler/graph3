@@ -1,6 +1,5 @@
 // graph_spherical.cpp
 // spherical coordinate system graph class (r(phi, theta))
-// TODO: check order
 
 // Copyright 2013 Matthew Chandler
 
@@ -21,6 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <utility>
+
 #include "graph_spherical.hpp"
 
 Graph_spherical::Graph_spherical(const std::string & eqn,
@@ -31,14 +32,20 @@ Graph_spherical::Graph_spherical(const std::string & eqn,
 {
     // TODO: error checks
     _p.SetExpr(theta_min);
-    _theta_min = _p.Eval();
+    float min = _p.Eval();
     _p.SetExpr(theta_max);
-    _theta_max = _p.Eval();
+    float max = _p.Eval();
+
+    _theta_min = std::min(min, max);
+    _theta_max = std::max(min, max);
 
     _p.SetExpr(phi_min);
-    _phi_min = _p.Eval();
+    min = _p.Eval();
     _p.SetExpr(phi_max);
-    _phi_max = _p.Eval();
+    max = _p.Eval();
+
+    _phi_min = std::min(min, max);
+    _phi_max = std::max(min, max);
 
     _p.DefineVar("theta", &_theta);
     _p.DefineVar("phi", &_phi);
