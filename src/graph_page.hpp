@@ -47,10 +47,10 @@ public:
     void apply();
     void change_flags();
     void change_color();
-    void update_cursor(const std::string & text);
+    void update_cursor(const std::string & text) const;
     void set_active();
 
-    sigc::signal<void, const std::string &> signal_cursor_moved();
+    sigc::signal<void, const std::string &> signal_cursor_moved() const;
 
 private:
     Graph_disp * _gl_window;

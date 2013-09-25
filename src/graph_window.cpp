@@ -48,7 +48,9 @@ sigc::signal<void> Tab_label::signal_close_tab()
 }
 
 Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::ContextSettings(0, 0, 4, 4, 0)), // these do nothing yet - future SFML version should enable them
-    _add_tab_butt(Gtk::Stock::ADD)
+    _add_tab_butt(Gtk::Stock::ADD),
+    _draw_axes("Draw Axes"),
+    _draw_cursor("Draw Cursor")
 {
     set_title("Graph 3");
     set_default_size(800, 600);
@@ -57,16 +59,17 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
     _gl_window.set_vexpand(true);
 
     _notebook.set_vexpand(true);
-    _notebook.set_hexpand(true);
     _notebook.set_scrollable(true);
 
     add(_main_grid);
-    _main_grid.set_column_spacing(5);
 
-    _main_grid.attach(_gl_window, 0, 0, 1, 100);
+    _main_grid.attach(_gl_window, 0, 0, 1, 2);
+    _main_grid.attach(_cursor_text, 0, 2, 1, 1);
+
     _main_grid.attach(_add_tab_butt, 1, 0, 1, 1);
-    _main_grid.attach(_notebook, 1, 1, 1, 100);
-    _main_grid.attach(_cursor_text, 0, 100, 1, 1);
+    _main_grid.attach(_notebook, 1, 1, 2, 1);
+    _main_grid.attach(_draw_axes, 1, 2, 1, 1);
+    _main_grid.attach(_draw_cursor, 2, 2, 1, 1);
 
     _add_tab_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
     _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &Graph_window::tab_change));
@@ -80,6 +83,12 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
         ->signal_close_tab().connect(sigc::bind<Graph_page *>(sigc::mem_fun(*this, &Graph_window::tab_close),
         _pages.back().get()));
     _pages.back()->show();
+
+    _draw_axes.set_active(true);
+    _draw_cursor.set_active(true);
+
+    _draw_axes.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
+    _draw_cursor.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
 
     _gl_window.invalidate();
 }
@@ -117,6 +126,19 @@ void Graph_window::tab_change(Gtk::Widget * page, guint page_no)
     _cursor_conn = dynamic_cast<Graph_page *>(page)->signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_window::update_cursor));
 
     dynamic_cast<Graph_page *>(page)->set_active();
+}
+
+void Graph_window::change_flags()
+{
+    _gl_window.draw_axes_flag = _draw_axes.get_active();
+    _gl_window.draw_cursor_flag = _draw_cursor.get_active();
+
+    if(!_draw_cursor.get_active())
+        update_cursor("");
+    else
+        dynamic_cast<Graph_page *>(_notebook.get_nth_page(_notebook.get_current_page()))->set_active();
+
+    _gl_window.invalidate();
 }
 
 void Graph_window::update_cursor(const std::string & text)

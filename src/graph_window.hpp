@@ -27,6 +27,7 @@
 #include <list>
 
 #include <gtkmm/button.h>
+#include <gtkmm/checkbutton.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
@@ -59,6 +60,7 @@ public:
     void tab_new();
     void tab_close(Graph_page * page);
     void tab_change(Widget * page, guint page_no);
+    void change_flags();
     void update_cursor(const std::string & text);
 
 private:
@@ -69,6 +71,7 @@ private:
     Graph_disp _gl_window;
     Gtk::Label _cursor_text;
     Gtk::Button _add_tab_butt;
+    Gtk::CheckButton _draw_axes, _draw_cursor;
 
     std::list<std::unique_ptr<Graph_page>> _pages;
     Gtk::Notebook _notebook; // this needs to be last, as several of the above are referenced during its destruction, due to dumbness. (I don't want to switch pages, I want to destroy them *all*)

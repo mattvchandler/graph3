@@ -204,7 +204,7 @@ void Graph_page::change_color()
     }
 }
 
-void Graph_page::update_cursor(const std::string & text)
+void Graph_page::update_cursor(const std::string & text) const
 {
     _signal_cursor_moved.emit(text);
 }
@@ -213,7 +213,7 @@ void Graph_page::set_active()
 {
     _gl_window->set_active_graph(_graph.get());
 
-    if(_graph.get())
+    if(_graph.get() && _gl_window->draw_cursor_flag)
         update_cursor(_graph->cursor_text());
     else
         update_cursor("");
@@ -221,7 +221,7 @@ void Graph_page::set_active()
     _gl_window->invalidate();
 }
 
-sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved()
+sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved() const
 {
     return _signal_cursor_moved;
 }

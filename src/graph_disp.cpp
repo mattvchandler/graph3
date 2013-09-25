@@ -714,7 +714,7 @@ bool Graph_disp::input()
                 invalidate();
             }
 
-            if(_active_graph)
+            if(draw_cursor_flag && _active_graph)
             {
                 // Cursor controls
                 int cursor_timeout = 200;
@@ -745,28 +745,6 @@ bool Graph_disp::input()
                     cursor_delay.restart();
                     invalidate();
                 }
-
-                // change active graph w/ page up/down
-                // if(graphs.size() > 1)
-                // {
-                //     if(sf::Keyboard::isKeyPressed(sf::Keyboard::PageUp) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
-                //     {
-                //         if(++active_graph == graphs.size())
-                //             active_graph = 0;
-
-                //         cursor_delay.restart();
-                //         invalidate();
-                //     }
-
-                //     if(sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
-                //     {
-                //         if(active_graph-- == 0)
-                //             active_graph = graphs.size() - 1;
-
-                //         cursor_delay.restart();
-                //         invalidate();
-                //     }
-                // }
             }
         }
         old_mouse_pos = new_mouse_pos;
