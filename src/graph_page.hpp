@@ -32,6 +32,7 @@
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 #include <gtkmm/radiobutton.h>
+#include <gtkmm/spinbutton.h>
 
 #include <sigc++/sigc++.h>
 
@@ -61,6 +62,7 @@ private:
     Gtk::Entry _eqn_par_y, _eqn_par_z;
     Gtk::Entry _row_min, _row_max;
     Gtk::Entry _col_min, _col_max;
+    Gtk::SpinButton _row_res, _col_res;
     Gtk::CheckButton _draw_grid, _draw_normals;
     Gtk::ColorButton _color_butt;
     Gtk::Button _apply_butt;

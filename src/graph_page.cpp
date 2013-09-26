@@ -35,6 +35,8 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _r_cyl("Cylindrical"),
     _r_sph("Spherical"),
     _r_par("Parametric"),
+    _row_res(Gtk::Adjustment::create(50.0, 1.0, 1000.0)),
+    _col_res(Gtk::Adjustment::create(50.0, 1.0, 1000.0)),
     _draw_grid("Draw Gridlines"),
     _draw_normals("Draw normals"),
     _apply_butt(Gtk::Stock::APPLY)
@@ -50,10 +52,12 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     attach(_row_max, 1, 6, 1, 1);
     attach(_col_min, 0, 7, 1, 1);
     attach(_col_max, 1, 7, 1, 1);
-    attach(_draw_grid, 0, 8, 1, 1);
-    attach(_draw_normals, 1, 8, 1, 1);
-    attach(_color_butt, 0, 9, 1, 1);
-    attach(_apply_butt, 1, 9, 1, 1);
+    attach(_row_res, 0, 8, 1, 1);
+    attach(_col_res, 1, 8, 1, 1);
+    attach(_draw_grid, 0, 9, 1, 1);
+    attach(_draw_normals, 1, 9, 1, 1);
+    attach(_color_butt, 0, 10, 1, 1);
+    attach(_apply_butt, 1, 10, 1, 1);
 
     _eqn.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _eqn_par_y.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
@@ -62,6 +66,9 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _row_max.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _col_min.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _col_max.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
+    _row_res.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
+    _col_res.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
+
 
     Gtk::RadioButton::Group radio_g = _r_car.get_group();
     _r_cyl.set_group(radio_g);
@@ -145,27 +152,27 @@ void Graph_page::apply()
     if(_r_car.get_active())
     {
         _graph = std::unique_ptr<Graph>(new Graph_cartesian(_eqn.get_text(),
-            _row_min.get_text(), _row_max.get_text(), 50,
-            _col_min.get_text(), _col_max.get_text(), 50));
+            _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
+            _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
     }
     else if(_r_cyl.get_active())
     {
         _graph = std::unique_ptr<Graph>(new Graph_cylindrical(_eqn.get_text(),
-            _row_min.get_text(), _row_max.get_text(), 50,
-            _col_min.get_text(), _col_max.get_text(), 50));
+            _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
+            _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
     }
     else if(_r_sph.get_active())
     {
         _graph = std::unique_ptr<Graph>(new Graph_spherical(_eqn.get_text(),
-            _row_min.get_text(), _row_max.get_text(), 50,
-            _col_min.get_text(), _col_max.get_text(), 50));
+            _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
+            _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
     }
     else if(_r_par.get_active())
     {
         _graph = std::unique_ptr<Graph>(new Graph_parametric(_eqn.get_text()
             + "," + _eqn_par_y.get_text() + "," + _eqn_par_z.get_text(),
-            _row_min.get_text(), _row_max.get_text(), 50,
-            _col_min.get_text(), _col_max.get_text(), 50));
+            _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
+            _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
     }
 
     _graph->draw_grid_flag = _draw_grid.get_active();
