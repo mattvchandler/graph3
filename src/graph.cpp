@@ -20,10 +20,12 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <limits>
 #include <sstream>
 
 #include "graph.hpp"
 
+// TODO: remove these debug funcs
 std::ostream & operator<<(std::ostream & out, const glm::vec2 & v)
 {
     out<<"("<<v.x<<", "<<v.y<<")";
@@ -53,82 +55,293 @@ glm::vec3 get_normal (glm::vec3 center,
     glm::vec3 lf, bool lf_def,
     glm::vec3 ul, bool ul_def)
 {
-    std::vector<glm::vec3> surrounding;
+    const float epsilon = std::numeric_limits<double>::epsilon() / 2.0f;
+
+    std::vector<glm::dvec3> surrounding;
+
+    // temporary vars
+    glm::dvec3 cr;
+    double length;
+
+    // get tangents through surrounding points
+    glm::dvec3 t_up, t_ur, t_rt, t_lr, t_dn, t_ll, t_lf, t_ul; 
+
+    // check to make sure we have no 0-length vectors, and then normalize
+    if(up_def)
+    {
+        t_up = up - center;
+        length = glm::length(t_up);
+        if(length <= epsilon)
+            up_def = false;
+    }
+    if(ur_def)
+    {
+        t_ur = ur - center;
+        length = glm::length(t_ur);
+        if(length <= epsilon)
+            ur_def = false;
+    }
+    if(rt_def)
+    {
+        t_rt = rt - center;
+        length = glm::length(t_rt);
+        if(length <= epsilon)
+            rt_def = false;
+    }
+    if(lr_def)
+    {
+        t_lr = lr - center;
+        length = glm::length(t_lr);
+        if(length <= epsilon)
+            lr_def = false;
+    }
+    if(dn_def)
+    {
+        t_dn = dn - center;
+        length = glm::length(t_dn);
+        if(length <= epsilon)
+            dn_def = false;
+    }
+    if(ll_def)
+    {
+        t_ll = ll - center;
+        length = glm::length(t_ll);
+        if(length <= epsilon)
+            ll_def = false;
+    }
+    if(lf_def)
+    {
+        t_lf = lf - center;
+        length = glm::length(t_lf);
+        if(length <= epsilon)
+            lf_def = false;
+    }
+    if(ul_def)
+    {
+        t_ul = ul - center;
+        length = glm::length(t_ul);
+        if(length <= epsilon)
+            ul_def = false;
+    }
 
     // get cross-products from combinations of surrounding points
-    if(up_def && ur_def)
-        surrounding.push_back(glm::normalize(glm::cross(ur - center, up - center)));
-    if(up_def && rt_def)
-        surrounding.push_back(glm::normalize(glm::cross(rt - center, up - center)));
-    if(up_def && lr_def)
-        surrounding.push_back(glm::normalize(glm::cross(lr - center, up - center)));
+    // check for colinearity
 
-    if(ur_def && rt_def)
-        surrounding.push_back(glm::normalize(glm::cross(rt - center, ur - center)));
-    if(ur_def && lr_def)
-        surrounding.push_back(glm::normalize(glm::cross(lr - center, ur - center)));
-    if(ur_def && dn_def)
-        surrounding.push_back(glm::normalize(glm::cross(dn - center, ur - center)));
-
-    if(rt_def && lr_def)
-        surrounding.push_back(glm::normalize(glm::cross(lr - center, rt - center)));
-    if(rt_def && dn_def)
-        surrounding.push_back(glm::normalize(glm::cross(dn - center, rt - center)));
-    if(rt_def && ll_def)
-        surrounding.push_back(glm::normalize(glm::cross(ll - center, rt - center)));
-
-    if(lr_def && dn_def)
-        surrounding.push_back(glm::normalize(glm::cross(dn - center, lr - center)));
-    if(lr_def && ll_def)
-        surrounding.push_back(glm::normalize(glm::cross(ll - center, lr - center)));
-    if(lr_def && lf_def)
-        surrounding.push_back(glm::normalize(glm::cross(lf - center, lr - center)));
-
-    if(dn_def && ll_def)
-        surrounding.push_back(glm::normalize(glm::cross(ll - center, dn - center)));
-    if(dn_def && lf_def)
-        surrounding.push_back(glm::normalize(glm::cross(lf - center, dn - center)));
-    if(dn_def && ul_def)
-        surrounding.push_back(glm::normalize(glm::cross(ul - center, dn - center)));
-
-    if(ll_def && lf_def)
-        surrounding.push_back(glm::normalize(glm::cross(lf - center, ll - center)));
-    if(ll_def && ul_def)
-        surrounding.push_back(glm::normalize(glm::cross(ul - center, ll - center)));
-    if(ll_def && up_def)
-        surrounding.push_back(glm::normalize(glm::cross(up - center, ll - center)));
-
-    if(lf_def && ul_def)
-        surrounding.push_back(glm::normalize(glm::cross(ul - center, lf - center)));
-    if(lf_def && up_def)
-        surrounding.push_back(glm::normalize(glm::cross(up - center, lf - center)));
-    if(lf_def && ur_def)
-        surrounding.push_back(glm::normalize(glm::cross(ur - center, lf - center)));
-
-    if(ul_def && up_def)
-        surrounding.push_back(glm::normalize(glm::cross(up - center, ul - center)));
-    if(ul_def && ur_def)
-        surrounding.push_back(glm::normalize(glm::cross(ur - center, ul - center)));
-    if(ul_def && rt_def)
-        surrounding.push_back(glm::normalize(glm::cross(rt - center, ul - center)));
-
-    glm::vec3 normal(0.0f);
-    for(auto &i: surrounding)
+    if(up_def)
     {
-        // don't use results from colinear or identical vectors
-        if((std::fpclassify(i.x) == FP_NORMAL || std::fpclassify(i.x) == FP_ZERO) &&
-            (std::fpclassify(i.y) == FP_NORMAL || std::fpclassify(i.y) == FP_ZERO) &&
-            (std::fpclassify(i.z) == FP_NORMAL || std::fpclassify(i.z) == FP_ZERO))
+        if(ur_def)
         {
-            // invert inverted normals
-            if(glm::length(normal + i) > glm::length(normal))
-                normal += i;
-            else
-                normal -= i;
+            cr = glm::cross(t_ur, t_up);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(rt_def)
+        {
+            cr = glm::cross(t_rt, t_up);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(lr_def)
+        {
+            cr = glm::cross(t_lr, t_up);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
         }
     }
 
-    return glm::normalize(normal);
+    if(ur_def)
+    {
+        if(rt_def)
+        {
+            cr = glm::cross(t_rt, t_ur);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(lr_def)
+        {
+            cr = glm::cross(t_lr, t_ur);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(dn_def)
+        {
+            cr = glm::cross(t_dn, t_ur);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+    }
+
+    if(rt_def)
+    {
+        if(lr_def)
+        {
+            cr = glm::cross(t_lr, t_rt);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(dn_def)
+        {
+            cr = glm::cross(t_dn, t_rt);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(ll_def)
+        {
+            cr = glm::cross(t_ll, t_rt);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+    }
+
+    if(lr_def)
+    {
+        if(dn_def)
+        {
+            cr = glm::cross(t_dn, t_lr);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(ll_def)
+        {
+            cr = glm::cross(t_ll, t_lr);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(lf_def)
+        {
+            cr = glm::cross(t_lf, t_lr);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+    }
+
+    if(dn_def)
+    {
+        if(ll_def)
+        {
+            cr = glm::cross(t_ll, t_dn);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(lf_def)
+        {
+            cr = glm::cross(t_lf, t_dn);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(ul_def)
+        {
+            cr = glm::cross(t_ul, t_dn);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+    }
+
+    if(ll_def)
+    {
+        if(lf_def)
+        {
+            cr = glm::cross(t_lf, t_ll);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(ul_def)
+        {
+            cr = glm::cross(t_ul, t_ll);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(up_def)
+        {
+            cr = glm::cross(t_up, t_ll);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+    }
+
+    if(lf_def)
+    {
+        if(ul_def)
+        {
+            cr = glm::cross(t_ul, t_lf);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(up_def)
+        {
+            cr = glm::cross(t_up, t_lf);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(ur_def)
+        {
+            cr = glm::cross(t_ur, t_lf);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+    }
+
+    if(ul_def)
+    {
+        if(up_def)
+        {
+            cr = glm::cross(t_up, t_ul);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(ur_def)
+        {
+            cr = glm::cross(t_ur, t_ul);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+        if(rt_def)
+        {
+            cr = glm::cross(t_rt, t_ul);
+            length = glm::length(cr);
+            if(length > epsilon)
+                surrounding.push_back(cr / length);
+        }
+    }
+
+    glm::dvec3 normal(0.0f);
+    for(auto &i: surrounding)
+    {
+        // invert inverted normals
+        if(glm::length(normal + i) > glm::length(normal))
+            normal += i;
+        else
+            normal -= i;
+    }
+
+    // check to see if we have a good vector before normalizing (to prevent div by 0)
+    if(surrounding.size() > 0 && glm::length(normal) > epsilon)
+        return glm::vec3(glm::normalize(normal));
+    else
+        return glm::vec3(0.0f, 0.0f, 1.0f);
 }
 
 Graph::Graph(const std::string & eqn):
