@@ -25,15 +25,15 @@
 #include "graph_parametric.hpp"
 
 Graph_parametric::Graph_parametric(const std::string & eqn,
-    const std::string & u_min, const std::string & u_max, int u_res,
-    const std::string & v_min, const std::string & v_max, int v_res):
+    const std::string & u_min, const std::string & u_max, size_t u_res,
+    const std::string & v_min, const std::string & v_max, size_t v_res):
     Graph(eqn), _u(0.0), _v(0.0), _u_res(u_res),_v_res(v_res)
 {
     // TODO: error checks
     _p.SetExpr(u_min);
-    float min = _p.Eval();
+    double min = _p.Eval();
     _p.SetExpr(u_max);
-    float max = _p.Eval();
+    double max = _p.Eval();
 
     _u_min = std::min(min, max);
     _u_max = std::max(min, max);
@@ -57,28 +57,17 @@ glm::vec3 Graph_parametric::eval(const double u, const double v)
 {
     _u = u; _v = v;
     glm::vec3 result(0.0f);
-    try
+    int num_eqns;
+
+    mu::value_type * result_v = _p.Eval(num_eqns);
+    if(num_eqns != 3)
     {
-        int num_eqns;
-        mu::value_type * v = _p.Eval(num_eqns); 
-        if(num_eqns != 3)
-        {
-            _p.Error(mu::EErrorCodes::ecUNEXPECTED_EOF, _eqn.size()-1, _eqn);
-        }
-        result.x = v[0];
-        result.y = v[1];
-        result.z = v[2];
+        _p.Error(mu::EErrorCodes::ecUNEXPECTED_EOF, _eqn.size()-1, _eqn);
     }
-    catch(mu::Parser::exception_type &e)
-    {
-        std::cerr<<"Error evaluating equation:"<<std::endl;
-        std::cerr<<"Message:  "<< e.GetMsg()<<std::endl;
-        std::cerr<<"Formula:  "<< e.GetExpr()<<std::endl;
-        std::cerr<<"Token:    "<< e.GetToken() <<std::endl;
-        std::cerr<<"Position: "<< e.GetPos()<<std::endl;
-        std::cerr<<"Errc:     "<< e.GetCode()<<std::endl;
-        throw;
-    }
+
+    result.x = result_v[0];
+    result.y = result_v[1];
+    result.z = result_v[2];
     return result;
 }
 

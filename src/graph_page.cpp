@@ -39,7 +39,8 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _col_res(Gtk::Adjustment::create(50.0, 1.0, 1000.0)),
     _draw_grid("Draw Gridlines"),
     _draw_normals("Draw normals"),
-    _apply_butt(Gtk::Stock::APPLY)
+    _apply_butt(Gtk::Stock::APPLY),
+    _error_dialog("", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK)
 {
     attach(_r_car, 0, 1, 1, 1);
     attach(_r_cyl, 1, 1, 1, 1);
@@ -69,7 +70,6 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _row_res.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _col_res.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
-
     Gtk::RadioButton::Group radio_g = _r_car.get_group();
     _r_cyl.set_group(radio_g);
     _r_sph.set_group(radio_g);
@@ -91,9 +91,16 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _color_butt.signal_color_set().connect(sigc::mem_fun(*this, &Graph_page::change_color));
     _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
+    _error_dialog.set_title("Error");
+    _error_dialog.signal_response().connect(sigc::mem_fun(*this, &Graph_page::close_error_dialog));
+
     show_all_children();
     _eqn_par_y.hide();
     _eqn_par_z.hide();
+    _error_dialog.hide();
+
+
+    // TODO: labels, tooltips, placeholder text
 }
 
 Graph_page::~Graph_page()
@@ -149,30 +156,46 @@ void Graph_page::apply()
         return;
     }
 
-    if(_r_car.get_active())
+    try
     {
-        _graph = std::unique_ptr<Graph>(new Graph_cartesian(_eqn.get_text(),
-            _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
-            _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
+        if(_r_car.get_active())
+        {
+            _graph = std::unique_ptr<Graph>(new Graph_cartesian(_eqn.get_text(),
+                        _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
+                        _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
+        }
+        else if(_r_cyl.get_active())
+        {
+            _graph = std::unique_ptr<Graph>(new Graph_cylindrical(_eqn.get_text(),
+                        _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
+                        _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
+        }
+        else if(_r_sph.get_active())
+        {
+            _graph = std::unique_ptr<Graph>(new Graph_spherical(_eqn.get_text(),
+                        _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
+                        _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
+        }
+        else if(_r_par.get_active())
+        {
+            _graph = std::unique_ptr<Graph>(new Graph_parametric(_eqn.get_text()
+                        + "," + _eqn_par_y.get_text() + "," + _eqn_par_z.get_text(),
+                        _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
+                        _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
+        }
     }
-    else if(_r_cyl.get_active())
+    catch(const mu::Parser::exception_type &e)
     {
-        _graph = std::unique_ptr<Graph>(new Graph_cylindrical(_eqn.get_text(),
-            _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
-            _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
-    }
-    else if(_r_sph.get_active())
-    {
-        _graph = std::unique_ptr<Graph>(new Graph_spherical(_eqn.get_text(),
-            _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
-            _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
-    }
-    else if(_r_par.get_active())
-    {
-        _graph = std::unique_ptr<Graph>(new Graph_parametric(_eqn.get_text()
-            + "," + _eqn_par_y.get_text() + "," + _eqn_par_z.get_text(),
-            _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
-            _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
+        // Show error message
+        _graph.reset();
+        update_cursor("");
+        _gl_window->invalidate();
+        _gl_window->set_active_graph(nullptr);
+
+        _error_dialog.set_message(std::string(e.GetMsg()));
+        _error_dialog.set_secondary_text("In Expression: " + e.GetExpr());
+        _error_dialog.show();
+        return;
     }
 
     _graph->draw_grid_flag = _draw_grid.get_active();
@@ -233,6 +256,10 @@ sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved() const
     return _signal_cursor_moved;
 }
 
+void Graph_page::close_error_dialog(int response)
+{
+    _error_dialog.hide();
+}
     // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("sin(v) * cos(u),sin(v) * sin(u),cos(v)", 0.0f, 2.0f * M_PI, 50, 0.0f, M_PI, 50))); // sphere
     // gl_window.graphs.push_back(std::unique_ptr<G:raph>(new Graph_parametric(
     //     "-2/15 * cos(u) * (3 * cos(v) - 30 * sin(u) + 90*cos(u)^4 * sin(u) - 60 * cos(u)^6 * sin(u) + 5 * cos(u) * cos(v) * sin(u)),"

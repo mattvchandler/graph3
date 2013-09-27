@@ -29,8 +29,8 @@ class Graph_cylindrical final: public Graph
 {
 public:
     explicit Graph_cylindrical(const std::string & eqn,
-        const std::string & r_min, const std::string & r_max, int r_res,
-        const std::string & theta_min, const std::string & theta_max, int theta_res);
+        const std::string & r_min, const std::string & r_max, size_t r_res,
+        const std::string & theta_min, const std::string & theta_max, size_t theta_res);
 
     double eval(const double r, const double theta);
     void build_graph() override;

@@ -25,15 +25,14 @@
 #include "graph_cartesian.hpp"
 
 Graph_cartesian::Graph_cartesian(const std::string & eqn,
-    const std::string & x_min, const std::string & x_max, int x_res,
-    const std::string & y_min, const std::string & y_max, int y_res):
+    const std::string & x_min, const std::string & x_max, size_t x_res,
+    const std::string & y_min, const std::string & y_max, size_t y_res):
     Graph(eqn), _x(0.0), _y(0.0), _x_res(x_res), _y_res(y_res)
 {
-    // TODO: error checks
     _p.SetExpr(x_min);
-    float min = _p.Eval();
+    double min = _p.Eval();
     _p.SetExpr(x_max);
-    float max = _p.Eval();
+    double max = _p.Eval();
 
     _x_min = std::min(min, max);
     _x_max = std::max(min, max);
@@ -56,22 +55,7 @@ Graph_cartesian::Graph_cartesian(const std::string & eqn,
 double Graph_cartesian::eval(const double x, const double y)
 {
     _x = x; _y = y;
-    double result = 0.0;
-    try
-    {
-        result = _p.Eval();
-    }
-    catch(mu::Parser::exception_type &e)
-    {
-        std::cerr<<"Error evaluating equation:"<<std::endl;
-        std::cerr<<"Message:  "<< e.GetMsg()<<std::endl;
-        std::cerr<<"Formula:  "<< e.GetExpr()<<std::endl;
-        std::cerr<<"Token:    "<< e.GetToken() <<std::endl;
-        std::cerr<<"Position: "<< e.GetPos()<<std::endl;
-        std::cerr<<"Errc:     "<< e.GetCode()<<std::endl;
-        throw;
-    }
-    return result;
+    return _p.Eval();
 }
 
 // OpenGL needs to be initialized before this is run, hence it's not in the ctor

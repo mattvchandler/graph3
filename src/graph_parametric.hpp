@@ -29,8 +29,8 @@ class Graph_parametric final: public Graph
 {
 public:
     explicit Graph_parametric(const std::string & eqn,
-        const std::string & u_min, const std::string & u_max, int u_res,
-        const std::string & v_min, const std::string & v_max, int v_res);
+        const std::string & u_min, const std::string & u_max, size_t u_res,
+        const std::string & v_min, const std::string & v_max, size_t v_res);
 
     glm::vec3 eval(const double u, const double v);
     void build_graph() override;

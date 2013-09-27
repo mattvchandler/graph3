@@ -25,16 +25,16 @@
 #include "graph_cylindrical.hpp"
 
 Graph_cylindrical::Graph_cylindrical(const std::string & eqn,
-    const std::string & r_min, const std::string & r_max, int r_res,
-    const std::string & theta_min, const std::string & theta_max, int theta_res):
+    const std::string & r_min, const std::string & r_max, size_t r_res,
+    const std::string & theta_min, const std::string & theta_max, size_t theta_res):
     Graph(eqn), _r(0.0), _theta(0.0), _r_res(r_res), _theta_res(theta_res)
 
 {
     // TODO: error checks
     _p.SetExpr(r_min);
-    float min = _p.Eval();
+    double min = _p.Eval();
     _p.SetExpr(r_max);
-    float max = _p.Eval();
+    double max = _p.Eval();
 
     _r_min = std::min(min, max);
     _r_max = std::max(min, max);
@@ -57,22 +57,7 @@ Graph_cylindrical::Graph_cylindrical(const std::string & eqn,
 double Graph_cylindrical::eval(const double r, const double theta)
 {
     _r = r; _theta = theta;
-    double result = 0.0;
-    try
-    {
-        result = _p.Eval();
-    }
-    catch(mu::Parser::exception_type &e)
-    {
-        std::cerr<<"Error evaluating equation:"<<std::endl;
-        std::cerr<<"Message:  "<< e.GetMsg()<<std::endl;
-        std::cerr<<"Formula:  "<< e.GetExpr()<<std::endl;
-        std::cerr<<"Token:    "<< e.GetToken() <<std::endl;
-        std::cerr<<"Position: "<< e.GetPos()<<std::endl;
-        std::cerr<<"Errc:     "<< e.GetCode()<<std::endl;
-        throw;
-    }
-    return result;
+    return _p.Eval();
 }
 
 // OpenGL needs to be initialized before this is run, hence it's not in the ctor

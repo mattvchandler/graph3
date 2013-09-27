@@ -25,16 +25,16 @@
 #include "graph_spherical.hpp"
 
 Graph_spherical::Graph_spherical(const std::string & eqn,
-    const std::string & theta_min, const std::string & theta_max, int theta_res,
-    const std::string & phi_min, const std::string & phi_max, int phi_res):
+    const std::string & theta_min, const std::string & theta_max, size_t theta_res,
+    const std::string & phi_min, const std::string & phi_max, size_t phi_res):
     Graph(eqn), _theta(0.0), _phi(0.0), _theta_res(theta_res), _phi_res(phi_res)
 
 {
     // TODO: error checks
     _p.SetExpr(theta_min);
-    float min = _p.Eval();
+    double min = _p.Eval();
     _p.SetExpr(theta_max);
-    float max = _p.Eval();
+    double max = _p.Eval();
 
     _theta_min = std::min(min, max);
     _theta_max = std::max(min, max);
@@ -57,22 +57,7 @@ Graph_spherical::Graph_spherical(const std::string & eqn,
 double Graph_spherical::eval(const double theta, const double phi)
 {
     _theta = theta; _phi = phi;
-    double result = 0.0;
-    try
-    {
-        result = _p.Eval();
-    }
-    catch(mu::Parser::exception_type &e)
-    {
-        std::cerr<<"Error evaluating equation:"<<std::endl;
-        std::cerr<<"Message:  "<< e.GetMsg()<<std::endl;
-        std::cerr<<"Formula:  "<< e.GetExpr()<<std::endl;
-        std::cerr<<"Token:    "<< e.GetToken() <<std::endl;
-        std::cerr<<"Position: "<< e.GetPos()<<std::endl;
-        std::cerr<<"Errc:     "<< e.GetCode()<<std::endl;
-        throw;
-    }
-    return result;
+   return _p.Eval();
 }
 
 // OpenGL needs to be initialized before this is run, hence it's not in the ctor

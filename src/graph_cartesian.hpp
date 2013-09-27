@@ -29,8 +29,8 @@ class Graph_cartesian final: public Graph
 {
 public:
     explicit Graph_cartesian(const std::string & eqn,
-        const std::string & x_min, const std::string & x_max, int x_res,
-        const std::string & y_min, const std::string & y_max, int y_res);
+        const std::string & x_min, const std::string & x_max, size_t x_res,
+        const std::string & y_min, const std::string & y_max, size_t y_res);
 
     double eval(const double x, const double y);
     void build_graph() override;

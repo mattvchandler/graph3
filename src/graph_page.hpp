@@ -31,6 +31,7 @@
 #include <gtkmm/entry.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
+#include <gtkmm/messagedialog.h>
 #include <gtkmm/radiobutton.h>
 #include <gtkmm/spinbutton.h>
 
@@ -50,6 +51,7 @@ public:
     void change_color();
     void update_cursor(const std::string & text) const;
     void set_active();
+    void close_error_dialog(int response);
 
     sigc::signal<void, const std::string &> signal_cursor_moved() const;
 
@@ -66,6 +68,7 @@ private:
     Gtk::CheckButton _draw_grid, _draw_normals;
     Gtk::ColorButton _color_butt;
     Gtk::Button _apply_butt;
+    Gtk::MessageDialog _error_dialog;
 
     sigc::signal<void, const std::string &> _signal_cursor_moved;
 
