@@ -42,6 +42,9 @@ public:
     std::string cursor_text() const override;
 
 private:
+    mu::Parser _p;
+    std::string _eqn;
+
     double _r, _theta;
     double _r_min, _r_max;
     size_t _r_res;

@@ -24,31 +24,51 @@
 
 #include "graph_parametric.hpp"
 
-Graph_parametric::Graph_parametric(const std::string & eqn,
+Graph_parametric::Graph_parametric(const std::string & eqn_x,
+    const std::string & eqn_y,
+    const std::string & eqn_z,
     const std::string & u_min, const std::string & u_max, size_t u_res,
     const std::string & v_min, const std::string & v_max, size_t v_res):
-    Graph(eqn), _u(0.0), _v(0.0), _u_res(u_res),_v_res(v_res)
+    _eqn_x(eqn_x), _eqn_y(eqn_y), _eqn_z(eqn_z),
+    _u(0.0), _v(0.0), _u_res(u_res),_v_res(v_res)
 {
     // TODO: error checks
-    _p.SetExpr(u_min);
-    double min = _p.Eval();
-    _p.SetExpr(u_max);
-    double max = _p.Eval();
+    _p_x.DefineConst("pi", M_PI);
+    _p_x.DefineConst("e", M_E);
+
+    _p_y.DefineConst("pi", M_PI);
+    _p_y.DefineConst("e", M_E);
+
+    _p_z.DefineConst("pi", M_PI);
+    _p_z.DefineConst("e", M_E);
+
+    _p_x.SetExpr(u_min);
+    double min = _p_x.Eval();
+    _p_x.SetExpr(u_max);
+    double max = _p_x.Eval();
 
     _u_min = std::min(min, max);
     _u_max = std::max(min, max);
 
-    _p.SetExpr(v_min);
-    min = _p.Eval();
-    _p.SetExpr(v_max);
-    max = _p.Eval();
+    _p_x.SetExpr(v_min);
+    min = _p_x.Eval();
+    _p_x.SetExpr(v_max);
+    max = _p_x.Eval();
 
     _v_min = std::min(min, max);
     _v_max = std::max(min, max);
 
-    _p.DefineVar("u", &_u);
-    _p.DefineVar("v", &_v);
-    _p.SetExpr(eqn);
+    _p_x.DefineVar("u", &_u);
+    _p_x.DefineVar("v", &_v);
+    _p_x.SetExpr(_eqn_x);
+
+    _p_y.DefineVar("u", &_u);
+    _p_y.DefineVar("v", &_v);
+    _p_y.SetExpr(_eqn_y);
+
+    _p_z.DefineVar("u", &_u);
+    _p_z.DefineVar("v", &_v);
+    _p_z.SetExpr(_eqn_z);
 
     build_graph();
 }
@@ -56,19 +76,7 @@ Graph_parametric::Graph_parametric(const std::string & eqn,
 glm::vec3 Graph_parametric::eval(const double u, const double v)
 {
     _u = u; _v = v;
-    glm::vec3 result(0.0f);
-    int num_eqns;
-
-    mu::value_type * result_v = _p.Eval(num_eqns);
-    if(num_eqns != 3)
-    {
-        _p.Error(mu::EErrorCodes::ecUNEXPECTED_EOF, _eqn.size()-1, _eqn);
-    }
-
-    result.x = result_v[0];
-    result.y = result_v[1];
-    result.z = result_v[2];
-    return result;
+    return glm::vec3(_p_x.Eval(), _p_y.Eval(), _p_z.Eval());
 }
 
 // OpenGL needs to be initialized before this is run, hence it's not in the ctor
@@ -296,10 +304,10 @@ bool Graph_parametric::cursor_defined() const
 std::string Graph_parametric::cursor_text() const
 {
     std::ostringstream str;
-    std::string eqn = _eqn;
+    std::string eqn = _eqn_x + "," + _eqn_y + "," + _eqn_z;
 
-    if(_eqn.size() > 20)
-        eqn = _eqn.substr(0, 19) + "…";
+    if(eqn.size() > 20)
+        eqn = eqn.substr(0, 19) + "…";
 
     str<<"(x, y, z)(u ,v) = "<<eqn<<" (x, y, z)("<<_cursor_u<<", "<<_cursor_v<<") = (";
     str<<_cursor_pos.x<<", "<<_cursor_pos.y<<", "<<_cursor_pos.z<<")"<<std::endl;

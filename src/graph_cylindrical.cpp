@@ -27,10 +27,13 @@
 Graph_cylindrical::Graph_cylindrical(const std::string & eqn,
     const std::string & r_min, const std::string & r_max, size_t r_res,
     const std::string & theta_min, const std::string & theta_max, size_t theta_res):
-    Graph(eqn), _r(0.0), _theta(0.0), _r_res(r_res), _theta_res(theta_res)
+    _eqn(eqn), _r(0.0), _theta(0.0), _r_res(r_res), _theta_res(theta_res)
 
 {
     // TODO: error checks
+    _p.DefineConst("pi", M_PI);
+    _p.DefineConst("e", M_E);
+
     _p.SetExpr(r_min);
     double min = _p.Eval();
     _p.SetExpr(r_max);

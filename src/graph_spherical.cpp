@@ -27,10 +27,13 @@
 Graph_spherical::Graph_spherical(const std::string & eqn,
     const std::string & theta_min, const std::string & theta_max, size_t theta_res,
     const std::string & phi_min, const std::string & phi_max, size_t phi_res):
-    Graph(eqn), _theta(0.0), _phi(0.0), _theta_res(theta_res), _phi_res(phi_res)
+    _eqn(eqn), _theta(0.0), _phi(0.0), _theta_res(theta_res), _phi_res(phi_res)
 
 {
     // TODO: error checks
+    _p.DefineConst("pi", M_PI);
+    _p.DefineConst("e", M_E);
+
     _p.SetExpr(theta_min);
     double min = _p.Eval();
     _p.SetExpr(theta_max);

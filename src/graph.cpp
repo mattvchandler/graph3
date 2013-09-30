@@ -344,16 +344,14 @@ glm::vec3 get_normal (glm::vec3 center,
         return glm::vec3(0.0f, 0.0f, 1.0f);
 }
 
-Graph::Graph(const std::string & eqn):
+Graph::Graph():
     tex(0), color(1.0f), shininess(50.0f), specular(1.0f),
     grid_color(0.1f, 0.1f, 0.1f, 1.0f), normal_color(0.0f, 1.0f, 1.0f, 1.0f),
     draw_grid_flag(true), draw_normals_flag(false),
-     _eqn(eqn), _ebo(0), _vao(0), _vbo(0), _num_indexes(0),
-     _grid_ebo(0), _grid_num_indexes(0),
-      _normal_vao(0), _normal_vbo(0), _normal_num_indexes(0)
+    _ebo(0), _vao(0), _vbo(0), _num_indexes(0),
+    _grid_ebo(0), _grid_num_indexes(0),
+    _normal_vao(0), _normal_vbo(0), _normal_num_indexes(0)
 {
-    _p.DefineConst("pi", M_PI);
-    _p.DefineConst("e", M_E);
 }
 
 Graph::~Graph()

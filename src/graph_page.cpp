@@ -178,8 +178,7 @@ void Graph_page::apply()
         }
         else if(_r_par.get_active())
         {
-            _graph = std::unique_ptr<Graph>(new Graph_parametric(_eqn.get_text()
-                        + "," + _eqn_par_y.get_text() + "," + _eqn_par_z.get_text(),
+            _graph = std::unique_ptr<Graph>(new Graph_parametric(_eqn.get_text(), _eqn_par_y.get_text(), _eqn_par_z.get_text(),
                         _row_min.get_text(), _row_max.get_text(), _row_res.get_value_as_int(),
                         _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
         }

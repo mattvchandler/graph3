@@ -28,7 +28,9 @@
 class Graph_parametric final: public Graph
 {
 public:
-    explicit Graph_parametric(const std::string & eqn,
+    explicit Graph_parametric(const std::string & eqn_x,
+        const std::string & eqn_y,
+        const std::string & eqn_z,
         const std::string & u_min, const std::string & u_max, size_t u_res,
         const std::string & v_min, const std::string & v_max, size_t v_res);
 
@@ -42,6 +44,9 @@ public:
     std::string cursor_text() const override;
 
 private:
+    mu::Parser _p_x, _p_y, _p_z;
+    std::string _eqn_x, _eqn_y, _eqn_z;
+
     double _u, _v;
     double _u_min, _u_max;
     size_t _u_res;

@@ -63,7 +63,7 @@ glm::vec3 get_normal (glm::vec3 center,
 class Graph: public sigc::trackable
 {
 public:
-    explicit Graph(const std::string & eqn = "");
+    Graph();
     virtual ~Graph();
 
     void draw() const;
@@ -97,9 +97,6 @@ protected:
         const std::vector<glm::vec2> & tex_coords,
         const std::vector<glm::vec3> & normals,
         const std::vector<bool> & defined);
-
-    std::string _eqn;
-    mu::Parser _p;
 
     GLuint _ebo;
     GLuint _vao;
