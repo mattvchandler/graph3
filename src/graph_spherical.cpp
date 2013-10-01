@@ -30,22 +30,56 @@ Graph_spherical::Graph_spherical(const std::string & eqn,
     _eqn(eqn), _theta(0.0), _phi(0.0), _theta_res(theta_res), _phi_res(phi_res)
 
 {
-    // TODO: error checks
     _p.DefineConst("pi", M_PI);
     _p.DefineConst("e", M_E);
+    double min, max;
 
     _p.SetExpr(theta_min);
-    double min = _p.Eval();
+    try
+    {
+        min = _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::ROW_MIN);
+        throw ge;
+    }
+
     _p.SetExpr(theta_max);
-    double max = _p.Eval();
+    try
+    {
+        max = _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::ROW_MAX);
+        throw ge;
+    }
 
     _theta_min = std::min(min, max);
     _theta_max = std::max(min, max);
 
     _p.SetExpr(phi_min);
-    min = _p.Eval();
+    try
+    {
+        min = _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::COL_MIN);
+        throw ge;
+    }
+
     _p.SetExpr(phi_max);
-    max = _p.Eval();
+    try
+    {
+        max = _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::COL_MAX);
+        throw ge;
+    }
 
     _phi_min = std::min(min, max);
     _phi_max = std::max(min, max);
@@ -60,7 +94,16 @@ Graph_spherical::Graph_spherical(const std::string & eqn,
 double Graph_spherical::eval(const double theta, const double phi)
 {
     _theta = theta; _phi = phi;
-   return _p.Eval();
+    try
+    {
+    return _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::EQN);
+        throw ge;
+    }
+
 }
 
 // OpenGL needs to be initialized before this is run, hence it's not in the ctor

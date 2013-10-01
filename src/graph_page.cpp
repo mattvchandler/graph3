@@ -138,23 +138,10 @@ void Graph_page::change_type()
     }
 }
 
-// TODO: error handling
 void Graph_page::apply()
 {
     _gl_window->remove_graph(_graph.get());
     _graph.reset();
-
-    if(_eqn.get_text_length() == 0 ||
-        _row_min.get_text_length() == 0 || _row_max.get_text_length() == 0 ||
-        _col_min.get_text_length() == 0 || _col_max.get_text_length() == 0 ||
-        (_r_par.get_active() &&
-        (_eqn_par_y.get_text_length() == 0 || _eqn_par_z.get_text_length() == 0)))
-    {
-        update_cursor("");
-        _gl_window->invalidate();
-        _gl_window->set_active_graph(nullptr);
-        return;
-    }
 
     try
     {
@@ -183,17 +170,73 @@ void Graph_page::apply()
                         _col_min.get_text(), _col_max.get_text(), _col_res.get_value_as_int()));
         }
     }
-    catch(const mu::Parser::exception_type &e)
+    catch(const Graph_exception &e)
     {
-        // Show error message
+        // show parsing error message
+        _error_dialog.set_message(std::string(e.GetMsg()));
+        _error_dialog.set_secondary_text("In Expression: " + e.GetExpr());
+        _error_dialog.show();
+
+        // highlight error
+        int start, end;
+        if(e.GetToken().size() > 0 && e.GetPos() < e.GetExpr().size())
+        {
+            start = e.GetPos();
+            end = e.GetPos() + e.GetToken().size();
+        }
+        else
+        {
+            start = 0;
+            end = -1;
+        }
+
+        switch(e.GetLocation())
+        {
+        case Graph_exception::ROW_MIN:
+            _row_min.grab_focus();
+            _row_min.select_region(start, end);
+            break;
+
+        case Graph_exception::ROW_MAX:
+            _row_max.grab_focus();
+            _row_max.select_region(start, end);
+            break;
+
+        case Graph_exception::COL_MIN:
+            _col_min.grab_focus();
+            _col_min.select_region(start, end);
+            break;
+
+        case Graph_exception::COL_MAX:
+            _col_max.grab_focus();
+            _col_max.select_region(start, end);
+            break;
+
+        case Graph_exception::EQN:
+        case Graph_exception::EQN_X:
+            _eqn.grab_focus();
+            _eqn.select_region(start, end);
+            break;
+
+        case Graph_exception::EQN_Y:
+            _eqn_par_y.grab_focus();
+            _eqn_par_y.select_region(start, end);
+            break;
+
+        case Graph_exception::EQN_Z:
+            _eqn_par_z.grab_focus();
+            _eqn_par_z.select_region(start, end);
+            break;
+
+        default:
+            break;
+        }
+
         _graph.reset();
         update_cursor("");
         _gl_window->invalidate();
         _gl_window->set_active_graph(nullptr);
-
-        _error_dialog.set_message(std::string(e.GetMsg()));
-        _error_dialog.set_secondary_text("In Expression: " + e.GetExpr());
-        _error_dialog.show();
+        return;
         return;
     }
 

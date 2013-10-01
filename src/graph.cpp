@@ -44,6 +44,16 @@ std::ostream & operator<<(std::ostream & out, const glm::dvec3 & v)
     return out;
 }
 
+Graph_exception::Graph_exception(const mu::Parser::exception_type & mu_e, const Location l):
+    mu::Parser::exception_type(mu_e), _location(l)
+{
+}
+
+Graph_exception::Location Graph_exception::GetLocation() const
+{
+    return _location;
+}
+
 // calculate the normal of a point given surrounding points
 glm::vec3 get_normal (glm::vec3 center,
     glm::vec3 up, bool up_def,

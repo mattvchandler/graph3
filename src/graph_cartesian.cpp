@@ -29,22 +29,56 @@ Graph_cartesian::Graph_cartesian(const std::string & eqn,
     const std::string & y_min, const std::string & y_max, size_t y_res):
     _eqn(eqn), _x(0.0), _y(0.0), _x_res(x_res), _y_res(y_res)
 {
-    // TODO: error checks
     _p.DefineConst("pi", M_PI);
     _p.DefineConst("e", M_E);
+    double min, max;
 
     _p.SetExpr(x_min);
-    double min = _p.Eval();
+    try
+    {
+        min = _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::ROW_MIN);
+        throw ge;
+    }
+
     _p.SetExpr(x_max);
-    double max = _p.Eval();
+    try
+    {
+        max = _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::ROW_MAX);
+        throw ge;
+    }
 
     _x_min = std::min(min, max);
     _x_max = std::max(min, max);
 
     _p.SetExpr(y_min);
-    min = _p.Eval();
+    try
+    {
+        min = _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::COL_MIN);
+        throw ge;
+    }
+
     _p.SetExpr(y_max);
-    max = _p.Eval();
+    try
+    {
+        max = _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::COL_MAX);
+        throw ge;
+    }
 
     _y_min = std::min(min, max);
     _y_max = std::max(min, max);
@@ -59,7 +93,16 @@ Graph_cartesian::Graph_cartesian(const std::string & eqn,
 double Graph_cartesian::eval(const double x, const double y)
 {
     _x = x; _y = y;
-    return _p.Eval();
+    try
+    {
+        return _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::EQN);
+        throw ge;
+    }
+
 }
 
 // OpenGL needs to be initialized before this is run, hence it's not in the ctor

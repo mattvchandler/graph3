@@ -30,22 +30,56 @@ Graph_cylindrical::Graph_cylindrical(const std::string & eqn,
     _eqn(eqn), _r(0.0), _theta(0.0), _r_res(r_res), _theta_res(theta_res)
 
 {
-    // TODO: error checks
     _p.DefineConst("pi", M_PI);
     _p.DefineConst("e", M_E);
+    double min, max;
 
     _p.SetExpr(r_min);
-    double min = _p.Eval();
+    try
+    {
+        min = _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::ROW_MIN);
+        throw ge;
+    }
+
     _p.SetExpr(r_max);
-    double max = _p.Eval();
+    try
+    {
+        max = _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::ROW_MAX);
+        throw ge;
+    }
 
     _r_min = std::min(min, max);
     _r_max = std::max(min, max);
 
     _p.SetExpr(theta_min);
-    min = _p.Eval();
+    try
+    {
+        min = _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::COL_MIN);
+        throw ge;
+    }
+
     _p.SetExpr(theta_max);
-    max = _p.Eval();
+    try
+    {
+        max = _p.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::COL_MAX);
+        throw ge;
+    }
 
     _theta_min = std::min(min, max);
     _theta_max = std::max(min, max);
@@ -60,7 +94,15 @@ Graph_cylindrical::Graph_cylindrical(const std::string & eqn,
 double Graph_cylindrical::eval(const double r, const double theta)
 {
     _r = r; _theta = theta;
-    return _p.Eval();
+    try
+    {
+        return _p.Eval();
+    }
+    catch(const mu::Parser::exception_type &e)
+    {
+        Graph_exception ge(e, Graph_exception::EQN);
+        throw ge;
+    }
 }
 
 // OpenGL needs to be initialized before this is run, hence it's not in the ctor

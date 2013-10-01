@@ -32,7 +32,6 @@ Graph_parametric::Graph_parametric(const std::string & eqn_x,
     _eqn_x(eqn_x), _eqn_y(eqn_y), _eqn_z(eqn_z),
     _u(0.0), _v(0.0), _u_res(u_res),_v_res(v_res)
 {
-    // TODO: error checks
     _p_x.DefineConst("pi", M_PI);
     _p_x.DefineConst("e", M_E);
 
@@ -42,18 +41,55 @@ Graph_parametric::Graph_parametric(const std::string & eqn_x,
     _p_z.DefineConst("pi", M_PI);
     _p_z.DefineConst("e", M_E);
 
+    double min, max;
+
     _p_x.SetExpr(u_min);
-    double min = _p_x.Eval();
+    try
+    {
+        min = _p_x.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::ROW_MIN);
+        throw ge;
+    }
+
     _p_x.SetExpr(u_max);
-    double max = _p_x.Eval();
+    try
+    {
+        max = _p_x.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::ROW_MAX);
+        throw ge;
+    }
 
     _u_min = std::min(min, max);
     _u_max = std::max(min, max);
 
     _p_x.SetExpr(v_min);
-    min = _p_x.Eval();
+    try
+    {
+        min = _p_x.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::COL_MIN);
+        throw ge;
+    }
+
     _p_x.SetExpr(v_max);
-    max = _p_x.Eval();
+    try
+    {
+        max = _p_x.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::COL_MAX);
+        throw ge;
+    }
+
 
     _v_min = std::min(min, max);
     _v_max = std::max(min, max);
@@ -76,7 +112,38 @@ Graph_parametric::Graph_parametric(const std::string & eqn_x,
 glm::vec3 Graph_parametric::eval(const double u, const double v)
 {
     _u = u; _v = v;
-    return glm::vec3(_p_x.Eval(), _p_y.Eval(), _p_z.Eval());
+    double x, y, z;
+    try
+    {
+        x = _p_x.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::EQN_X);
+        throw ge;
+    }
+
+    try
+    {
+        y = _p_y.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::EQN_Y);
+        throw ge;
+    }
+
+    try
+    {
+        z = _p_z.Eval();
+    }
+    catch(const mu::Parser::exception_type & e)
+    {
+        Graph_exception ge(e, Graph_exception::EQN_Z);
+        throw ge;
+    }
+
+    return glm::vec3(x, y, z);
 }
 
 // OpenGL needs to be initialized before this is run, hence it's not in the ctor
