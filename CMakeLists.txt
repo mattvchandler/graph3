@@ -24,6 +24,7 @@ include_directories(${GTKMM_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/src/)
 link_directories(${GTKMM_LINK_DIRS})
 
 add_executable(${PROJECT_NAME}
+    src/gl_helpers.cpp
     src/graph.cpp
     src/graph_cartesian.cpp
     src/graph_cylindrical.cpp

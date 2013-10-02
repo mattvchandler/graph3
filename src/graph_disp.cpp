@@ -20,155 +20,10 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <iostream>
-#include <fstream>
-#include <utility>
-#include <cmath>
-
-#include <gdkmm.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "gl_helpers.hpp"
 #include "graph_disp.hpp"
-
-void check_error(const char * at)
-{
-    GLenum e = glGetError();
-    if(e == GL_NO_ERROR)
-        return;
-    std::cerr<<"OpenGL Error at "<<at<<": "<<gluErrorString(e)<<std::endl;
-}
-
-GLuint compile_shader(const char * filename, GLenum shader_type)
-{
-    std::ifstream in(filename, std::ios::binary | std::ios::in);
-    std::vector <char> buff;
-
-    if(in)
-    {
-        in.seekg(0, std::ios::end);
-        size_t in_size = in.tellg();
-        in.seekg(0, std::ios::beg);
-
-        buff.resize(in_size + 1);
-        buff.back() = '\0';
-        in.read(&buff[0], in_size);
-
-        if(!in)
-            return 0;
-    }
-    else
-        return 0;
-
-    GLuint shader = glCreateShader(shader_type);
-
-    const char * src = &buff[0];
-    glShaderSource(shader, 1, &src, NULL);
-
-    glCompileShader(shader);
-
-    GLint compile_status;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
-
-    if(compile_status != GL_TRUE)
-    {
-        GLint log_length;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
-        std::vector<char> log(log_length + 1);
-        log.back() = '\0';
-        glGetShaderInfoLog(shader, log_length, NULL, &log[0]);
-
-        std::cerr<<"Error compiling shader: "<<filename<<std::endl;
-        std::cerr<<&log[0]<<std::endl;
-
-        glDeleteShader(shader);
-
-        return 0;
-    }
-    return shader;
-}
-
-GLuint link_shader_prog(const std::vector<GLuint> & shaders)
-{
-    GLuint prog = glCreateProgram();
-    for(auto &i: shaders)
-        glAttachShader(prog, i);
-
-    glLinkProgram(prog);
-
-    GLint link_status;
-    glGetProgramiv(prog, GL_LINK_STATUS, &link_status);
-
-    if(link_status != GL_TRUE)
-    {
-        GLint log_length;
-        glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &log_length);
-        std::vector<char> log(log_length + 1);
-        log.back() = '\0';
-        glGetProgramInfoLog(prog, log_length, NULL, &log[0]);
-
-        std::cerr<<"Error linking program: "<<std::endl;
-        std::cerr<<&log[0]<<std::endl;
-
-        glDeleteProgram(prog);
-
-        return 0;
-    }
-    return prog;
-}
-
-std::pair<std::vector<float>, glm::uvec2> read_img(const std::string & filename)
-{
-    const Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create_from_file(filename);
-    std::pair<std::vector<float>, glm::uvec2> ret(std::vector<float>(image->get_width() * image->get_height() * 4),
-        glm::uvec2(image->get_width(), image->get_height()));
-
-    const guint8 * data = image->get_pixels();
-    for(int r = 0; r < image->get_height(); ++r)
-    {
-        for(int c = 0; c < image->get_width(); ++c)
-        {
-            const guint8 * pix = data + r * image->get_rowstride() + c * image->get_n_channels();
-            switch(image->get_n_channels())
-            {
-            case 1:
-                ret.first[(image->get_width() * r + c) * 4 + 0] = pix[0] / 255.0f;
-                ret.first[(image->get_width() * r + c) * 4 + 1] = pix[0] / 255.0f;
-                ret.first[(image->get_width() * r + c) * 4 + 2] = pix[0] / 255.0f;
-                ret.first[(image->get_width() * r + c) * 4 + 3] = 1.0f;
-                break;
-            case 3:
-                ret.first[(image->get_width() * r + c) * 4 + 0] = pix[0] / 255.0f;
-                ret.first[(image->get_width() * r + c) * 4 + 1] = pix[1] / 255.0f;
-                ret.first[(image->get_width() * r + c) * 4 + 2] = pix[2] / 255.0f;
-                ret.first[(image->get_width() * r + c) * 4 + 3] = 1.0f;
-                break;
-            case 4:
-                ret.first[(image->get_width() * r + c) * 4 + 0] = pix[0] / 255.0f;
-                ret.first[(image->get_width() * r + c) * 4 + 1] = pix[1] / 255.0f;
-                ret.first[(image->get_width() * r + c) * 4 + 2] = pix[2] / 255.0f;
-                ret.first[(image->get_width() * r + c) * 4 + 3] = pix[3] / 255.0f;
-                break;
-            default:
-                break;
-            }
-        }
-    }
-    return ret;
-}
-
-// get a list of supported filename extensions (not .<ext>, just <ext>)
-std::vector<std::string> get_img_extensions()
-{
-    std::vector<std::string> exts;
-    for(auto &i: Gdk::Pixbuf::get_formats())
-    {
-        for(auto & ext:i.get_extensions())
-        {
-            exts.push_back(ext);
-        }
-    }
-    return exts;
-}
 
 Cursor::Cursor(): tex(0), shininess(90.0f), specular(1.0f),
     _vao(0), _vbo(0), _num_indexes(0)
@@ -182,6 +37,7 @@ Cursor::~Cursor()
     if(_vbo)
         glDeleteBuffers(1, &_vbo);
 }
+
 void Cursor::draw() const
 {
     glBindVertexArray(_vao);
@@ -439,33 +295,15 @@ void Graph_disp::realize()
     // load images
     glEnable(GL_TEXTURE_2D);
 
-    std::vector<std::pair<std::vector<float>, glm::uvec2>> texture_data;
-
     try
     {
-        texture_data.push_back(read_img("img/test.png"));
-        texture_data.push_back(read_img("img/cursor.png"));
+        textures.push_back(create_texture_from_file("img/test.png"));
+        textures.push_back(create_texture_from_file("img/cursor.png"));
     }
     catch(Glib::Exception &e)
     {
         std::cerr<<"Error reading image file:"<<std::endl<<e.what()<<std::endl;
         exit(EXIT_FAILURE);
-    }
-
-    textures.resize(texture_data.size());
-    glGenTextures(textures.size(), &textures[0]);
-
-    for(size_t i = 0; i < textures.size(); ++i)
-    {
-        glBindTexture(GL_TEXTURE_2D, textures[i]);
-        glTexStorage2D(GL_TEXTURE_2D, (int)(log2(std::min(texture_data[i].second.x, texture_data[i].second.y))) + 1,
-            GL_RGBA8, texture_data[i].second.x, texture_data[i].second.y);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 512, 512, GL_RGBA, GL_FLOAT, &texture_data[i].first[0]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glGenerateMipmap(GL_TEXTURE_2D);
     }
 
     // set up un-changing lighting values
@@ -569,7 +407,6 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
         check_error("pre draw");
 
         graph->draw();
-
 
         if(graph->draw_grid_flag)
         {

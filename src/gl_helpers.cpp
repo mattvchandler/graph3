@@ -1,0 +1,170 @@
+// gl_helpers.cpp
+// texture and shader loading
+
+// Copyright 2013 Matthew Chandler
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#include <iostream>
+#include <fstream>
+#include <utility>
+#include <cmath>
+
+#include "gl_helpers.hpp"
+
+void check_error(const std::string & at)
+{
+    GLenum e = glGetError();
+    if(e == GL_NO_ERROR)
+        return;
+    std::cerr<<"OpenGL Error at "<<at<<": "<<gluErrorString(e)<<std::endl;
+}
+
+GLuint compile_shader(const std::string & filename, GLenum shader_type)
+{
+    std::ifstream in(filename, std::ios::binary | std::ios::in);
+    std::vector <char> buff;
+
+    if(in)
+    {
+        in.seekg(0, std::ios::end);
+        size_t in_size = in.tellg();
+        in.seekg(0, std::ios::beg);
+
+        buff.resize(in_size + 1);
+        buff.back() = '\0';
+        in.read(buff.data(), in_size);
+
+        if(!in)
+            return 0;
+    }
+    else
+        return 0;
+
+    GLuint shader = glCreateShader(shader_type);
+
+    const char * src = buff.data();
+    glShaderSource(shader, 1, &src, NULL);
+
+    glCompileShader(shader);
+
+    GLint compile_status;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
+
+    if(compile_status != GL_TRUE)
+    {
+        GLint log_length;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
+        std::vector<char> log(log_length + 1);
+        log.back() = '\0';
+        glGetShaderInfoLog(shader, log_length, NULL, log.data());
+
+        std::cerr<<"Error compiling shader: "<<filename<<std::endl;
+        std::cerr<<log.data()<<std::endl;
+
+        glDeleteShader(shader);
+
+        return 0;
+    }
+    return shader;
+}
+
+GLuint link_shader_prog(const std::vector<GLuint> & shaders)
+{
+    GLuint prog = glCreateProgram();
+    for(auto &i: shaders)
+        glAttachShader(prog, i);
+
+    glLinkProgram(prog);
+
+    GLint link_status;
+    glGetProgramiv(prog, GL_LINK_STATUS, &link_status);
+
+    if(link_status != GL_TRUE)
+    {
+        GLint log_length;
+        glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &log_length);
+        std::vector<char> log(log_length + 1);
+        log.back() = '\0';
+        glGetProgramInfoLog(prog, log_length, NULL, log.data());
+
+        std::cerr<<"Error linking program: "<<std::endl;
+        std::cerr<<log.data()<<std::endl;
+
+        glDeleteProgram(prog);
+
+        return 0;
+    }
+    return prog;
+}
+
+GLuint create_texture_from_file(const std::string & filename)
+{
+    const Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create_from_file(filename);
+    std::vector<float> float_data(image->get_width() * image->get_height() * 4);
+
+    // get data and load into float array
+    const guint8 * int_data = image->get_pixels();
+    for(int r = 0; r < image->get_height(); ++r)
+    {
+        for(int c = 0; c < image->get_width(); ++c)
+        {
+            const guint8 * pix = int_data + r * image->get_rowstride() + c * image->get_n_channels();
+            switch(image->get_n_channels())
+            {
+            case 1:
+                float_data[(image->get_width() * r + c) * 4 + 0] = pix[0] / 255.0f;
+                float_data[(image->get_width() * r + c) * 4 + 1] = pix[0] / 255.0f;
+                float_data[(image->get_width() * r + c) * 4 + 2] = pix[0] / 255.0f;
+                float_data[(image->get_width() * r + c) * 4 + 3] = 1.0f;
+                break;
+            case 3:
+                float_data[(image->get_width() * r + c) * 4 + 0] = pix[0] / 255.0f;
+                float_data[(image->get_width() * r + c) * 4 + 1] = pix[1] / 255.0f;
+                float_data[(image->get_width() * r + c) * 4 + 2] = pix[2] / 255.0f;
+                float_data[(image->get_width() * r + c) * 4 + 3] = 1.0f;
+                break;
+            case 4:
+                float_data[(image->get_width() * r + c) * 4 + 0] = pix[0] / 255.0f;
+                float_data[(image->get_width() * r + c) * 4 + 1] = pix[1] / 255.0f;
+                float_data[(image->get_width() * r + c) * 4 + 2] = pix[2] / 255.0f;
+                float_data[(image->get_width() * r + c) * 4 + 3] = pix[3] / 255.0f;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    // copy to OpenGL
+    glEnable(GL_TEXTURE_2D);
+    GLuint tex;
+    glGenTextures(1, &tex);
+
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexStorage2D(GL_TEXTURE_2D, (int)(log2(std::min(image->get_width(), image->get_height()))) + 1,
+        GL_RGBA8, image->get_width(), image->get_height());
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 512, 512, GL_RGBA, GL_FLOAT, float_data.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    return tex;
+}
