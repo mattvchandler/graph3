@@ -59,15 +59,15 @@ public:
     ~Cursor();
 
     void draw() const;
-    void build();
+    void build(const std::string & filename);
 
     // material properties
-    GLuint tex;
     float shininess;
     glm::vec3 specular;
 
 private:
     // OpenGL stuff
+    GLuint _tex;
     GLuint _vao;
     GLuint _vbo;
     GLuint _num_indexes;
@@ -106,7 +106,6 @@ class Graph_disp final: public SFMLWidget
 {
 public:
     Graph_disp(const sf::VideoMode & mode, const int size_reqest = - 1, const sf::ContextSettings & context_settings = sf::ContextSettings());
-    ~Graph_disp();
 
     // key press handler
     bool key_press(GdkEventKey * e);
@@ -124,8 +123,6 @@ public:
     // give and take graphs from the display
     void add_graph(const Graph * graph);
     void remove_graph(const Graph * graph);
-
-    std::vector<GLuint> textures;
 
     bool draw_cursor_flag;
     bool draw_axes_flag;

@@ -25,13 +25,15 @@
 #include "gl_helpers.hpp"
 #include "graph_disp.hpp"
 
-Cursor::Cursor(): tex(0), shininess(90.0f), specular(1.0f),
-    _vao(0), _vbo(0), _num_indexes(0)
+Cursor::Cursor(): shininess(90.0f), specular(1.0f),
+    _tex(0), _vao(0), _vbo(0), _num_indexes(0)
 {
 }
 
 Cursor::~Cursor()
 {
+    if(_tex)
+        glDeleteTextures(1, &_tex);
     if(_vao)
         glDeleteVertexArrays(1, &_vao);
     if(_vbo)
@@ -42,12 +44,12 @@ void Cursor::draw() const
 {
     glBindVertexArray(_vao);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-    glBindTexture(GL_TEXTURE_2D, tex);
+    glBindTexture(GL_TEXTURE_2D, _tex);
 
     glDrawArrays(GL_TRIANGLES, 0, _num_indexes);
 }
 
-void Cursor::build()
+void Cursor::build(const std::string & tex_file_name)
 {
     std::vector<glm::vec3> coords =
     {
@@ -123,6 +125,16 @@ void Cursor::build()
     glEnableVertexAttribArray(2);
 
     _num_indexes = coords.size();
+
+    try
+    {
+        _tex = create_texture_from_file(tex_file_name);
+    }
+    catch(Glib::Exception &e)
+    {
+        std::cerr<<"Error reading cursor image file:"<<std::endl<<e.what()<<std::endl;
+        exit(EXIT_FAILURE);
+    }
 }
 
 Axes::Axes(): color(0.0f, 0.0f, 0.0f, 1.0f), _vao(0), _vbo(0), _num_indexes(0)
@@ -193,15 +205,6 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_reqest, const 
 
     set_can_focus();
     set_can_default();
-}
-
-Graph_disp::~Graph_disp()
-{
-    for(auto &i: textures)
-    {
-        if(i != 0)
-            glDeleteTextures(1, &i);
-    }
 }
 
 // key press handler
@@ -292,20 +295,6 @@ void Graph_disp::realize()
     _prog_line_uniforms["view_model"] = glGetUniformLocation(_prog_line, "view_model");
     _prog_line_uniforms["color"] = glGetUniformLocation(_prog_line, "color");
 
-    // load images
-    glEnable(GL_TEXTURE_2D);
-
-    try
-    {
-        textures.push_back(create_texture_from_file("img/test.png"));
-        textures.push_back(create_texture_from_file("img/cursor.png"));
-    }
-    catch(Glib::Exception &e)
-    {
-        std::cerr<<"Error reading image file:"<<std::endl<<e.what()<<std::endl;
-        exit(EXIT_FAILURE);
-    }
-
     // set up un-changing lighting values
     glm::vec3 light_pos_eye(0.0f);
     glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
@@ -330,8 +319,7 @@ void Graph_disp::realize()
     glUniform1f(_prog_color_uniforms["quad_atten"], _light.quad_attenuation);
     glUniform3fv(_prog_color_uniforms["cam_forward"], 1, &light_forward[0]);
 
-    _cursor.build();
-    _cursor.tex = textures[1];
+    _cursor.build("img/cursor.png");
 
     _axes.build();
     _axes.color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -378,7 +366,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
 
     for(auto &graph: _graphs)
     {
-        if(graph->tex != 0)
+        if(graph->use_tex != 0)
         {
             glUseProgram(_prog_tex);
 

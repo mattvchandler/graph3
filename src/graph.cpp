@@ -23,6 +23,7 @@
 #include <limits>
 #include <sstream>
 
+#include "gl_helpers.hpp"
 #include "graph.hpp"
 
 // TODO: remove these debug funcs
@@ -355,17 +356,21 @@ glm::vec3 get_normal (glm::vec3 center,
 }
 
 Graph::Graph():
-    tex(0), color(1.0f), shininess(50.0f), specular(1.0f),
+    use_tex(false), color(1.0f), shininess(50.0f), specular(1.0f),
     grid_color(0.1f, 0.1f, 0.1f, 1.0f), normal_color(0.0f, 1.0f, 1.0f, 1.0f),
     draw_grid_flag(true), draw_normals_flag(false),
-    _ebo(0), _vao(0), _vbo(0), _num_indexes(0),
+    _tex(0), _ebo(0), _vao(0), _vbo(0), _num_indexes(0),
     _grid_ebo(0), _grid_num_indexes(0),
     _normal_vao(0), _normal_vbo(0), _normal_num_indexes(0)
 {
+    set_texture("img/test.png");
 }
 
 Graph::~Graph()
 {
+    if(_tex)
+        glDeleteTextures(1, &_tex);
+
     if(_ebo)
         glDeleteBuffers(1, &_ebo);
     if(_vao)
@@ -388,7 +393,7 @@ void Graph::draw() const
     glBindVertexArray(_vao);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-    glBindTexture(GL_TEXTURE_2D, tex);
+    glBindTexture(GL_TEXTURE_2D, _tex);
 
     glDrawElements(GL_TRIANGLE_STRIP, _num_indexes, GL_UNSIGNED_INT, NULL);
 }
@@ -408,6 +413,16 @@ void Graph::draw_normals() const
     glBindBuffer(GL_ARRAY_BUFFER, _normal_vbo);
 
     glDrawArrays(GL_LINES, 0, _normal_num_indexes);
+}
+
+void Graph::set_texture(const std::string & filename)
+{
+    if(_tex)
+        glDeleteTextures(1, &_tex);
+
+    _tex = 0; // so we're in a good state if the next line throws
+
+    _tex = create_texture_from_file(filename);
 }
 
 sigc::signal<void, const std::string &> Graph::signal_cursor_moved()

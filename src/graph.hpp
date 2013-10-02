@@ -81,6 +81,8 @@ public:
     void draw_grid() const;
     void draw_normals() const;
 
+    void set_texture(const std::string & filename);
+
     // cursor funcs
     typedef enum {UP, DOWN, LEFT, RIGHT} Cursor_dir;
     virtual void move_cursor(const Cursor_dir dir) = 0;
@@ -90,7 +92,7 @@ public:
     sigc::signal<void, const std::string &> signal_cursor_moved();
 
     // material properties
-    GLuint tex;
+    bool use_tex;
     glm::vec4 color;
     float shininess;
     glm::vec3 specular;
@@ -109,6 +111,7 @@ protected:
         const std::vector<glm::vec3> & normals,
         const std::vector<bool> & defined);
 
+    GLuint _tex;
     GLuint _ebo;
     GLuint _vao;
     GLuint _vbo;
