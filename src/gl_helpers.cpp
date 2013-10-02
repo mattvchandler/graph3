@@ -116,34 +116,37 @@ GLuint link_shader_prog(const std::vector<GLuint> & shaders)
 GLuint create_texture_from_file(const std::string & filename)
 {
     const Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create_from_file(filename);
-    std::vector<float> float_data(image->get_width() * image->get_height() * 4);
+    int w = image->get_width();
+    int h = image->get_height();
+
+    std::vector<float> float_data(w * h * 4);
 
     // get data and load into float array
     const guint8 * int_data = image->get_pixels();
-    for(int r = 0; r < image->get_height(); ++r)
+    for(int r = 0; r < h; ++r)
     {
-        for(int c = 0; c < image->get_width(); ++c)
+        for(int c = 0; c < w; ++c)
         {
             const guint8 * pix = int_data + r * image->get_rowstride() + c * image->get_n_channels();
             switch(image->get_n_channels())
             {
             case 1:
-                float_data[(image->get_width() * r + c) * 4 + 0] = pix[0] / 255.0f;
-                float_data[(image->get_width() * r + c) * 4 + 1] = pix[0] / 255.0f;
-                float_data[(image->get_width() * r + c) * 4 + 2] = pix[0] / 255.0f;
-                float_data[(image->get_width() * r + c) * 4 + 3] = 1.0f;
+                float_data[(w * r + c) * 4 + 0] = pix[0] / 255.0f;
+                float_data[(w * r + c) * 4 + 1] = pix[0] / 255.0f;
+                float_data[(w * r + c) * 4 + 2] = pix[0] / 255.0f;
+                float_data[(w * r + c) * 4 + 3] = 1.0f;
                 break;
             case 3:
-                float_data[(image->get_width() * r + c) * 4 + 0] = pix[0] / 255.0f;
-                float_data[(image->get_width() * r + c) * 4 + 1] = pix[1] / 255.0f;
-                float_data[(image->get_width() * r + c) * 4 + 2] = pix[2] / 255.0f;
-                float_data[(image->get_width() * r + c) * 4 + 3] = 1.0f;
+                float_data[(w * r + c) * 4 + 0] = pix[0] / 255.0f;
+                float_data[(w * r + c) * 4 + 1] = pix[1] / 255.0f;
+                float_data[(w * r + c) * 4 + 2] = pix[2] / 255.0f;
+                float_data[(w * r + c) * 4 + 3] = 1.0f;
                 break;
             case 4:
-                float_data[(image->get_width() * r + c) * 4 + 0] = pix[0] / 255.0f;
-                float_data[(image->get_width() * r + c) * 4 + 1] = pix[1] / 255.0f;
-                float_data[(image->get_width() * r + c) * 4 + 2] = pix[2] / 255.0f;
-                float_data[(image->get_width() * r + c) * 4 + 3] = pix[3] / 255.0f;
+                float_data[(w * r + c) * 4 + 0] = pix[0] / 255.0f;
+                float_data[(w * r + c) * 4 + 1] = pix[1] / 255.0f;
+                float_data[(w * r + c) * 4 + 2] = pix[2] / 255.0f;
+                float_data[(w * r + c) * 4 + 3] = pix[3] / 255.0f;
                 break;
             default:
                 break;
@@ -153,18 +156,20 @@ GLuint create_texture_from_file(const std::string & filename)
 
     // copy to OpenGL
     glEnable(GL_TEXTURE_2D);
-    GLuint tex = 0;
+    GLuint tex;
     glGenTextures(1, &tex);
 
     glBindTexture(GL_TEXTURE_2D, tex);
-    glTexStorage2D(GL_TEXTURE_2D, (int)(log2(std::min(image->get_width(), image->get_height()))) + 1,
-        GL_RGBA8, image->get_width(), image->get_height());
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 512, 512, GL_RGBA, GL_FLOAT, float_data.data());
+    glTexStorage2D(GL_TEXTURE_2D, (int)(log2(std::min(w, h))) + 1,
+        GL_RGBA8, w, h);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_FLOAT, float_data.data());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glGenerateMipmap(GL_TEXTURE_2D);
+
+    check_error("Texture generation for: " + filename);
 
     return tex;
 }
