@@ -517,7 +517,7 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
     // generate required OpenGL structures
     glGenBuffers(1, &_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * index.size(), &index[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * index.size(), index.data(), GL_STATIC_DRAW);
 
     glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
@@ -528,10 +528,10 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
         sizeof(glm::vec3) * normals.size(), NULL, GL_STATIC_DRAW);
 
     // store vertex data
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * coords.size(), &coords[0]);
-    glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size(), sizeof(glm::vec2) * tex_coords.size(), &tex_coords[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * coords.size(), coords.data());
+    glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size(), sizeof(glm::vec2) * tex_coords.size(), tex_coords.data());
     glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size(),
-        sizeof(glm::vec3) * normals.size(), &normals[0]);
+        sizeof(glm::vec3) * normals.size(), normals.data());
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(0);
@@ -578,7 +578,7 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
     // generate required OpenGL structures
     glGenBuffers(1, &_grid_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _grid_ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * grid_index.size(), &grid_index[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * grid_index.size(), grid_index.data(), GL_STATIC_DRAW);
 
     _grid_num_indexes = grid_index.size();
 
@@ -599,7 +599,7 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
 
     glGenBuffers(1, &_normal_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, _normal_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * normal_coords.size(), &normal_coords[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * normal_coords.size(), normal_coords.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(0);
