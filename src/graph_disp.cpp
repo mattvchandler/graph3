@@ -366,7 +366,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
 
     for(auto &graph: _graphs)
     {
-        if(graph->use_tex != 0)
+        if(graph->use_tex && graph->valid_tex)
         {
             glUseProgram(_prog_tex);
 

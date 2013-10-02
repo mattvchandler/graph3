@@ -153,7 +153,7 @@ GLuint create_texture_from_file(const std::string & filename)
 
     // copy to OpenGL
     glEnable(GL_TEXTURE_2D);
-    GLuint tex;
+    GLuint tex = 0;
     glGenTextures(1, &tex);
 
     glBindTexture(GL_TEXTURE_2D, tex);

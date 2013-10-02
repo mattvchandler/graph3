@@ -39,6 +39,9 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _col_res(Gtk::Adjustment::create(50.0, 1.0, 1000.0)),
     _draw_grid("Draw Gridlines"),
     _draw_normals("Draw normals"),
+    _use_color("Use Color"),
+    _use_tex("Use Texture"),
+    _texture_butt("Choose Texture", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_OPEN),
     _apply_butt(Gtk::Stock::APPLY),
     _error_dialog("", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK)
 {
@@ -57,8 +60,21 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     attach(_col_res, 1, 8, 1, 1);
     attach(_draw_grid, 0, 9, 1, 1);
     attach(_draw_normals, 1, 9, 1, 1);
-    attach(_color_butt, 0, 10, 1, 1);
-    attach(_apply_butt, 1, 10, 1, 1);
+    attach(_use_color, 0, 10, 1, 1);
+    attach(_use_tex, 1, 10, 1, 1);
+    attach(_color_butt, 0, 11, 1, 1);
+    attach(_texture_butt, 1, 11, 1, 1);
+    attach(_apply_butt, 0, 12, 1, 1);
+
+    Gtk::RadioButton::Group type_g = _r_car.get_group();
+    _r_cyl.set_group(type_g);
+    _r_sph.set_group(type_g);
+    _r_par.set_group(type_g);
+
+    _r_car.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
+    _r_cyl.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
+    _r_sph.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
+    _r_par.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
 
     _eqn.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _eqn_par_y.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
@@ -70,25 +86,34 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _row_res.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _col_res.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
-    Gtk::RadioButton::Group radio_g = _r_car.get_group();
-    _r_cyl.set_group(radio_g);
-    _r_sph.set_group(radio_g);
-    _r_par.set_group(radio_g);
-
-    _r_car.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
-    _r_cyl.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
-    _r_sph.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
-    _r_par.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
-
     _draw_grid.set_active(true);
     _draw_grid.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
     _draw_normals.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
 
+    Gtk::RadioButton::Group tex_g = _use_color.get_group();
+    _use_tex.set_group(tex_g);
+
+    _use_color.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_coloring));
+    _use_tex.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_coloring));
+
+    
     Gdk::RGBA start_rgba;
     start_rgba.set_rgba(0.2, 0.5, 0.2, 1.0);
     _color_butt.set_rgba(start_rgba);
-
     _color_butt.signal_color_set().connect(sigc::mem_fun(*this, &Graph_page::change_color));
+
+    _tex_types = Gtk::FileFilter::create();
+    _tex_types->add_pixbuf_formats();
+    _tex_types->set_name("Image files");
+    _texture_butt.add_filter(_tex_types);
+
+    _all_types = Gtk::FileFilter::create();
+    _all_types->add_pattern("*");
+    _all_types->set_name("All files");
+    _texture_butt.add_filter(_all_types);
+
+    _texture_butt.signal_file_set().connect(sigc::mem_fun(*this, &Graph_page::change_tex));
+
     _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
     _error_dialog.set_title("Error");
@@ -243,7 +268,10 @@ void Graph_page::apply()
     _graph->draw_grid_flag = _draw_grid.get_active();
     _graph->draw_normals_flag = _draw_normals.get_active();
 
+    _graph->use_tex = _use_tex.get_active();
     change_color();
+    change_tex();
+
     update_cursor(_graph->cursor_text());
 
     _gl_window->add_graph(_graph.get());
@@ -264,6 +292,21 @@ void Graph_page::change_flags()
     }
 }
 
+void Graph_page::change_coloring()
+{
+    // prevent being run when leaving one and again while entering another
+    static bool change_in = false;
+    change_in = !change_in;
+    if(!change_in)
+        return;
+
+    if(_graph.get())
+    {
+        _graph->use_tex = _use_tex.get_active();
+        _gl_window->invalidate();
+    }
+}
+
 void Graph_page::change_color()
 {
     if(_graph.get())
@@ -273,6 +316,24 @@ void Graph_page::change_color()
         _graph->color.b = _color_butt.get_rgba().get_blue();
         _graph->color.a = 1.0f;
         _gl_window->invalidate();
+    }
+}
+
+void Graph_page::change_tex()
+{
+    if(_graph.get())
+    {
+        try
+        {
+            _graph->set_texture(_texture_butt.get_filename());
+            _gl_window->invalidate();
+        }
+        catch(Glib::Exception &e)
+        {
+            _error_dialog.set_message(e.what());
+            _error_dialog.set_secondary_text("");
+            _error_dialog.show();
+        }
     }
 }
 

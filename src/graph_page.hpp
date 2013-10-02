@@ -29,6 +29,7 @@
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/colorbutton.h>
 #include <gtkmm/entry.h>
+#include <gtkmm/filechooserbutton.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 #include <gtkmm/messagedialog.h>
@@ -48,7 +49,9 @@ public:
     void change_type();
     void apply();
     void change_flags();
+    void change_coloring();
     void change_color();
+    void change_tex();
     void update_cursor(const std::string & text) const;
     void set_active();
     void close_error_dialog(int response);
@@ -66,9 +69,15 @@ private:
     Gtk::Entry _col_min, _col_max;
     Gtk::SpinButton _row_res, _col_res;
     Gtk::CheckButton _draw_grid, _draw_normals;
+    Gtk::RadioButton _use_color, _use_tex;
     Gtk::ColorButton _color_butt;
+    Gtk::FileChooserButton _texture_butt;
     Gtk::Button _apply_butt;
+
     Gtk::MessageDialog _error_dialog;
+
+    Glib::RefPtr<Gtk::FileFilter> _tex_types;
+    Glib::RefPtr<Gtk::FileFilter> _all_types;
 
     sigc::signal<void, const std::string &> _signal_cursor_moved;
 

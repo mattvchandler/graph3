@@ -93,6 +93,7 @@ public:
 
     // material properties
     bool use_tex;
+    bool valid_tex;
     glm::vec4 color;
     float shininess;
     glm::vec3 specular;

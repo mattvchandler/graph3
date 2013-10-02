@@ -356,14 +356,13 @@ glm::vec3 get_normal (glm::vec3 center,
 }
 
 Graph::Graph():
-    use_tex(false), color(1.0f), shininess(50.0f), specular(1.0f),
+    use_tex(false), valid_tex(false), color(1.0f), shininess(50.0f), specular(1.0f),
     grid_color(0.1f, 0.1f, 0.1f, 1.0f), normal_color(0.0f, 1.0f, 1.0f, 1.0f),
     draw_grid_flag(true), draw_normals_flag(false),
     _tex(0), _ebo(0), _vao(0), _vbo(0), _num_indexes(0),
     _grid_ebo(0), _grid_num_indexes(0),
     _normal_vao(0), _normal_vbo(0), _normal_num_indexes(0)
 {
-    set_texture("img/test.png");
 }
 
 Graph::~Graph()
@@ -420,9 +419,15 @@ void Graph::set_texture(const std::string & filename)
     if(_tex)
         glDeleteTextures(1, &_tex);
 
-    _tex = 0; // so we're in a good state if the next line throws
+    // so we're in a good state if the texture creation line throws
+    _tex = 0;
+    valid_tex = false;
+
+    if(filename.size() == 0)
+        return;
 
     _tex = create_texture_from_file(filename);
+    valid_tex = true;
 }
 
 sigc::signal<void, const std::string &> Graph::signal_cursor_moved()
