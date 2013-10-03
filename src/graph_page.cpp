@@ -117,7 +117,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
     _error_dialog.set_title("Error");
-    _error_dialog.signal_response().connect(sigc::mem_fun(*this, &Graph_page::close_error_dialog));
+    _error_dialog.signal_response().connect(sigc::hide(sigc::mem_fun(_error_dialog, &Gtk::MessageDialog::hide)));
 
     show_all_children();
     _eqn_par_y.hide();
@@ -357,11 +357,6 @@ void Graph_page::set_active()
 sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved() const
 {
     return _signal_cursor_moved;
-}
-
-void Graph_page::close_error_dialog(int response)
-{
-    _error_dialog.hide();
 }
     // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("sin(v) * cos(u),sin(v) * sin(u),cos(v)", 0.0f, 2.0f * M_PI, 50, 0.0f, M_PI, 50))); // sphere
     // gl_window.graphs.push_back(std::unique_ptr<G:raph>(new Graph_parametric(

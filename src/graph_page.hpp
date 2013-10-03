@@ -54,7 +54,6 @@ public:
     void change_tex();
     void update_cursor(const std::string & text) const;
     void set_active();
-    void close_error_dialog(int response);
 
     sigc::signal<void, const std::string &> signal_cursor_moved() const;
 
