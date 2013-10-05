@@ -108,6 +108,14 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _row_res.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _col_res.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
+    _eqn.set_placeholder_text("z(x,y)");
+    _eqn_par_y.set_placeholder_text("y(u,v)");
+    _eqn_par_z.set_placeholder_text("z(u,v)");
+    _row_min.set_placeholder_text("x min");
+    _row_max.set_placeholder_text("x max");
+    _col_min.set_placeholder_text("y min");
+    _col_max.set_placeholder_text("y max");
+
     _draw_grid.set_active(true);
     _draw_grid.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
     _draw_normals.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
@@ -147,8 +155,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _eqn_par_z.hide();
     _error_dialog.hide();
 
-
-    // TODO: tooltips, placeholder text
+    // TODO: tooltips, save/load, fixed light, orbiting camera, widget spacing/layout
 }
 
 Graph_page::~Graph_page()
@@ -174,6 +181,12 @@ void Graph_page::change_type()
         _col_max_l.set_text("y max=");
         _row_res_l.set_text("x resolution");
         _col_res_l.set_text("y resolution");
+
+        _eqn.set_placeholder_text("z(x,y)");
+        _row_min.set_placeholder_text("x min");
+        _row_max.set_placeholder_text("x max");
+        _col_min.set_placeholder_text("y min");
+        _col_max.set_placeholder_text("y max");
     }
     else if(_r_cyl.get_active())
     {
@@ -184,6 +197,12 @@ void Graph_page::change_type()
         _col_max_l.set_text(u8"θ max=");
         _row_res_l.set_text("r resolution");
         _col_res_l.set_text(u8"θ resolution");
+
+        _eqn.set_placeholder_text(u8"z(r,θ)");
+        _row_min.set_placeholder_text("r min");
+        _row_max.set_placeholder_text("r max");
+        _col_min.set_placeholder_text(u8"θ min");
+        _col_max.set_placeholder_text(u8"θ max");
     }
     else if(_r_sph.get_active())
     {
@@ -194,6 +213,12 @@ void Graph_page::change_type()
         _col_max_l.set_text(u8"ϕ max=");
         _row_res_l.set_text(u8"θ resolution");
         _col_res_l.set_text(u8"ϕ resolution");
+
+        _eqn.set_placeholder_text(u8"z(θ,ϕ)");
+        _row_min.set_placeholder_text(u8"θ min");
+        _row_max.set_placeholder_text(u8"θ max");
+        _col_min.set_placeholder_text(u8"ϕ min");
+        _col_max.set_placeholder_text(u8"ϕ max");
     }
     if(_r_par.get_active())
     {
@@ -204,6 +229,12 @@ void Graph_page::change_type()
         _col_max_l.set_text("v max=");
         _row_res_l.set_text("u resolution");
         _col_res_l.set_text("v resolution");
+
+        _eqn.set_placeholder_text("x(u,v)");
+        _row_min.set_placeholder_text("u min");
+        _row_max.set_placeholder_text("u max");
+        _col_min.set_placeholder_text("v min");
+        _col_max.set_placeholder_text("v max");
 
         _eqn_par_y_l.show();
         _eqn_par_y.show();
@@ -334,7 +365,6 @@ void Graph_page::apply()
     _gl_window->set_active_graph(_graph.get());
 
     _graph->signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_page::update_cursor));
-    // _signal_graph_regen.emit(_graph.get());
     _gl_window->invalidate();
 }
 
