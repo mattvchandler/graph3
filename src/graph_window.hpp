@@ -29,11 +29,14 @@
 #include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/grid.h>
+#include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/window.h>
 
 #include <sigc++/sigc++.h>
+
+#include <glm/glm.hpp>
 
 #include "graph_disp.hpp"
 #include "graph_page.hpp"
@@ -42,11 +45,15 @@ class Tab_label final: public Gtk::Grid
 {
 public:
     Tab_label();
+
+    void set_img_from_color(const glm::vec3 & color);
+    void set_img(const std::string & filename);
+
     sigc::signal<void> signal_close_tab();
 private:
     void on_button_press();
 
-    Gtk::Label _tab_text;
+    Gtk::Image _tab_pic;
     Gtk::Button _close_butt;
     Gtk::Image _close_img;
     sigc::signal<void> _signal_close_tab;

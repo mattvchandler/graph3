@@ -22,6 +22,8 @@
 
 #include <gtkmm/stock.h>
 
+#include <gdkmm.h>
+
 #include "graph_page.hpp"
 
 #include "graph.hpp"
@@ -29,6 +31,8 @@
 #include "graph_cylindrical.hpp"
 #include "graph_spherical.hpp"
 #include "graph_parametric.hpp"
+
+const glm::vec3 Graph_page::start_color = glm::vec3(0.2f, 0.5f, 0.2f);
 
 Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nullptr),
     _r_car("Cartesian"),
@@ -127,7 +131,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _use_tex.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_coloring));
 
     Gdk::RGBA start_rgba;
-    start_rgba.set_rgba(0.2, 0.5, 0.2, 1.0);
+    start_rgba.set_rgba(start_color.r, start_color.g, start_color.b, 1.0);
     _color_butt.set_rgba(start_rgba);
     _color_butt.signal_color_set().connect(sigc::mem_fun(*this, &Graph_page::change_color));
 
@@ -391,18 +395,37 @@ void Graph_page::change_coloring()
         _graph->use_tex = _use_tex.get_active();
         _gl_window->invalidate();
     }
+
+    if(_use_tex.get_active())
+    {
+        _signal_tex_changed.emit(_texture_butt.get_filename());
+    }
+    else
+    {
+        glm::vec3 new_color;
+        new_color.r = _color_butt.get_rgba().get_red();
+        new_color.g = _color_butt.get_rgba().get_green();
+        new_color.b = _color_butt.get_rgba().get_blue();
+
+        _signal_color_changed.emit(new_color);
+    }
 }
 
 void Graph_page::change_color()
 {
+    glm::vec3 new_color;
+    new_color.r = _color_butt.get_rgba().get_red();
+    new_color.g = _color_butt.get_rgba().get_green();
+    new_color.b = _color_butt.get_rgba().get_blue();
+
     if(_graph.get())
     {
-        _graph->color.r = _color_butt.get_rgba().get_red();
-        _graph->color.g = _color_butt.get_rgba().get_green();
-        _graph->color.b = _color_butt.get_rgba().get_blue();
-        _graph->color.a = 1.0f;
+        _graph->color = glm::vec4(new_color, 1.0f);
         _gl_window->invalidate();
     }
+
+    if(!_use_tex.get_active())
+        _signal_color_changed.emit(new_color);
 }
 
 void Graph_page::change_tex()
@@ -420,6 +443,11 @@ void Graph_page::change_tex()
             _error_dialog.set_secondary_text("");
             _error_dialog.show();
         }
+    }
+
+    if(_use_tex.get_active())
+    {
+        _signal_tex_changed.emit(_texture_butt.get_filename());
     }
 }
 
@@ -444,6 +472,17 @@ sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved() const
 {
     return _signal_cursor_moved;
 }
+
+sigc::signal<void, const glm::vec3 &> Graph_page::signal_color_changed() const
+{
+    return _signal_color_changed;
+}
+
+sigc::signal<void, const std::string &> Graph_page::signal_tex_changed() const
+{
+    return _signal_tex_changed;
+}
+
     // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("sin(v) * cos(u),sin(v) * sin(u),cos(v)", 0.0f, 2.0f * M_PI, 50, 0.0f, M_PI, 50))); // sphere
     // gl_window.graphs.push_back(std::unique_ptr<G:raph>(new Graph_parametric(
     //     "-2/15 * cos(u) * (3 * cos(v) - 30 * sin(u) + 90*cos(u)^4 * sin(u) - 60 * cos(u)^6 * sin(u) + 5 * cos(u) * cos(v) * sin(u)),"

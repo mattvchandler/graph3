@@ -27,14 +27,41 @@ Tab_label::Tab_label(): _close_img(Gtk::Stock::CLOSE, Gtk::ICON_SIZE_MENU)
 {
     _close_butt.set_always_show_image(true);
     _close_butt.set_image(_close_img);
-    _tab_text.set_text("test");
 
-    attach(_tab_text, 0, 0, 1, 1);
+    set_img_from_color(Graph_page::start_color);
+
+    attach(_tab_pic, 0, 0, 1, 1);
     attach(_close_butt, 1, 0, 1, 1);
 
     _close_butt.signal_clicked().connect(sigc::mem_fun(*this, &Tab_label::on_button_press));
 
     show_all_children();
+}
+
+void Tab_label::set_img_from_color(const glm::vec3 & color)
+{
+    guint8 r = (guint8)(color.r * 256.0f);
+    guint8 g = (guint8)(color.g * 256.0f);
+    guint8 b = (guint8)(color.b * 256.0f);
+
+    guint32 hex_color = r << 24 | g << 16 | b << 8;
+
+    Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 16, 16);
+    image->fill(hex_color);
+
+    _tab_pic.set(image);
+}
+
+void Tab_label::set_img(const std::string & filename)
+{
+    try
+    {
+        _tab_pic.set(Gdk::Pixbuf::create_from_file(filename)->scale_simple(16, 16, Gdk::InterpType::INTERP_BILINEAR));
+    }
+    catch(Glib::Exception &e)
+    {
+        _tab_pic.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_MENU);
+    }
 }
 
 void Tab_label::on_button_press()
@@ -82,6 +109,12 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
     dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back()))
         ->signal_close_tab().connect(sigc::bind<Graph_page *>(sigc::mem_fun(*this, &Graph_window::tab_close),
         _pages.back().get()));
+    dynamic_cast<Graph_page *>(_pages.back().get())->signal_color_changed()
+        .connect(sigc::mem_fun(*dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back())),
+        &Tab_label::set_img_from_color));
+    dynamic_cast<Graph_page *>(_pages.back().get())->signal_tex_changed()
+        .connect(sigc::mem_fun(*dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back())),
+        &Tab_label::set_img));
     _pages.back()->show();
 
     _draw_axes.set_active(true);
@@ -101,6 +134,12 @@ void Graph_window::tab_new()
     dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back()))
         ->signal_close_tab().connect(sigc::bind<Graph_page *>(sigc::mem_fun(*this, &Graph_window::tab_close),
         _pages.back().get()));
+    dynamic_cast<Graph_page *>(_pages.back().get())->signal_color_changed()
+        .connect(sigc::mem_fun(*dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back())),
+        &Tab_label::set_img_from_color));
+    dynamic_cast<Graph_page *>(_pages.back().get())->signal_tex_changed()
+        .connect(sigc::mem_fun(*dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back())),
+        &Tab_label::set_img));
 
     _pages.back()->show();
 }

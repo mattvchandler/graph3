@@ -38,6 +38,8 @@
 
 #include <sigc++/sigc++.h>
 
+#include <glm/glm.hpp>
+
 #include "graph_disp.hpp"
 
 class Graph_page final: public Gtk::Grid
@@ -56,6 +58,10 @@ public:
     void set_active();
 
     sigc::signal<void, const std::string &> signal_cursor_moved() const;
+    sigc::signal<void, const glm::vec3 &> signal_color_changed() const;
+    sigc::signal<void, const std::string &> signal_tex_changed() const;
+
+    static const glm::vec3 start_color;
 
 private:
     Graph_disp * _gl_window;
@@ -86,6 +92,8 @@ private:
     Glib::RefPtr<Gtk::FileFilter> _all_types;
 
     sigc::signal<void, const std::string &> _signal_cursor_moved;
+    sigc::signal<void, const glm::vec3 &> _signal_color_changed;
+    sigc::signal<void, const std::string &> _signal_tex_changed;
 
     // make non-copyable
     Graph_page(const Graph_page &) = delete;
