@@ -29,7 +29,6 @@
 #include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/grid.h>
-#include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/uimanager.h>
@@ -41,24 +40,7 @@
 
 #include "graph_disp.hpp"
 #include "graph_page.hpp"
-
-class Tab_label final: public Gtk::Grid
-{
-public:
-    Tab_label();
-
-    sigc::signal<void> signal_close_tab();
-    void set_img(const Gtk::Image & filename);
-
-private:
-
-    void on_button_press();
-
-    Gtk::Image _tab_pic;
-    Gtk::Button _close_butt;
-    Gtk::Image _close_img;
-    sigc::signal<void> _signal_close_tab;
-};
+#include "tab_label.hpp"
 
 class Graph_window final: public Gtk::Window
 {

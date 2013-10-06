@@ -1,0 +1,50 @@
+// tab_label.hpp
+// tab labels
+
+// Copyright 2013 Matthew Chandler
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#ifndef __TAB_LABEL_H__
+#define __TAB_LABEL_H__
+
+#include <gtkmm/button.h>
+#include <gtkmm/grid.h>
+#include <gtkmm/image.h>
+
+#include <sigc++/sigc++.h>
+
+class Tab_label final: public Gtk::Grid
+{
+public:
+    Tab_label();
+
+    sigc::signal<void> signal_close_tab();
+    void set_img(const Gtk::Image & filename);
+
+private:
+
+    void on_button_press();
+
+    Gtk::Image _tab_pic;
+    Gtk::Button _close_butt;
+    Gtk::Image _close_img;
+    sigc::signal<void> _signal_close_tab;
+};
+
+#endif // __TAB_LABEL_H__

@@ -34,7 +34,8 @@ add_executable(${PROJECT_NAME}
     src/graph_spherical.cpp
     src/graph_window.cpp
     src/main.cpp
-    src/SFMLWidget/SFMLWidget.cpp)
+    src/SFMLWidget/SFMLWidget.cpp
+    src/tab_label.cpp)
 target_link_libraries(${PROJECT_NAME}
     ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${MUPARSER_LIBRARIES})
 
