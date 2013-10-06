@@ -72,6 +72,38 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
     set_title("Graph 3");
     set_default_size(800, 600);
 
+    // build menu
+    _menu_act = Gtk::ActionGroup::create();
+    _menu_act->add(Gtk::Action::create("File", "File"));
+    _menu_act->add(Gtk::Action::create("File_Save", Gtk::Stock::SAVE, "_Save", "Save"), sigc::mem_fun(*this, &Graph_window::hide));
+    _menu_act->add(Gtk::Action::create("File_Open", Gtk::Stock::OPEN, "_Open", "Open"), sigc::mem_fun(*this, &Graph_window::hide));
+    _menu_act->add(Gtk::Action::create("File_Quit", Gtk::Stock::QUIT, "_Quit", "Quit"), sigc::mem_fun(*this, &Graph_window::hide));
+
+    _menu = Gtk::UIManager::create();
+    _menu->insert_action_group(_menu_act);
+    add_accel_group(_menu->get_accel_group());
+
+    Glib::ustring menu_str =
+    "<ui>"
+    "    <menubar name='MenuBar'>"
+    "        <menu action='File'>"
+    "            <menuitem action='File_Save'/>"
+    "            <menuitem action='File_Open'/>"
+    "            <separator/>"
+    "            <menuitem action='File_Quit'/>"
+    "        </menu>"
+    "    </menubar>"
+    "</ui>";
+
+    try
+    {
+        _menu->add_ui_from_string(menu_str);
+    }
+    catch(const Glib::Error & e)
+    {
+        std::cerr<<"Error building menu: "<<e.what()<<std::endl;
+    }
+
     _gl_window.set_hexpand(true);
     _gl_window.set_vexpand(true);
 
@@ -80,13 +112,15 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
 
     add(_main_grid);
 
-    _main_grid.attach(_gl_window, 0, 0, 1, 2);
-    _main_grid.attach(_cursor_text, 0, 2, 1, 1);
+    _main_grid.attach(*_menu->get_widget("/MenuBar"), 0, 0, 3, 1);
 
-    _main_grid.attach(_add_tab_butt, 1, 0, 1, 1);
-    _main_grid.attach(_notebook, 1, 1, 2, 1);
-    _main_grid.attach(_draw_axes, 1, 2, 1, 1);
-    _main_grid.attach(_draw_cursor, 2, 2, 1, 1);
+    _main_grid.attach(_gl_window, 0, 1, 1, 2);
+    _main_grid.attach(_cursor_text, 0, 3, 1, 1);
+
+    _main_grid.attach(_add_tab_butt, 1, 1, 1, 1);
+    _main_grid.attach(_notebook, 1, 2, 2, 1);
+    _main_grid.attach(_draw_axes, 1, 3, 1, 1);
+    _main_grid.attach(_draw_cursor, 2, 3, 1, 1);
 
     _add_tab_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
     _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &Graph_window::tab_change));

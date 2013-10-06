@@ -32,6 +32,7 @@
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
+#include <gtkmm/uimanager.h>
 #include <gtkmm/window.h>
 
 #include <sigc++/sigc++.h>
@@ -70,14 +71,18 @@ public:
     void update_cursor(const std::string & text);
 
 private:
+    Glib::RefPtr<Gtk::UIManager> _menu;
+    Glib::RefPtr<Gtk::ActionGroup> _menu_act;
+
     Gtk::Grid _main_grid;
 
-    sigc::connection _cursor_conn;
-
+    // widgets
     Graph_disp _gl_window;
     Gtk::Label _cursor_text;
     Gtk::Button _add_tab_butt;
     Gtk::CheckButton _draw_axes, _draw_cursor;
+
+    sigc::connection _cursor_conn;
 
     std::list<std::unique_ptr<Graph_page>> _pages;
     Gtk::Notebook _notebook; // this needs to be last, as several of the above are referenced during its destruction, due to dumbness. (I don't want to switch pages, I want to destroy them *all*)
