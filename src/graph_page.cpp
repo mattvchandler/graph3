@@ -22,6 +22,7 @@
 
 #include <gtkmm/colorchooserdialog.h>
 #include <gtkmm/filechooserdialog.h>
+#include <gtkmm/messagedialog.h>
 #include <gtkmm/stock.h>
 
 #include <gdkmm.h>
@@ -58,7 +59,6 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _use_tex("Use Texture"),
     _tex_butt("Choose Texture"),
     _apply_butt(Gtk::Stock::APPLY),
-    _error_dialog("", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK),
     _color(start_color)
 {
     attach(_r_car, 0, 1, 2, 1);
@@ -135,15 +135,11 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
 
     _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
-    _error_dialog.set_title("Error");
-    _error_dialog.signal_response().connect(sigc::hide(sigc::mem_fun(_error_dialog, &Gtk::MessageDialog::hide)));
-
     show_all_children();
     _eqn_par_y_l.hide();
     _eqn_par_y.hide();
     _eqn_par_z_l.hide();
     _eqn_par_z.hide();
-    _error_dialog.hide();
 
     // TODO: tooltips, save/load, fixed light, orbiting camera, widget spacing/layout, texture_butt icon, move methods to private if appropriate
 }
@@ -275,9 +271,10 @@ void Graph_page::apply()
     catch(const Graph_exception &e)
     {
         // show parsing error message
-        _error_dialog.set_message(std::string(e.GetMsg()));
-        _error_dialog.set_secondary_text("In Expression: " + e.GetExpr());
-        _error_dialog.show();
+        Gtk::MessageDialog error_dialog(std::string(e.GetMsg()), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        error_dialog.set_title("Errror");
+        error_dialog.set_secondary_text("In Expression: " + e.GetExpr());
+        error_dialog.run();
 
         // highlight error
         int start, end;
@@ -354,9 +351,10 @@ void Graph_page::apply()
         }
         catch(Glib::Exception &e)
         {
-            _error_dialog.set_message(e.what());
-            _error_dialog.set_secondary_text("");
-            _error_dialog.show();
+            Gtk::MessageDialog error_dialog(std::string(e.what()), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            error_dialog.set_title("Errror");
+            error_dialog.set_secondary_text("");
+            error_dialog.run();
         }
     }
     _graph->color = glm::vec4(_color, 1.0f);
@@ -455,9 +453,10 @@ void Graph_page::apply_tex()
         {
             _tex_ico.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR);
 
-            _error_dialog.set_message(e.what());
-            _error_dialog.set_secondary_text("");
-            _error_dialog.show();
+            Gtk::MessageDialog error_dialog(std::string(e.what()), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            error_dialog.set_title("Errror");
+            error_dialog.set_secondary_text("");
+            error_dialog.run();
         }
     }
     else
@@ -488,9 +487,9 @@ void Graph_page::apply_tex_to_graph()
             }
             catch(Glib::Exception &e)
             {
-                _error_dialog.set_message(e.what());
-                _error_dialog.set_secondary_text("");
-                _error_dialog.show();
+                Gtk::MessageDialog error_dialog(std::string(e.what()), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+                error_dialog.set_title("Errror");
+                error_dialog.run();
             }
         }
         else

@@ -30,7 +30,6 @@
 #include <gtkmm/entry.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
-#include <gtkmm/messagedialog.h>
 #include <gtkmm/radiobutton.h>
 #include <gtkmm/spinbutton.h>
 
@@ -80,8 +79,6 @@ private:
     Gtk::RadioButton _use_color, _use_tex;
     Gtk::Button _tex_butt;
     Gtk::Button _apply_butt;
-
-    Gtk::MessageDialog _error_dialog;
 
     Gtk::Image _tex_ico;
     glm::vec3 _color;
