@@ -141,7 +141,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _eqn_par_z_l.hide();
     _eqn_par_z.hide();
 
-    // TODO: tooltips, save/load, fixed light, orbiting camera, widget spacing/layout, texture_butt icon, move methods to private if appropriate
+    // TODO: tooltips, save/load, fixed light, orbiting camera, widget spacing/layout, texture_butt icon
 }
 
 Graph_page::~Graph_page()

@@ -45,14 +45,6 @@ public:
     Graph_page(Graph_disp * gl_window);
     ~Graph_page();
 
-    void change_type();
-    void apply();
-    void change_flags();
-    void change_coloring();
-    void change_tex();
-    void apply_tex();
-    void apply_tex_to_graph();
-    void update_cursor(const std::string & text) const;
     void set_active();
 
     sigc::signal<void, const std::string &> signal_cursor_moved() const;
@@ -61,6 +53,15 @@ public:
     static const glm::vec3 start_color;
 
 private:
+    void change_type();
+    void apply();
+    void change_flags();
+    void change_coloring();
+    void change_tex();
+    void apply_tex();
+    void apply_tex_to_graph();
+    void update_cursor(const std::string & text) const;
+
     Graph_disp * _gl_window;
     std::unique_ptr<Graph> _graph;
 

@@ -47,10 +47,11 @@ class Tab_label final: public Gtk::Grid
 public:
     Tab_label();
 
+    sigc::signal<void> signal_close_tab();
     void set_img(const Gtk::Image & filename);
 
-    sigc::signal<void> signal_close_tab();
 private:
+
     void on_button_press();
 
     Gtk::Image _tab_pic;
@@ -64,13 +65,13 @@ class Graph_window final: public Gtk::Window
 public:
     Graph_window();
 
+private:
     void tab_new();
     void tab_close(Graph_page * page);
     void tab_change(Widget * page, guint page_no);
     void change_flags();
     void update_cursor(const std::string & text);
 
-private:
     Glib::RefPtr<Gtk::UIManager> _menu;
     Glib::RefPtr<Gtk::ActionGroup> _menu_act;
 

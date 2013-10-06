@@ -111,11 +111,6 @@ public:
     bool key_press(GdkEventKey * e);
 
     // openGL initialization should go here
-    void realize();
-    void resize(Gtk::Allocation & allocation);
-    bool draw(const Cairo::RefPtr<Cairo::Context> & cr);
-    bool input();
-
     // set and get the active graph (the one w/ the cursor on it)
     void set_active_graph(Graph * graph);
     Graph * get_active_graph() const;
@@ -128,6 +123,11 @@ public:
     bool draw_axes_flag;
 
 private:
+    void realize();
+    void resize(Gtk::Allocation & allocation);
+    bool draw(const Cairo::RefPtr<Cairo::Context> & cr);
+    bool input();
+
     GLuint _prog_tex;
     GLuint _prog_color;
     GLuint _prog_line;
