@@ -27,9 +27,7 @@
 
 #include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
-#include <gtkmm/colorbutton.h>
 #include <gtkmm/entry.h>
-#include <gtkmm/filechooserbutton.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 #include <gtkmm/messagedialog.h>
@@ -52,14 +50,14 @@ public:
     void apply();
     void change_flags();
     void change_coloring();
-    void change_color();
     void change_tex();
+    void apply_tex();
+    void apply_tex_to_graph();
     void update_cursor(const std::string & text) const;
     void set_active();
 
     sigc::signal<void, const std::string &> signal_cursor_moved() const;
-    sigc::signal<void, const glm::vec3 &> signal_color_changed() const;
-    sigc::signal<void, const std::string &> signal_tex_changed() const;
+    sigc::signal<void, const Gtk::Image &> signal_tex_changed() const;
 
     static const glm::vec3 start_color;
 
@@ -80,20 +78,17 @@ private:
     Gtk::SpinButton _row_res, _col_res;
     Gtk::CheckButton _draw_grid, _draw_normals;
     Gtk::RadioButton _use_color, _use_tex;
-    Gtk::Label _color_butt_l;
-    Gtk::ColorButton _color_butt;
-    Gtk::Label _texture_butt_l;
-    Gtk::FileChooserButton _texture_butt;
+    Gtk::Button _tex_butt;
     Gtk::Button _apply_butt;
 
     Gtk::MessageDialog _error_dialog;
 
-    Glib::RefPtr<Gtk::FileFilter> _tex_types;
-    Glib::RefPtr<Gtk::FileFilter> _all_types;
+    Gtk::Image _tex_ico;
+    glm::vec3 _color;
+    std::string _tex_filename;
 
     sigc::signal<void, const std::string &> _signal_cursor_moved;
-    sigc::signal<void, const glm::vec3 &> _signal_color_changed;
-    sigc::signal<void, const std::string &> _signal_tex_changed;
+    sigc::signal<void, const Gtk::Image &> _signal_tex_changed;
 
     // make non-copyable
     Graph_page(const Graph_page &) = delete;

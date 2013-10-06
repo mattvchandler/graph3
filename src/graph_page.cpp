@@ -20,6 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <gtkmm/colorchooserdialog.h>
+#include <gtkmm/filechooserdialog.h>
 #include <gtkmm/stock.h>
 
 #include <gdkmm.h>
@@ -54,11 +56,10 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _draw_normals("Draw normals"),
     _use_color("Use Color"),
     _use_tex("Use Texture"),
-    _color_butt_l("Choose color"),
-    _texture_butt_l("Choose texture"),
-    _texture_butt("Choose Texture", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_OPEN),
+    _tex_butt("Choose Texture"),
     _apply_butt(Gtk::Stock::APPLY),
-    _error_dialog("", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK)
+    _error_dialog("", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK),
+    _color(start_color)
 {
     attach(_r_car, 0, 1, 2, 1);
     attach(_r_cyl, 2, 1, 2, 1);
@@ -85,11 +86,8 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     attach(_draw_grid, 0, 9, 2, 1);
     attach(_draw_normals, 2, 9, 2, 1);
     attach(_use_color, 0, 10, 2, 1);
-    attach(_use_tex, 2, 10, 2, 1);
-    attach(_color_butt_l, 0, 11, 1, 1);
-    attach(_color_butt, 1, 11, 1, 1);
-    attach(_texture_butt_l, 2, 11, 1, 1);
-    attach(_texture_butt, 3, 11, 1, 1);
+    attach(_use_tex, 0, 11, 2, 1);
+    attach(_tex_butt, 2, 10, 2, 2);
     attach(_apply_butt, 3, 12, 1, 1);
 
     Gtk::RadioButton::Group type_g = _r_car.get_group();
@@ -130,22 +128,10 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _use_color.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_coloring));
     _use_tex.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_coloring));
 
-    Gdk::RGBA start_rgba;
-    start_rgba.set_rgba(start_color.r, start_color.g, start_color.b, 1.0);
-    _color_butt.set_rgba(start_rgba);
-    _color_butt.signal_color_set().connect(sigc::mem_fun(*this, &Graph_page::change_color));
+    apply_tex();
 
-    _tex_types = Gtk::FileFilter::create();
-    _tex_types->add_pixbuf_formats();
-    _tex_types->set_name("Image files");
-    _texture_butt.add_filter(_tex_types);
-
-    _all_types = Gtk::FileFilter::create();
-    _all_types->add_pattern("*");
-    _all_types->set_name("All files");
-    _texture_butt.add_filter(_all_types);
-
-    _texture_butt.signal_file_set().connect(sigc::mem_fun(*this, &Graph_page::change_tex));
+    _tex_butt.set_image(_tex_ico);
+    _tex_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::change_tex));
 
     _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
@@ -159,7 +145,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _eqn_par_z.hide();
     _error_dialog.hide();
 
-    // TODO: tooltips, save/load, fixed light, orbiting camera, widget spacing/layout
+    // TODO: tooltips, save/load, fixed light, orbiting camera, widget spacing/layout, texture_butt icon, move methods to private if appropriate
 }
 
 Graph_page::~Graph_page()
@@ -353,15 +339,27 @@ void Graph_page::apply()
         _gl_window->invalidate();
         _gl_window->set_active_graph(nullptr);
         return;
-        return;
     }
 
     _graph->draw_grid_flag = _draw_grid.get_active();
     _graph->draw_normals_flag = _draw_normals.get_active();
 
     _graph->use_tex = _use_tex.get_active();
-    change_color();
-    change_tex();
+
+    if(!_tex_filename.empty())
+    {
+        try
+        {
+            _graph->set_texture(_tex_filename);
+        }
+        catch(Glib::Exception &e)
+        {
+            _error_dialog.set_message(e.what());
+            _error_dialog.set_secondary_text("");
+            _error_dialog.show();
+        }
+    }
+    _graph->color = glm::vec4(_color, 1.0f);
 
     update_cursor(_graph->cursor_text());
 
@@ -395,59 +393,111 @@ void Graph_page::change_coloring()
         _graph->use_tex = _use_tex.get_active();
         _gl_window->invalidate();
     }
-
-    if(_use_tex.get_active())
-    {
-        _signal_tex_changed.emit(_texture_butt.get_filename());
-    }
-    else
-    {
-        glm::vec3 new_color;
-        new_color.r = _color_butt.get_rgba().get_red();
-        new_color.g = _color_butt.get_rgba().get_green();
-        new_color.b = _color_butt.get_rgba().get_blue();
-
-        _signal_color_changed.emit(new_color);
-    }
-}
-
-void Graph_page::change_color()
-{
-    glm::vec3 new_color;
-    new_color.r = _color_butt.get_rgba().get_red();
-    new_color.g = _color_butt.get_rgba().get_green();
-    new_color.b = _color_butt.get_rgba().get_blue();
-
-    if(_graph.get())
-    {
-        _graph->color = glm::vec4(new_color, 1.0f);
-        _gl_window->invalidate();
-    }
-
-    if(!_use_tex.get_active())
-        _signal_color_changed.emit(new_color);
+    apply_tex();
 }
 
 void Graph_page::change_tex()
 {
-    if(_graph.get())
+    if(_use_tex.get_active())
+    {
+        Gtk::FileChooserDialog tex_chooser("Choose Texture", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_OPEN);
+        Glib::RefPtr<Gtk::FileFilter> tex_types;
+        Glib::RefPtr<Gtk::FileFilter> all_types;
+
+        tex_types = Gtk::FileFilter::create();
+        tex_types->add_pixbuf_formats();
+        tex_types->set_name("Image files");
+        tex_chooser.add_filter(tex_types);
+
+        all_types = Gtk::FileFilter::create();
+        all_types->add_pattern("*");
+        all_types->set_name("All files");
+        tex_chooser.add_filter(all_types);
+
+        tex_chooser.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+        tex_chooser.add_button("Select", Gtk::RESPONSE_OK);
+
+        int response = tex_chooser.run();
+
+        if(response == Gtk::RESPONSE_OK)
+        {
+            _tex_filename = tex_chooser.get_filename();
+            apply_tex();
+            apply_tex_to_graph();
+        }
+    }
+    else
+    {
+        Gtk::ColorChooserDialog color_chooser;
+
+        int response = color_chooser.run();
+
+        if(response == Gtk::RESPONSE_OK)
+        {
+            _color.r = color_chooser.get_rgba().get_red();
+            _color.g = color_chooser.get_rgba().get_green();
+            _color.b = color_chooser.get_rgba().get_blue();
+            apply_tex();
+            apply_tex_to_graph();
+        }
+    }
+}
+
+void Graph_page::apply_tex()
+{
+    if(_use_tex.get_active() && !_tex_filename.empty())
     {
         try
         {
-            _graph->set_texture(_texture_butt.get_filename());
-            _gl_window->invalidate();
+            _tex_ico.set(Gdk::Pixbuf::create_from_file(_tex_filename)->scale_simple(32, 32, Gdk::InterpType::INTERP_BILINEAR));
         }
         catch(Glib::Exception &e)
         {
+            _tex_ico.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR);
+
             _error_dialog.set_message(e.what());
             _error_dialog.set_secondary_text("");
             _error_dialog.show();
         }
     }
-
-    if(_use_tex.get_active())
+    else
     {
-        _signal_tex_changed.emit(_texture_butt.get_filename());
+        guint8 r = (guint8)(_color.r * 256.0f);
+        guint8 g = (guint8)(_color.g * 256.0f);
+        guint8 b = (guint8)(_color.b * 256.0f);
+
+        guint32 hex_color = r << 24 | g << 16 | b << 8;
+
+        Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
+        image->fill(hex_color);
+        _tex_ico.set(image);
+    }
+
+    _signal_tex_changed.emit(_tex_ico);
+}
+
+void Graph_page::apply_tex_to_graph()
+{
+    if(_graph.get())
+    {
+        if(_use_tex.get_active() && !_tex_filename.empty())
+        {
+            try
+            {
+                _graph->set_texture(_tex_filename);
+            }
+            catch(Glib::Exception &e)
+            {
+                _error_dialog.set_message(e.what());
+                _error_dialog.set_secondary_text("");
+                _error_dialog.show();
+            }
+        }
+        else
+        {
+            _graph->color = glm::vec4(_color, 1.0f);
+        }
+        _gl_window->invalidate();
     }
 }
 
@@ -473,12 +523,7 @@ sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved() const
     return _signal_cursor_moved;
 }
 
-sigc::signal<void, const glm::vec3 &> Graph_page::signal_color_changed() const
-{
-    return _signal_color_changed;
-}
-
-sigc::signal<void, const std::string &> Graph_page::signal_tex_changed() const
+sigc::signal<void, const Gtk::Image &> Graph_page::signal_tex_changed() const
 {
     return _signal_tex_changed;
 }

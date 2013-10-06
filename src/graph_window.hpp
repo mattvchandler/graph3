@@ -46,8 +46,7 @@ class Tab_label final: public Gtk::Grid
 public:
     Tab_label();
 
-    void set_img_from_color(const glm::vec3 & color);
-    void set_img(const std::string & filename);
+    void set_img(const Gtk::Image & filename);
 
     sigc::signal<void> signal_close_tab();
 private:
