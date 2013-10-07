@@ -61,6 +61,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _use_tex("Use Texture"),
     _tex_butt("Choose Texture"),
     _apply_butt(Gtk::Stock::APPLY),
+    _tex_ico(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR),
     _color(start_color)
 {
     attach(_r_car, 0, 1, 2, 1);
@@ -130,9 +131,17 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _use_color.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_coloring));
     _use_tex.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_coloring));
 
-    apply_tex();
+    Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
 
-    _tex_butt.set_image(_tex_ico);
+    guint8 r = (guint8)(_color.r * 256.0f);
+    guint8 g = (guint8)(_color.g * 256.0f);
+    guint8 b = (guint8)(_color.b * 256.0f);
+
+    guint32 hex_color = r << 24 | g << 16 | b << 8;
+
+    image->fill(hex_color);
+    _color_ico.set(image);
+    _tex_butt.set_image(_color_ico);
     _tex_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::change_tex));
 
     _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
@@ -462,7 +471,17 @@ void Graph_page::change_coloring()
         _graph->use_tex = _use_tex.get_active();
         _gl_window->invalidate();
     }
-    apply_tex();
+
+    if(_use_tex.get_active())
+    {
+        _tex_butt.set_image(_tex_ico);
+        _signal_tex_changed.emit(_tex_ico);
+    }
+    else
+    {
+        _tex_butt.set_image(_color_ico);
+        _signal_tex_changed.emit(_color_ico);
+    }
 }
 
 void Graph_page::change_tex()
@@ -491,8 +510,26 @@ void Graph_page::change_tex()
         if(response == Gtk::RESPONSE_OK)
         {
             _tex_filename = tex_chooser.get_filename();
-            apply_tex();
-            apply_tex_to_graph();
+
+            try
+            {
+                _tex_ico.set(Gdk::Pixbuf::create_from_file(_tex_filename)->scale_simple(32, 32, Gdk::InterpType::INTERP_BILINEAR));
+                if(_graph.get())
+                {
+                    _graph->set_texture(_tex_filename);
+                    _gl_window->invalidate();
+                }
+            }
+            catch(Glib::Exception &e)
+            {
+                _tex_ico.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR);
+
+                Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+                error_dialog.set_title("Errror");
+                error_dialog.set_secondary_text("");
+                error_dialog.run();
+            }
+            _signal_tex_changed.emit(_tex_ico);
         }
     }
     else
@@ -506,68 +543,24 @@ void Graph_page::change_tex()
             _color.r = color_chooser.get_rgba().get_red();
             _color.g = color_chooser.get_rgba().get_green();
             _color.b = color_chooser.get_rgba().get_blue();
-            apply_tex();
-            apply_tex_to_graph();
-        }
-    }
-}
 
-void Graph_page::apply_tex()
-{
-    if(_use_tex.get_active() && !_tex_filename.empty())
-    {
-        try
-        {
-            _tex_ico.set(Gdk::Pixbuf::create_from_file(_tex_filename)->scale_simple(32, 32, Gdk::InterpType::INTERP_BILINEAR));
-        }
-        catch(Glib::Exception &e)
-        {
-            _tex_ico.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR);
-
-            Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-            error_dialog.set_title("Errror");
-            error_dialog.set_secondary_text("");
-            error_dialog.run();
-        }
-    }
-    else
-    {
-        guint8 r = (guint8)(_color.r * 256.0f);
-        guint8 g = (guint8)(_color.g * 256.0f);
-        guint8 b = (guint8)(_color.b * 256.0f);
-
-        guint32 hex_color = r << 24 | g << 16 | b << 8;
-
-        Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
-        image->fill(hex_color);
-        _tex_ico.set(image);
-    }
-
-    _signal_tex_changed.emit(_tex_ico);
-}
-
-void Graph_page::apply_tex_to_graph()
-{
-    if(_graph.get())
-    {
-        if(_use_tex.get_active() && !_tex_filename.empty())
-        {
-            try
+            if(_graph.get())
             {
-                _graph->set_texture(_tex_filename);
+                _graph->color = glm::vec4(_color, 1.0f);
+                _gl_window->invalidate();
             }
-            catch(Glib::Exception &e)
-            {
-                Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-                error_dialog.set_title("Errror");
-                error_dialog.run();
-            }
+
+            guint8 r = (guint8)(_color.r * 256.0f);
+            guint8 g = (guint8)(_color.g * 256.0f);
+            guint8 b = (guint8)(_color.b * 256.0f);
+
+            guint32 hex_color = r << 24 | g << 16 | b << 8;
+
+            Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
+            image->fill(hex_color);
+            _color_ico.set(image);
+            _signal_tex_changed.emit(_color_ico);
         }
-        else
-        {
-            _graph->color = glm::vec4(_color, 1.0f);
-        }
-        _gl_window->invalidate();
     }
 }
 

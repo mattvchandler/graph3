@@ -62,8 +62,6 @@ private:
     void change_flags();
     void change_coloring();
     void change_tex();
-    void apply_tex();
-    void apply_tex_to_graph();
     void update_cursor(const std::string & text) const;
 
     Graph_disp * _gl_window;
@@ -85,6 +83,7 @@ private:
     Gtk::Button _tex_butt;
     Gtk::Button _apply_butt;
 
+    Gtk::Image _color_ico;
     Gtk::Image _tex_ico;
     glm::vec3 _color;
     std::string _tex_filename;
