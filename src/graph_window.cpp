@@ -20,6 +20,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <gtkmm/stock.h>
+#include <gtkmm/filechooserdialog.h>
 
 #include "graph_window.hpp"
 
@@ -34,8 +35,8 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
     // build menu
     _menu_act = Gtk::ActionGroup::create();
     _menu_act->add(Gtk::Action::create("File", "File"));
-    _menu_act->add(Gtk::Action::create("File_Save", Gtk::Stock::SAVE, "_Save", "Save"), sigc::mem_fun(*this, &Graph_window::hide));
-    _menu_act->add(Gtk::Action::create("File_Open", Gtk::Stock::OPEN, "_Open", "Open"), sigc::mem_fun(*this, &Graph_window::hide));
+    _menu_act->add(Gtk::Action::create("File_Save", Gtk::Stock::SAVE, "_Save", "Save"), sigc::mem_fun(*this, &Graph_window::save_graph));
+    _menu_act->add(Gtk::Action::create("File_Open", Gtk::Stock::OPEN, "_Open", "Open"), sigc::mem_fun(*this, &Graph_window::load_graph));
     _menu_act->add(Gtk::Action::create("File_Quit", Gtk::Stock::QUIT, "_Quit", "Quit"), sigc::mem_fun(*this, &Graph_window::hide));
 
     _menu = Gtk::UIManager::create();
@@ -160,4 +161,70 @@ void Graph_window::change_flags()
 void Graph_window::update_cursor(const std::string & text)
 {
     _cursor_text.set_text(text);
+}
+
+void Graph_window::save_graph()
+{
+    Gtk::FileChooserDialog graph_chooser("Save Graph", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_SAVE);
+    Glib::RefPtr<Gtk::FileFilter> graph_types;
+    Glib::RefPtr<Gtk::FileFilter> all_types;
+
+    all_types = Gtk::FileFilter::create();
+    all_types->add_pattern("*.gra");
+    all_types->set_name("Graph files (*.gra)");
+    graph_chooser.add_filter(all_types);
+
+    all_types = Gtk::FileFilter::create();
+    all_types->add_pattern("*");
+    all_types->set_name("All files");
+    graph_chooser.add_filter(all_types);
+
+    graph_chooser.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+    graph_chooser.add_button("Save", Gtk::RESPONSE_OK);
+
+    graph_chooser.set_do_overwrite_confirmation(true);
+
+    if(graph_chooser.run() != Gtk::RESPONSE_OK)
+        return;
+
+    std::string filename = graph_chooser.get_filename();
+    if(filename.substr(filename.size() - 4) != ".gra")
+    {
+        filename += ".gra";
+    }
+
+    dynamic_cast<Graph_page *>(_notebook.get_nth_page(_notebook.get_current_page()))->save_graph(filename);
+}
+
+void Graph_window::load_graph()
+{
+    Gtk::FileChooserDialog graph_chooser("Open Graph", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_OPEN);
+    Glib::RefPtr<Gtk::FileFilter> graph_types;
+    Glib::RefPtr<Gtk::FileFilter> all_types;
+
+    all_types = Gtk::FileFilter::create();
+    all_types->add_pattern("*.gra");
+    all_types->set_name("Graph files (*.gra)");
+    graph_chooser.add_filter(all_types);
+
+    all_types = Gtk::FileFilter::create();
+    all_types->add_pattern("*");
+    all_types->set_name("All files");
+    graph_chooser.add_filter(all_types);
+
+    graph_chooser.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+    graph_chooser.add_button("Select", Gtk::RESPONSE_OK);
+
+    if(graph_chooser.run() != Gtk::RESPONSE_OK)
+        return;
+
+    int current_tab = _notebook.get_current_page();
+
+    tab_new();
+    Graph_page * new_tab = dynamic_cast<Graph_page *>(_notebook.get_nth_page(_notebook.get_current_page()));
+    if(!new_tab->load_graph(graph_chooser.get_filename()))
+    {
+       tab_close(new_tab); 
+       _notebook.set_current_page(current_tab);
+    }
 }

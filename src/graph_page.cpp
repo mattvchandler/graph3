@@ -27,6 +27,8 @@
 
 #include <gdkmm.h>
 
+#include <libconfig.h++>
+
 #include "graph_page.hpp"
 
 #include "graph.hpp"
@@ -141,7 +143,8 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _eqn_par_z_l.hide();
     _eqn_par_z.hide();
 
-    // TODO: tooltips, save/load, fixed light, orbiting camera, widget spacing/layout, texture_butt icon
+
+    // TODO: tooltips, save/load, fixed light, orbiting camera, widget spacing/layout, toolbar w/  add butt on right if we can
 }
 
 Graph_page::~Graph_page()
@@ -160,6 +163,52 @@ void Graph_page::set_active()
         update_cursor("");
 
     _gl_window->invalidate();
+}
+
+void Graph_page::save_graph(const std::string & filename)
+{
+    libconfig::Config cfg;
+    libconfig::Setting & cfg_root = cfg.getRoot().add("graph", libconfig::Setting::TypeGroup);
+
+    cfg_root.add("r_car", libconfig::Setting::TypeBoolean) = _r_car.get_active();
+    cfg_root.add("r_cyl", libconfig::Setting::TypeBoolean) = _r_cyl.get_active();
+    cfg_root.add("r_sph", libconfig::Setting::TypeBoolean) = _r_sph.get_active();
+    cfg_root.add("r_par", libconfig::Setting::TypeBoolean) = _r_par.get_active();
+    cfg_root.add("eqn", libconfig::Setting::TypeString) = _eqn.get_text();
+    cfg_root.add("eqn_par_y", libconfig::Setting::TypeString) = _eqn_par_y.get_text();
+    cfg_root.add("eqn_par_z", libconfig::Setting::TypeString) = _eqn_par_z.get_text();
+    cfg_root.add("row_min", libconfig::Setting::TypeString) = _row_min.get_text();
+    cfg_root.add("row_max", libconfig::Setting::TypeString) = _row_max.get_text();
+    cfg_root.add("col_min", libconfig::Setting::TypeString) = _col_min.get_text();
+    cfg_root.add("col_max", libconfig::Setting::TypeString) = _col_max.get_text();
+    cfg_root.add("row_res", libconfig::Setting::TypeInt) = _row_res.get_value_as_int();
+    cfg_root.add("col_res", libconfig::Setting::TypeInt) = _col_res.get_value_as_int();
+    cfg_root.add("draw_grid", libconfig::Setting::TypeBoolean) = _draw_grid.get_active();
+    cfg_root.add("draw_normals", libconfig::Setting::TypeBoolean) = _draw_normals.get_active();
+    cfg_root.add("use_color", libconfig::Setting::TypeBoolean) = _use_color.get_active();
+    cfg_root.add("use_tex", libconfig::Setting::TypeBoolean) = _use_tex.get_active();
+    libconfig::Setting & color = cfg_root.add("color", libconfig::Setting::TypeList);
+    color.add(libconfig::Setting::TypeFloat) = _color.r;
+    color.add(libconfig::Setting::TypeFloat) = _color.g;
+    color.add(libconfig::Setting::TypeFloat) = _color.b;
+    cfg_root.add("tex_filename", libconfig::Setting::TypeString) = _tex_filename;
+
+    try
+    {
+        cfg.writeFile(filename.c_str());
+    }
+    catch(const libconfig::FileIOException & e)
+    {
+        Gtk::MessageDialog error_dialog("Error writing to " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        error_dialog.set_secondary_text(e.what());
+        error_dialog.set_title("Errror");
+        error_dialog.run();
+    }
+}
+
+bool Graph_page::load_graph(const std::string & filename)
+{
+    return false;
 }
 
 sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved() const

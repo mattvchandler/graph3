@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <list>
+#include <string>
 
 #include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
@@ -53,6 +54,9 @@ private:
     void tab_change(Widget * page, guint page_no);
     void change_flags();
     void update_cursor(const std::string & text);
+
+    void save_graph();
+    void load_graph();
 
     Glib::RefPtr<Gtk::UIManager> _menu;
     Glib::RefPtr<Gtk::ActionGroup> _menu_act;

@@ -48,6 +48,9 @@ public:
 
     void set_active();
 
+    void save_graph(const std::string & filename);
+    bool load_graph(const std::string & filename);
+
     sigc::signal<void, const std::string &> signal_cursor_moved() const;
     sigc::signal<void, const Gtk::Image &> signal_tex_changed() const;
 

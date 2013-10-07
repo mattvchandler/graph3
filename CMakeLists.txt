@@ -16,12 +16,13 @@ find_package(PkgConfig)
 pkg_check_modules(GTKMM gtkmm-3.0)
 find_package(SFML 2 COMPONENTS window system)
 pkg_check_modules(MUPARSER muparser)
+pkg_check_modules(LIBCONFIG libconfig++)
 find_package(OpenGL)
 find_package(GLEW)
 find_package(GLM)
 
-include_directories(${GTKMM_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/src/)
-link_directories(${GTKMM_LINK_DIRS})
+include_directories(${GTKMM_INCLUDE_DIRS} ${LIBCONFIG_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+link_directories(${GTKMM_LINK_DIRS} ${LIBCONFIG_LINK_DIRS})
 
 add_executable(${PROJECT_NAME}
     src/gl_helpers.cpp
@@ -37,5 +38,5 @@ add_executable(${PROJECT_NAME}
     src/SFMLWidget/SFMLWidget.cpp
     src/tab_label.cpp)
 target_link_libraries(${PROJECT_NAME}
-    ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${MUPARSER_LIBRARIES})
+    ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${MUPARSER_LIBRARIES} ${LIBCONFIG_LIBRARIES})
 
