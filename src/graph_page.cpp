@@ -20,6 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <sstream>
+
 #include <gtkmm/colorchooserdialog.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/messagedialog.h>
@@ -183,23 +185,30 @@ void Graph_page::save_graph(const std::string & filename)
     cfg_root.add("r_cyl", libconfig::Setting::TypeBoolean) = _r_cyl.get_active();
     cfg_root.add("r_sph", libconfig::Setting::TypeBoolean) = _r_sph.get_active();
     cfg_root.add("r_par", libconfig::Setting::TypeBoolean) = _r_par.get_active();
+
     cfg_root.add("eqn", libconfig::Setting::TypeString) = _eqn.get_text();
     cfg_root.add("eqn_par_y", libconfig::Setting::TypeString) = _eqn_par_y.get_text();
     cfg_root.add("eqn_par_z", libconfig::Setting::TypeString) = _eqn_par_z.get_text();
+
     cfg_root.add("row_min", libconfig::Setting::TypeString) = _row_min.get_text();
     cfg_root.add("row_max", libconfig::Setting::TypeString) = _row_max.get_text();
     cfg_root.add("col_min", libconfig::Setting::TypeString) = _col_min.get_text();
     cfg_root.add("col_max", libconfig::Setting::TypeString) = _col_max.get_text();
+
     cfg_root.add("row_res", libconfig::Setting::TypeInt) = _row_res.get_value_as_int();
     cfg_root.add("col_res", libconfig::Setting::TypeInt) = _col_res.get_value_as_int();
+
     cfg_root.add("draw_grid", libconfig::Setting::TypeBoolean) = _draw_grid.get_active();
     cfg_root.add("draw_normals", libconfig::Setting::TypeBoolean) = _draw_normals.get_active();
+
     cfg_root.add("use_color", libconfig::Setting::TypeBoolean) = _use_color.get_active();
     cfg_root.add("use_tex", libconfig::Setting::TypeBoolean) = _use_tex.get_active();
+
     libconfig::Setting & color = cfg_root.add("color", libconfig::Setting::TypeList);
     color.add(libconfig::Setting::TypeFloat) = _color.r;
     color.add(libconfig::Setting::TypeFloat) = _color.g;
     color.add(libconfig::Setting::TypeFloat) = _color.b;
+
     cfg_root.add("tex_filename", libconfig::Setting::TypeString) = _tex_filename;
 
     try
@@ -217,7 +226,164 @@ void Graph_page::save_graph(const std::string & filename)
 
 bool Graph_page::load_graph(const std::string & filename)
 {
-    return false;
+    libconfig::Config cfg;
+    try
+    {
+        cfg.readFile(filename.c_str());
+        libconfig::Setting & cfg_root = cfg.getRoot()["graph"];
+
+        bool r_car = cfg_root["r_car"];
+        bool r_cyl = cfg_root["r_cyl"];
+        bool r_sph = cfg_root["r_sph"];
+        bool r_par = cfg_root["r_par"];
+        if((int)r_car + (int)r_cyl + (int)r_sph + (int)r_par != 1)
+        {
+            Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            error_dialog.set_secondary_text("Invalid combination of r_car, r_cyl, r_sph, r_par");
+            error_dialog.set_title("Errror");
+            error_dialog.run();
+            return false;
+        }
+
+        std::string eqn = cfg_root["eqn"];
+        std::string eqn_par_y = cfg_root["eqn_par_y"];
+        std::string eqn_par_z = cfg_root["eqn_par_z"];
+
+        std::string row_min = cfg_root["row_min"];
+        std::string row_max = cfg_root["row_max"];
+        std::string col_min = cfg_root["col_min"];
+        std::string col_max = cfg_root["col_max"];
+
+        int row_res = cfg_root["row_res"];
+        int col_res = cfg_root["col_res"];
+
+        bool draw_grid = cfg_root["draw_grid"];
+        bool draw_normals = cfg_root["draw_normals"];
+
+        bool use_color = cfg_root["use_color"];
+        bool use_tex = cfg_root["use_tex"];
+        if((int)use_color + (int)use_tex != 1)
+        {
+            Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            error_dialog.set_secondary_text("Invalid combination of use_color, use_tex");
+            error_dialog.set_title("Errror");
+            error_dialog.run();
+            return false;
+        }
+
+        libconfig::Setting & color_l = cfg_root["color"];
+        if(!color_l.isList() || color_l.getLength() != 3)
+        {
+            Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            std::ostringstream msg;
+            msg<<"Invalid number of color elements (expected 3, got "<<color_l.getLength()<<")";
+            error_dialog.set_secondary_text(msg.str());
+            error_dialog.set_title("Errror");
+            error_dialog.run();
+            return false;
+        }
+        glm::vec3 color;
+        color.r = color_l[0];
+        color.g = color_l[1];
+        color.b = color_l[2];
+
+        std::string tex_filename = cfg_root["tex_filename"];
+
+        _r_car.set_active(r_car);
+        _r_cyl.set_active(r_cyl);
+        _r_sph.set_active(r_sph);
+        _r_par.set_active(r_par);
+
+        _eqn.set_text(eqn);
+        _eqn_par_y.set_text(eqn_par_y);
+        _eqn_par_z.set_text(eqn_par_z);
+
+        _row_min.set_text(row_min);
+        _row_max.set_text(row_max);
+        _col_min.set_text(col_min);
+        _col_max.set_text(col_max);
+
+        _row_res.get_adjustment()->set_value((double)row_res);
+        _col_res.get_adjustment()->set_value((double)col_res);
+
+        _draw_grid.set_active(draw_grid);
+        _draw_normals.set_active(draw_normals);
+
+        _use_color.set_active(use_color);
+        _use_tex.set_active(use_tex);
+
+        _color = color;
+
+        _tex_filename = tex_filename;
+    }
+    catch(const libconfig::FileIOException & e)
+    {
+        Gtk::MessageDialog error_dialog("Error writing to " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        error_dialog.set_secondary_text(e.what());
+        error_dialog.set_title("Errror");
+        error_dialog.run();
+        return false;
+    }
+    catch(const libconfig::ParseException & e)
+    {
+        Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        std::ostringstream msg;
+        msg<<e.getError()<<" on line: "<<e.getLine();
+        error_dialog.set_secondary_text(msg.str());
+        error_dialog.set_title("Errror");
+        error_dialog.run();
+        return false;
+    }
+    catch(const libconfig::SettingTypeException & e)
+    {
+        Gtk::MessageDialog error_dialog("Invalid setting type in" + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        error_dialog.set_secondary_text(e.getPath());
+        error_dialog.set_title("Errror");
+        error_dialog.run();
+        return false;
+    }
+    catch(const libconfig::SettingNotFoundException & e)
+    {
+        Gtk::MessageDialog error_dialog("Could not find setting in" + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        error_dialog.set_secondary_text(e.getPath());
+        error_dialog.set_title("Errror");
+        error_dialog.run();
+        return false;
+    }
+
+    if(!_tex_filename.empty())
+    {
+        try
+        {
+            _tex_ico.set(Gdk::Pixbuf::create_from_file(_tex_filename)->scale_simple(32, 32, Gdk::InterpType::INTERP_BILINEAR));
+        }
+        catch(Glib::Exception &e)
+        {
+            _tex_ico.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR);
+
+            Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            error_dialog.set_title("Errror");
+            error_dialog.set_secondary_text("");
+            error_dialog.run();
+        }
+    }
+
+    guint8 r = (guint8)(_color.r * 256.0f);
+    guint8 g = (guint8)(_color.g * 256.0f);
+    guint8 b = (guint8)(_color.b * 256.0f);
+
+    guint32 hex_color = r << 24 | g << 16 | b << 8;
+
+    Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
+    image->fill(hex_color);
+    _color_ico.set(image);
+
+    _signal_tex_changed.emit(_tex_ico);
+
+    change_type();
+    change_coloring();
+
+    return true;
 }
 
 sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved() const
@@ -232,12 +398,6 @@ sigc::signal<void, const Gtk::Image &> Graph_page::signal_tex_changed() const
 
 void Graph_page::change_type()
 {
-    // prevent being run when leaving one and again while entering another
-    static bool change_in = false;
-    change_in = !change_in;
-    if(!change_in)
-        return;
-
     if(_r_car.get_active())
     {
         _eqn_l.set_text("z(x,y)=");
@@ -460,12 +620,6 @@ void Graph_page::change_flags()
 
 void Graph_page::change_coloring()
 {
-    // prevent being run when leaving one and again while entering another
-    static bool change_in = false;
-    change_in = !change_in;
-    if(!change_in)
-        return;
-
     if(_graph.get())
     {
         _graph->use_tex = _use_tex.get_active();
@@ -568,18 +722,3 @@ void Graph_page::update_cursor(const std::string & text) const
 {
     _signal_cursor_moved.emit(text);
 }
-
-    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("sin(v) * cos(u),sin(v) * sin(u),cos(v)", 0.0f, 2.0f * M_PI, 50, 0.0f, M_PI, 50))); // sphere
-    // gl_window.graphs.push_back(std::unique_ptr<G:raph>(new Graph_parametric(
-    //     "-2/15 * cos(u) * (3 * cos(v) - 30 * sin(u) + 90*cos(u)^4 * sin(u) - 60 * cos(u)^6 * sin(u) + 5 * cos(u) * cos(v) * sin(u)),"
-    //     "-1/15 * sin(u) * (3 * cos(v) - 3 * cos(u)^2 * cos(v) - 48 * cos(u)^4 * cos(v) + 48 * cos(u)^6 * cos(v) - 60 * sin(u) + 5 * cos(u) * cos(v) * sin(u) -5 * cos(u)^3 * cos(v) * sin(u) - 80 * cos(u)^5 * cos(v) * sin(u) + 80 * cos(u)^7 * cos(v) * sin(u)),"
-    //     "2/15 * (3 + 5 * cos(u) * sin(u)) * sin(v)",
-    //     0.0f, M_PI, 50, 0.0f, 2.0f * M_PI, 50))); // klein bottle
-    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("(2 + cos(u/2) * cos(v) - sin(u/2) * sin(2*v)) * cos(u),(2 + cos(u/2) * cos(v) - sin(u/2) * sin(2*v)) * sin(u),sin(u/2) * cos(v) + cos(u/2) * sin(2*v)", 0.0f, 2.0f * M_PI, 50, 0.0f, 2.0f * M_PI, 50))); // klein bagel
-    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("(1 + v / 2 * cos(u / 2)) * cos(u),(1 + v / 2 * cos(u / 2)) * sin(u),v / 2 * sin(u / 2)", 0.0f, 2.0f * M_PI, 50, -1.0f, 1.0f, 50))); // möbius strip
-    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("(2 + .5 * cos(v)) * cos(u),(2 + .5 * cos(v)) * sin(u),.5 * sin(v)", 0.0f, 2.0f * M_PI, 50, 0.0f, 2.0f * M_PI, 50))); // torus
-    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_spherical("1", 0.0f, 2.0f * M_PI, 50, 0.0f, M_PI, 50)));
-    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cylindrical("sqrt(r)", 0.0f, 10.0f, 50, 0.0f, 2.0f * M_PI, 50)));
-    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cylindrical("-sqrt(r)", 0.0f, 10.0f, 50, 0.0f, 2.0f * M_PI, 50)));
-    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cartesian("sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)));
-    // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_cartesian("-sqrt(1 - x^2 + y^2)", -2.0f, 2.0f, 50, -2.0f, 2.0f, 50)));

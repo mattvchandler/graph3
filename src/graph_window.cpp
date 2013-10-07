@@ -221,10 +221,11 @@ void Graph_window::load_graph()
     int current_tab = _notebook.get_current_page();
 
     tab_new();
+    _notebook.set_current_page(_notebook.get_n_pages() - 1);
     Graph_page * new_tab = dynamic_cast<Graph_page *>(_notebook.get_nth_page(_notebook.get_current_page()));
     if(!new_tab->load_graph(graph_chooser.get_filename()))
     {
-       tab_close(new_tab); 
+       tab_close(new_tab);
        _notebook.set_current_page(current_tab);
     }
 }
