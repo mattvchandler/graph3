@@ -1,0 +1,22 @@
+graph : 
+{
+  r_car = false;
+  r_cyl = false;
+  r_sph = false;
+  r_par = true;
+  eqn = "-2/15 * cos(u) * (3 * cos(v) - 30 * sin(u) + 90*cos(u)^4 * sin(u) - 60 * cos(u)^6 * sin(u) + 5 * cos(u) * cos(v) * sin(u))";
+  eqn_par_y = "-1/15 * sin(u) * (3 * cos(v) - 3 * cos(u)^2 * cos(v) - 48 * cos(u)^4 * cos(v) + 48 * cos(u)^6 * cos(v) - 60 * sin(u) + 5 * cos(u) * cos(v) * sin(u) -5 * cos(u)^3 * cos(v) * sin(u) - 80 * cos(u)^5 * cos(v) * sin(u) + 80 * cos(u)^7 * cos(v) * sin(u))";
+  eqn_par_z = "2/15 * (3 + 5 * cos(u) * sin(u)) * sin(v)";
+  row_min = "0";
+  row_max = "pi";
+  col_min = "0";
+  col_max = "2*pi";
+  row_res = 50;
+  col_res = 50;
+  draw_grid = true;
+  draw_normals = false;
+  use_color = true;
+  use_tex = false;
+  color = ( 0.4470588267, 0.6235294342, 0.8117647171 );
+  tex_filename = "";
+};

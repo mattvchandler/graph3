@@ -1,0 +1,22 @@
+graph : 
+{
+  r_car = false;
+  r_cyl = false;
+  r_sph = false;
+  r_par = true;
+  eqn = "(1 + v / 2 * cos(u / 2)) * cos(u)";
+  eqn_par_y = "(1 + v / 2 * cos(u / 2)) * sin(u)";
+  eqn_par_z = "v / 2 * sin(u / 2)";
+  row_min = "0";
+  row_max = "2*pi";
+  col_min = "-1";
+  col_max = "1";
+  row_res = 50;
+  col_res = 50;
+  draw_grid = false;
+  draw_normals = true;
+  use_color = true;
+  use_tex = false;
+  color = ( 0.8000000119, 0.0, 0.0 );
+  tex_filename = "";
+};

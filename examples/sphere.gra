@@ -1,0 +1,22 @@
+graph : 
+{
+  r_car = false;
+  r_cyl = false;
+  r_sph = true;
+  r_par = false;
+  eqn = "1";
+  eqn_par_y = "";
+  eqn_par_z = "";
+  row_min = "0";
+  row_max = "2*pi";
+  col_min = "0";
+  col_max = "pi";
+  row_res = 50;
+  col_res = 50;
+  draw_grid = true;
+  draw_normals = false;
+  use_color = true;
+  use_tex = false;
+  color = ( 0.5411764979, 0.8862745166, 0.2039215714 );
+  tex_filename = "";
+};
