@@ -150,6 +150,28 @@ Graph_page::~Graph_page()
     _gl_window->invalidate();
 }
 
+void Graph_page::set_active()
+{
+    _gl_window->set_active_graph(_graph.get());
+
+    if(_graph.get() && _gl_window->draw_cursor_flag)
+        update_cursor(_graph->cursor_text());
+    else
+        update_cursor("");
+
+    _gl_window->invalidate();
+}
+
+sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved() const
+{
+    return _signal_cursor_moved;
+}
+
+sigc::signal<void, const Gtk::Image &> Graph_page::signal_tex_changed() const
+{
+    return _signal_tex_changed;
+}
+
 void Graph_page::change_type()
 {
     // prevent being run when leaving one and again while entering another
@@ -271,7 +293,7 @@ void Graph_page::apply()
     catch(const Graph_exception &e)
     {
         // show parsing error message
-        Gtk::MessageDialog error_dialog(std::string(e.GetMsg()), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        Gtk::MessageDialog error_dialog(e.GetMsg(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
         error_dialog.set_title("Errror");
         error_dialog.set_secondary_text("In Expression: " + e.GetExpr());
         error_dialog.run();
@@ -351,7 +373,7 @@ void Graph_page::apply()
         }
         catch(Glib::Exception &e)
         {
-            Gtk::MessageDialog error_dialog(std::string(e.what()), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
             error_dialog.set_title("Errror");
             error_dialog.set_secondary_text("");
             error_dialog.run();
@@ -453,7 +475,7 @@ void Graph_page::apply_tex()
         {
             _tex_ico.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR);
 
-            Gtk::MessageDialog error_dialog(std::string(e.what()), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
             error_dialog.set_title("Errror");
             error_dialog.set_secondary_text("");
             error_dialog.run();
@@ -487,7 +509,7 @@ void Graph_page::apply_tex_to_graph()
             }
             catch(Glib::Exception &e)
             {
-                Gtk::MessageDialog error_dialog(std::string(e.what()), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+                Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
                 error_dialog.set_title("Errror");
                 error_dialog.run();
             }
@@ -503,28 +525,6 @@ void Graph_page::apply_tex_to_graph()
 void Graph_page::update_cursor(const std::string & text) const
 {
     _signal_cursor_moved.emit(text);
-}
-
-void Graph_page::set_active()
-{
-    _gl_window->set_active_graph(_graph.get());
-
-    if(_graph.get() && _gl_window->draw_cursor_flag)
-        update_cursor(_graph->cursor_text());
-    else
-        update_cursor("");
-
-    _gl_window->invalidate();
-}
-
-sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved() const
-{
-    return _signal_cursor_moved;
-}
-
-sigc::signal<void, const Gtk::Image &> Graph_page::signal_tex_changed() const
-{
-    return _signal_tex_changed;
 }
 
     // gl_window.graphs.push_back(std::unique_ptr<Graph>(new Graph_parametric("sin(v) * cos(u),sin(v) * sin(u),cos(v)", 0.0f, 2.0f * M_PI, 50, 0.0f, M_PI, 50))); // sphere

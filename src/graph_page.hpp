@@ -24,6 +24,7 @@
 #define __GRAPH_PAGE_H__
 
 #include <memory>
+#include <string>
 
 #include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
