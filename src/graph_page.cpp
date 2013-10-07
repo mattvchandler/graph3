@@ -61,7 +61,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _draw_normals("Draw normals"),
     _use_color("Use Color"),
     _use_tex("Use Texture"),
-    _tex_butt("Choose Texture"),
+    _tex_butt("Choose Color"),
     _apply_butt(Gtk::Stock::APPLY),
     _tex_ico(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR),
     _color(start_color)
@@ -155,7 +155,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _eqn_par_z.hide();
 
 
-    // TODO: tooltips, save/load, fixed light, orbiting camera, widget spacing/layout, toolbar w/  add butt on right if we can
+    // TODO: tooltips, fixed light, orbiting camera, widget spacing/layout, toolbar w/  add butt on right if we can, increase cursor text eqn width
 }
 
 Graph_page::~Graph_page()
@@ -628,11 +628,13 @@ void Graph_page::change_coloring()
 
     if(_use_tex.get_active())
     {
+        _tex_butt.set_label("Choose Texture");
         _tex_butt.set_image(_tex_ico);
         _signal_tex_changed.emit(_tex_ico);
     }
     else
     {
+        _tex_butt.set_label("Choose Color");
         _tex_butt.set_image(_color_ico);
         _signal_tex_changed.emit(_color_ico);
     }
