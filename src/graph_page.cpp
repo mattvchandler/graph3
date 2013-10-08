@@ -156,6 +156,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
 
 
     // TODO: tooltips, fixed light, orbiting camera, widget spacing/layout, toolbar w/  add butt on right if we can, increase cursor text eqn width
+    //       unbind ^Q, draw / don't draw checkbox
 }
 
 Graph_page::~Graph_page()

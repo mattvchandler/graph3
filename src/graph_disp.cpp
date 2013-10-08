@@ -487,7 +487,7 @@ bool Graph_disp::input()
                 scale *= 2.0f;
             }
 
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl))
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt))
             {
                 scale *= 0.1f;
             }
