@@ -309,6 +309,10 @@ void Graph_disp::realize()
     glUniform1f(_prog_tex_uniforms["quad_atten"], _light.quad_attenuation);
     glUniform3fv(_prog_tex_uniforms["cam_forward"], 1, &light_forward[0]);
 
+    glBindAttribLocation(_prog_tex, 0, "vert_pos");
+    glBindAttribLocation(_prog_tex, 1, "tex");
+    glBindAttribLocation(_prog_tex, 2, "normal");
+
     glUseProgram(_prog_color);
     glUniform3fv(_prog_color_uniforms["ambient_color"], 1, &_ambient_light[0]);
     glUniform3fv(_prog_color_uniforms["light_color"], 1, &_light.color[0]);
@@ -318,6 +322,13 @@ void Graph_disp::realize()
     glUniform1f(_prog_color_uniforms["linear_atten"], _light.linear_attenuation);
     glUniform1f(_prog_color_uniforms["quad_atten"], _light.quad_attenuation);
     glUniform3fv(_prog_color_uniforms["cam_forward"], 1, &light_forward[0]);
+
+    glBindAttribLocation(_prog_color, 0, "vert_pos");
+    glBindAttribLocation(_prog_color, 1, "tex");
+    glBindAttribLocation(_prog_color, 2, "normal");
+
+    glUseProgram(_prog_line);
+    glBindAttribLocation(_prog_line, 0, "vert_pos");
 
     _cursor.build("img/cursor.png");
 
@@ -342,8 +353,8 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glEnable(GL_PRIMITIVE_RESTART);
-    glPrimitiveRestartIndex(0xFFFFFFFF);
+    // glEnable(GL_PRIMITIVE_RESTART);
+    // glPrimitiveRestartIndex(0xFFFFFFFF);
 
     // set up transformation matrices
     glm::mat4 view_model = _cam.view_mat();

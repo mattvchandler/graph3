@@ -359,8 +359,8 @@ Graph::Graph():
     use_tex(false), valid_tex(false), color(1.0f), shininess(50.0f), specular(1.0f),
     grid_color(0.1f, 0.1f, 0.1f, 1.0f), normal_color(0.0f, 1.0f, 1.0f, 1.0f),
     draw_flag(true), draw_grid_flag(true), draw_normals_flag(false),
-    _tex(0), _ebo(0), _vao(0), _vbo(0), _num_indexes(0),
-    _grid_ebo(0), _grid_num_indexes(0),
+    _tex(0), _ebo(0), _vao(0), _vbo(0),
+    _grid_ebo(0),
     _normal_vao(0), _normal_vbo(0), _normal_num_indexes(0)
 {
 }
@@ -394,7 +394,8 @@ void Graph::draw() const
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     glBindTexture(GL_TEXTURE_2D, _tex);
 
-    glDrawElements(GL_TRIANGLE_STRIP, _num_indexes, GL_UNSIGNED_INT, NULL);
+    for(auto &i: _segs)
+        glDrawElements(GL_TRIANGLE_STRIP, i.second, GL_UNSIGNED_INT, (GLvoid *)(sizeof(GLuint) * i.first));
 }
 
 void Graph::draw_grid() const
@@ -403,7 +404,8 @@ void Graph::draw_grid() const
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _grid_ebo);
 
-    glDrawElements(GL_LINE_STRIP, _grid_num_indexes, GL_UNSIGNED_INT, NULL);
+    for(auto &i: _grid_segs)
+        glDrawElements(GL_LINE_STRIP, i.second, GL_UNSIGNED_INT, (GLvoid *)(sizeof(GLuint) * i.first));
 }
 
 void Graph::draw_normals() const
@@ -519,6 +521,22 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
         break_flag = true;
     }
 
+    // get starting point and lengths of segments
+    GLuint start = 0;
+    for(size_t i = 0; i < index.size() ;++i)
+    {
+        if(index[i] == 0xFFFFFFFF)
+        {
+            if(i != start)
+            {
+                _segs.push_back(std::make_pair(start, (GLuint)(i - start)));
+            }
+            start = i + 1;
+        }
+    }
+    if(start != index.size())
+        _segs.push_back(std::make_pair(start, (GLuint)(index.size() - start)));
+
     // generate required OpenGL structures
     glGenBuffers(1, &_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
@@ -546,8 +564,6 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
 
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid *)(sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size()));
     glEnableVertexAttribArray(2);
-
-    _num_indexes = index.size();
 
     // generate grid lines
     std::vector<GLuint> grid_index;
@@ -580,12 +596,27 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
         grid_index.push_back(0xFFFFFFFF);
     }
 
+    // get starting point and lengths of segments
+    start = 0;
+    for(size_t i = 0; i < grid_index.size() ;++i)
+    {
+        if(grid_index[i] == 0xFFFFFFFF)
+        {
+            if(i != start)
+            {
+                _grid_segs.push_back(std::make_pair(start, (GLuint)(i - start)));
+            }
+            start = i + 1;
+        }
+    }
+    if(start != grid_index.size())
+        _grid_segs.push_back(std::make_pair(start, (GLuint)(grid_index.size() - start)));
+
+
     // generate required OpenGL structures
     glGenBuffers(1, &_grid_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _grid_ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * grid_index.size(), grid_index.data(), GL_STATIC_DRAW);
-
-    _grid_num_indexes = grid_index.size();
 
     // lines for normal vectors
     std::vector<glm::vec3> normal_coords;

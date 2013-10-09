@@ -24,6 +24,7 @@
 #define __GRAPH_H__
 
 #include <string>
+#include <utility>
 
 #include <GL/glew.h>
 
@@ -117,10 +118,10 @@ protected:
     GLuint _ebo;
     GLuint _vao;
     GLuint _vbo;
-    GLuint _num_indexes;
+    std::vector<std::pair<GLuint, GLuint>> _segs;
 
     GLuint _grid_ebo;
-    GLuint _grid_num_indexes;
+    std::vector<std::pair<GLuint, GLuint>> _grid_segs;
 
     GLuint _normal_vao;
     GLuint _normal_vbo;
