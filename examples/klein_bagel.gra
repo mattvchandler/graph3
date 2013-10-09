@@ -13,6 +13,7 @@ graph :
   col_max = "2*pi";
   row_res = 50;
   col_res = 50;
+  draw = true;
   draw_grid = true;
   draw_normals = false;
   use_color = true;

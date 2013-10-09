@@ -13,6 +13,7 @@ graph :
   col_max = "1";
   row_res = 50;
   col_res = 50;
+  draw = true;
   draw_grid = false;
   draw_normals = true;
   use_color = true;

@@ -101,6 +101,7 @@ public:
     glm::vec4 grid_color;
     glm::vec4 normal_color;
 
+    bool draw_flag;
     bool draw_grid_flag;
     bool draw_normals_flag;
 

@@ -1,23 +1,23 @@
 graph : 
 {
   r_car = false;
-  r_cyl = false;
-  r_sph = true;
+  r_cyl = true;
+  r_sph = false;
   r_par = false;
-  eqn = "1";
+  eqn = ".1*sin(10/r)";
   eqn_par_y = "";
   eqn_par_z = "";
   row_min = "0";
-  row_max = "2*pi";
+  row_max = "2";
   col_min = "0";
-  col_max = "pi";
-  row_res = 50;
+  col_max = "2*pi";
+  row_res = 1000;
   col_res = 50;
   draw = true;
-  draw_grid = true;
+  draw_grid = false;
   draw_normals = false;
   use_color = true;
   use_tex = false;
-  color = ( 0.5411764979, 0.8862745166, 0.2039215714 );
+  color = ( 0.4470588267, 0.6235294342, 0.8117647171 );
   tex_filename = "";
 };

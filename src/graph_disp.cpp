@@ -366,35 +366,37 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
 
     for(auto &graph: _graphs)
     {
-        if(graph->use_tex && graph->valid_tex)
+        if(graph->draw_flag)
         {
-            glUseProgram(_prog_tex);
+            if(graph->use_tex && graph->valid_tex)
+            {
+                glUseProgram(_prog_tex);
 
-            glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-            glUniformMatrix4fv(_prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-            glUniformMatrix3fv(_prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+                glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+                glUniformMatrix4fv(_prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+                glUniformMatrix3fv(_prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
 
-            // material properties
-            glUniform1f(_prog_tex_uniforms["shininess"], graph->shininess);
-            glUniform3fv(_prog_tex_uniforms["specular"], 1, &graph->specular[0]);
+                // material properties
+                glUniform1f(_prog_tex_uniforms["shininess"], graph->shininess);
+                glUniform3fv(_prog_tex_uniforms["specular"], 1, &graph->specular[0]);
+            }
+            else
+            {
+                glUseProgram(_prog_color);
+
+                glUniformMatrix4fv(_prog_color_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+                glUniformMatrix4fv(_prog_color_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+                glUniformMatrix3fv(_prog_color_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+
+                // material properties
+                glUniform4fv(_prog_color_uniforms["color"], 1, &graph->color[0]);
+                glUniform1f(_prog_color_uniforms["shininess"], graph->shininess);
+                glUniform3fv(_prog_color_uniforms["specular"], 1, &graph->specular[0]);
+            }
+            check_error("pre draw");
+
+            graph->draw();
         }
-        else
-        {
-            glUseProgram(_prog_color);
-
-            glUniformMatrix4fv(_prog_color_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-            glUniformMatrix4fv(_prog_color_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-            glUniformMatrix3fv(_prog_color_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
-
-            // material properties
-            glUniform4fv(_prog_color_uniforms["color"], 1, &graph->color[0]);
-            glUniform1f(_prog_color_uniforms["shininess"], graph->shininess);
-            glUniform3fv(_prog_color_uniforms["specular"], 1, &graph->specular[0]);
-        }
-
-        check_error("pre draw");
-
-        graph->draw();
 
         if(graph->draw_grid_flag)
         {

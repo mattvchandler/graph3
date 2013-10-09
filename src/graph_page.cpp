@@ -57,6 +57,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _col_res_l("y resolution="),
     _row_res(Gtk::Adjustment::create(50.0, 1.0, 1000.0)),
     _col_res(Gtk::Adjustment::create(50.0, 1.0, 1000.0)),
+    _draw("Draw Graph"),
     _draw_grid("Draw Gridlines"),
     _draw_normals("Draw normals"),
     _use_color("Use Color"),
@@ -88,7 +89,8 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     attach(_row_res, 1, 8, 1, 1);
     attach(_col_res_l, 2, 8, 1, 1);
     attach(_col_res, 3, 8, 1, 1);
-    attach(_draw_grid, 0, 9, 2, 1);
+    attach(_draw, 0, 9, 1, 1);
+    attach(_draw_grid, 1, 9, 1, 1);
     attach(_draw_normals, 2, 9, 2, 1);
     attach(_use_color, 0, 10, 2, 1);
     attach(_use_tex, 0, 11, 2, 1);
@@ -123,7 +125,9 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _col_min.set_placeholder_text("y min");
     _col_max.set_placeholder_text("y max");
 
+    _draw.set_active(true);
     _draw_grid.set_active(true);
+    _draw.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
     _draw_grid.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
     _draw_normals.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
 
@@ -156,7 +160,6 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
 
 
     // TODO: tooltips, fixed light, orbiting camera, widget spacing/layout, toolbar w/  add butt on right if we can, increase cursor text eqn width
-    //       unbind ^Q, draw / don't draw checkbox
 }
 
 Graph_page::~Graph_page()
@@ -199,6 +202,7 @@ void Graph_page::save_graph(const std::string & filename)
     cfg_root.add("row_res", libconfig::Setting::TypeInt) = _row_res.get_value_as_int();
     cfg_root.add("col_res", libconfig::Setting::TypeInt) = _col_res.get_value_as_int();
 
+    cfg_root.add("draw", libconfig::Setting::TypeBoolean) = _draw.get_active();
     cfg_root.add("draw_grid", libconfig::Setting::TypeBoolean) = _draw_grid.get_active();
     cfg_root.add("draw_normals", libconfig::Setting::TypeBoolean) = _draw_normals.get_active();
 
@@ -258,6 +262,7 @@ bool Graph_page::load_graph(const std::string & filename)
         int row_res = cfg_root["row_res"];
         int col_res = cfg_root["col_res"];
 
+        bool draw = cfg_root["draw"];
         bool draw_grid = cfg_root["draw_grid"];
         bool draw_normals = cfg_root["draw_normals"];
 
@@ -307,6 +312,7 @@ bool Graph_page::load_graph(const std::string & filename)
         _row_res.get_adjustment()->set_value((double)row_res);
         _col_res.get_adjustment()->set_value((double)col_res);
 
+        _draw.set_active(draw);
         _draw_grid.set_active(draw_grid);
         _draw_normals.set_active(draw_normals);
 
@@ -579,6 +585,7 @@ void Graph_page::apply()
         return;
     }
 
+    _graph->draw_flag = _draw.get_active();
     _graph->draw_grid_flag = _draw_grid.get_active();
     _graph->draw_normals_flag = _draw_normals.get_active();
 
@@ -613,6 +620,7 @@ void Graph_page::change_flags()
 {
     if(_graph.get())
     {
+        _graph->draw_flag = _draw.get_active();
         _graph->draw_grid_flag = _draw_grid.get_active();
         _graph->draw_normals_flag = _draw_normals.get_active();
         _gl_window->invalidate();

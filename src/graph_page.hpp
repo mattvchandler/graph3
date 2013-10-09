@@ -78,7 +78,7 @@ private:
     Gtk::Entry _col_min, _col_max;
     Gtk::Label _row_res_l, _col_res_l;
     Gtk::SpinButton _row_res, _col_res;
-    Gtk::CheckButton _draw_grid, _draw_normals;
+    Gtk::CheckButton _draw, _draw_grid, _draw_normals;
     Gtk::RadioButton _use_color, _use_tex;
     Gtk::Button _tex_butt;
     Gtk::Button _apply_butt;
