@@ -30,6 +30,7 @@
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/grid.h>
+#include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/radiobutton.h>
 #include <gtkmm/spinbutton.h>
@@ -87,6 +88,7 @@ private:
     Gtk::Image _tex_ico;
     glm::vec3 _color;
     std::string _tex_filename;
+    Gtk::Image _apply_butt_img;
 
     sigc::signal<void, const std::string &> _signal_cursor_moved;
     sigc::signal<void, const Gtk::Image &> _signal_tex_changed;

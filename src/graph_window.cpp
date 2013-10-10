@@ -25,7 +25,8 @@
 #include "graph_window.hpp"
 
 Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::ContextSettings(0, 0, 4, 4, 0)), // these do nothing yet - future SFML version should enable them
-    _add_tab_butt(Gtk::Stock::ADD),
+    _add_tab_butt("Add"),
+    _add_tab_butt_img(Gtk::Stock::ADD, Gtk::ICON_SIZE_MENU),
     _draw_axes("Draw Axes"),
     _draw_cursor("Draw Cursor")
 {
@@ -82,7 +83,9 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
     _main_grid.attach(_draw_axes, 1, 3, 1, 1);
     _main_grid.attach(_draw_cursor, 2, 3, 1, 1);
 
+    _add_tab_butt.set_image(_add_tab_butt_img);
     _add_tab_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
+
     _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &Graph_window::tab_change));
 
     show_all_children();

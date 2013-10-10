@@ -30,6 +30,7 @@
 #include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/grid.h>
+#include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/uimanager.h>
@@ -67,6 +68,7 @@ private:
     Graph_disp _gl_window;
     Gtk::Label _cursor_text;
     Gtk::Button _add_tab_butt;
+    Gtk::Image _add_tab_butt_img;
     Gtk::CheckButton _draw_axes, _draw_cursor;
 
     sigc::connection _cursor_conn;

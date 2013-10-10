@@ -63,9 +63,10 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _use_color("Use Color"),
     _use_tex("Use Texture"),
     _tex_butt("Choose Color"),
-    _apply_butt(Gtk::Stock::APPLY),
+    _apply_butt("Apply"),
     _tex_ico(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR),
-    _color(start_color)
+    _color(start_color),
+    _apply_butt_img(Gtk::Stock::APPLY, Gtk::ICON_SIZE_SMALL_TOOLBAR)
 {
     attach(_r_car, 0, 1, 2, 1);
     attach(_r_cyl, 2, 1, 2, 1);
@@ -150,6 +151,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _tex_butt.set_image(_color_ico);
     _tex_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::change_tex));
 
+    _apply_butt.set_image(_apply_butt_img);
     _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
     show_all_children();
