@@ -159,7 +159,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _eqn_par_z.hide();
 
 
-    // TODO: tooltips, fixed light, orbiting camera, widget spacing/layout, toolbar w/  add butt on right if we can, increase cursor text eqn width
+    // TODO: tooltips, fixed light, orbiting camera, widget spacing/layout, toolbar w/  add butt on right if we can
 }
 
 Graph_page::~Graph_page()

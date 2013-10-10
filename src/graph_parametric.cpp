@@ -20,6 +20,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <iomanip>
 #include <utility>
 
 #include "graph_parametric.hpp"
@@ -373,10 +374,10 @@ std::string Graph_parametric::cursor_text() const
     std::ostringstream str;
     std::string eqn = _eqn_x + "," + _eqn_y + "," + _eqn_z;
 
-    if(eqn.size() > 20)
-        eqn = eqn.substr(0, 19) + "…";
+    if(eqn.size() > 50)
+        eqn = eqn.substr(0, 49) + "…";
 
-    str<<"(x, y, z)(u ,v) = "<<eqn<<" (x, y, z)("<<_cursor_u<<", "<<_cursor_v<<") = (";
+    str<<std::setprecision(4)<<"(x, y, z)(u ,v) = "<<eqn<<" (x, y, z)("<<_cursor_u<<", "<<_cursor_v<<") = (";
     str<<_cursor_pos.x<<", "<<_cursor_pos.y<<", "<<_cursor_pos.z<<")"<<std::endl;
     return str.str();
 }

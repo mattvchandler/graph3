@@ -20,6 +20,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <iomanip>
 #include <utility>
 
 #include "graph_spherical.hpp"
@@ -302,9 +303,9 @@ std::string Graph_spherical::cursor_text() const
     std::ostringstream str;
     std::string eqn = _eqn;
 
-    if(_eqn.size() > 20)
-        eqn = _eqn.substr(0, 19) + "…";
+    if(_eqn.size() > 50)
+        eqn = _eqn.substr(0, 49) + "…";
 
-    str<<u8"r(θ, ϕ) = "<<eqn<<"; r("<<_cursor_theta<<", "<<_cursor_phi<<") = "<<_cursor_r;
+    str<<std::setprecision(4)<<u8"r(θ, ϕ) = "<<eqn<<"; r("<<_cursor_theta<<", "<<_cursor_phi<<") = "<<_cursor_r;
     return str.str();
 }
