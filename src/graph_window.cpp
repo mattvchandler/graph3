@@ -166,6 +166,9 @@ void Graph_window::update_cursor(const std::string & text)
     _cursor_text.set_text(text);
 }
 
+std::string curr_dir = "";
+std::string curr_file = "";
+
 void Graph_window::save_graph()
 {
     Gtk::FileChooserDialog graph_chooser("Save Graph", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_SAVE);
@@ -182,6 +185,18 @@ void Graph_window::save_graph()
     all_types->set_name("All files");
     graph_chooser.add_filter(all_types);
 
+    if(!curr_dir.empty())
+        graph_chooser.set_current_folder(curr_dir);
+    else
+        graph_chooser.set_current_folder(".");
+
+    if(!curr_file.empty())
+        graph_chooser.set_current_name(curr_file);
+    else
+        graph_chooser.set_current_name(".gra");
+
+    graph_chooser.set_create_folders(true);
+
     graph_chooser.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
     graph_chooser.add_button("Save", Gtk::RESPONSE_OK);
 
@@ -191,10 +206,8 @@ void Graph_window::save_graph()
         return;
 
     std::string filename = graph_chooser.get_filename();
-    if(filename.substr(filename.size() - 4) != ".gra")
-    {
-        filename += ".gra";
-    }
+    curr_dir = graph_chooser.get_current_folder();
+    curr_file = filename.substr(curr_dir.size() + 1);
 
     dynamic_cast<Graph_page *>(_notebook.get_nth_page(_notebook.get_current_page()))->save_graph(filename);
 }
@@ -218,15 +231,29 @@ void Graph_window::load_graph()
     graph_chooser.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
     graph_chooser.add_button("Select", Gtk::RESPONSE_OK);
 
+    graph_chooser.add_shortcut_folder("./examples");
+
+    if(!curr_dir.empty())
+        graph_chooser.set_current_folder(curr_dir);
+    else
+        graph_chooser.set_current_folder(".");
+
+    if(!curr_file.empty())
+        graph_chooser.select_filename(curr_dir + curr_file);
+
     if(graph_chooser.run() != Gtk::RESPONSE_OK)
         return;
+
+    std::string filename = graph_chooser.get_filename();
+    curr_dir = graph_chooser.get_current_folder();
+    curr_file = filename.substr(curr_dir.size() + 1);
 
     int current_tab = _notebook.get_current_page();
 
     tab_new();
     _notebook.set_current_page(_notebook.get_n_pages() - 1);
     Graph_page * new_tab = dynamic_cast<Graph_page *>(_notebook.get_nth_page(_notebook.get_current_page()));
-    if(!new_tab->load_graph(graph_chooser.get_filename()))
+    if(!new_tab->load_graph(filename))
     {
        tab_close(new_tab);
        _notebook.set_current_page(current_tab);
