@@ -28,6 +28,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+// TODO remove these
 inline std::ostream & operator<<(std::ostream & out, const glm::vec2 & v)
 {
     out<<"("<<v.x<<", "<<v.y<<")";

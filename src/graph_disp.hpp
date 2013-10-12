@@ -139,6 +139,7 @@ private:
     Axes _axes;
 
     Camera _cam;
+    float _scale;
     glm::mat4 _perspective_mat;
     Light _light;
     glm::vec3 _ambient_light;

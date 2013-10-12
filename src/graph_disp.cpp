@@ -189,7 +189,7 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_reqest, const 
     SFMLWidget(mode, size_reqest),
     draw_cursor_flag(true), draw_axes_flag(true),
     _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-    _perspective_mat(1.0f),
+    _scale(1.0f), _perspective_mat(1.0f),
     _light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.8f, 1.0f, 0.5f, 0.0f}),
     _ambient_light(0.4f, 0.4f, 0.4f),
     _active_graph(nullptr)
@@ -353,11 +353,8 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // glEnable(GL_PRIMITIVE_RESTART);
-    // glPrimitiveRestartIndex(0xFFFFFFFF);
-
     // set up transformation matrices
-    glm::mat4 view_model = _cam.view_mat();
+    glm::mat4 view_model = glm::scale(_cam.view_mat(), glm::vec3(_scale));
     glm::mat4 view_model_perspective = _perspective_mat * view_model;
     glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
@@ -439,7 +436,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
     {
         glUseProgram(_prog_tex);
 
-        view_model = glm::translate(_cam.view_mat(), _active_graph->cursor_pos()) * glm::scale(glm::mat4(), glm::vec3(0.25f));
+        view_model = glm::scale(glm::translate(glm::scale(_cam.view_mat(), glm::vec3(_scale)), _active_graph->cursor_pos()), glm::vec3(0.25f / _scale));
         view_model_perspective = _perspective_mat * view_model;
         normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
@@ -465,6 +462,7 @@ bool Graph_disp::input()
     static std::unordered_map<sf::Keyboard::Key, bool, std::hash<int>> key_lock;
     static sf::Vector2i old_mouse_pos = sf::Mouse::getPosition(glWindow);
     static sf::Clock cursor_delay;
+    static sf::Clock zoom_delay;
 
     // the neat thing about having this in a timeout func is that we
     // don't need to calc dt for movement controls.
@@ -483,61 +481,79 @@ bool Graph_disp::input()
         if(has_focus())
         {
             // Camera controls
+
             // reset
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
             {
                 key_lock[sf::Keyboard::R] = true;
                 _cam.set();
+                _scale = 1.0f;
                 invalidate();
             }
             else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
                 key_lock[sf::Keyboard::R] = false;
 
-            float scale = 0.1f;
+            float mov_scale = 0.1f;
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
             {
-                scale *= 2.0f;
+                mov_scale *= 2.0f;
             }
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt))
             {
-                scale *= 0.1f;
+                mov_scale *= 0.1f;
             }
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
             {
-                _cam.translate(scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
+                _cam.translate(mov_scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
                 invalidate();
             }
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
             {
-                _cam.translate(-scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
+                _cam.translate(-mov_scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
                 invalidate();
             }
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
             {
-                _cam.translate(-scale * _cam.right());
+                _cam.translate(-mov_scale * _cam.right());
                 invalidate();
             }
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
             {
-                _cam.translate(scale * _cam.right());
+                _cam.translate(mov_scale * _cam.right());
                 invalidate();
             }
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
             {
-                _cam.translate(scale * glm::vec3(0.0f, 0.0f, 1.0f));
+                _cam.translate(mov_scale * glm::vec3(0.0f, 0.0f, 1.0f));
                 invalidate();
             }
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::E))
             {
-                _cam.translate(-scale * glm::vec3(0.0f, 0.0f, 1.0f));
+                _cam.translate(-mov_scale * glm::vec3(0.0f, 0.0f, 1.0f));
+                invalidate();
+            }
+
+            const int zoom_timeout = 200;
+
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && zoom_delay.getElapsedTime().asMilliseconds() >= zoom_timeout)
+            {
+                _scale *= 2.0f;
+                zoom_delay.restart();
+                invalidate();
+            }
+            
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::X) && zoom_delay.getElapsedTime().asMilliseconds() >= zoom_timeout)
+            {
+                _scale *= 0.5f;
+                zoom_delay.restart();
                 invalidate();
             }
 
@@ -555,7 +571,7 @@ bool Graph_disp::input()
             if(draw_cursor_flag && _active_graph)
             {
                 // Cursor controls
-                int cursor_timeout = 200;
+                const int cursor_timeout = 200;
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
                 {
                     _active_graph->move_cursor(Graph::UP);
