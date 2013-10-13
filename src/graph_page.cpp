@@ -160,7 +160,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _eqn_par_z_l.hide();
     _eqn_par_z.hide();
 
-    // TODO: tooltips, fixed light, orbiting camera, widget spacing/layout, toolbar w/  add butt on right if we can, icon,
+    // TODO: tooltips, fixed light, apply loaded graphs, widget spacing/layout, toolbar w/  add butt on right if we can, icon,
     // abs paths for images/examples
 }
 

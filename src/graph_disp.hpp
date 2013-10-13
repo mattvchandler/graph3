@@ -52,6 +52,13 @@ struct Light
     float quad_attenuation;
 };
 
+struct Orbit_cam
+{
+    float r;
+    float theta;
+    float phi;
+};
+
 class Cursor
 {
 public:
@@ -121,6 +128,7 @@ public:
 
     bool draw_cursor_flag;
     bool draw_axes_flag;
+    bool use_orbit_cam;
 
 private:
     void realize();
@@ -139,7 +147,9 @@ private:
     Axes _axes;
 
     Camera _cam;
+    Orbit_cam _orbit_cam;
     float _scale;
+
     glm::mat4 _perspective_mat;
     Light _light;
     glm::vec3 _ambient_light;

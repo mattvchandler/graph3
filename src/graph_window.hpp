@@ -33,6 +33,7 @@
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
+#include <gtkmm/radiobutton.h>
 #include <gtkmm/uimanager.h>
 #include <gtkmm/window.h>
 
@@ -70,6 +71,7 @@ private:
     Gtk::Button _add_tab_butt;
     Gtk::Image _add_tab_butt_img;
     Gtk::CheckButton _draw_axes, _draw_cursor;
+    Gtk::RadioButton _use_orbit_cam, _use_free_cam;
 
     sigc::connection _cursor_conn;
 

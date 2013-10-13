@@ -187,9 +187,9 @@ void Axes::build()
 
 Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_reqest, const sf::ContextSettings & context_settings):
     SFMLWidget(mode, size_reqest),
-    draw_cursor_flag(true), draw_axes_flag(true),
+    draw_cursor_flag(true), draw_axes_flag(true), use_orbit_cam(true),
     _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-    _scale(1.0f), _perspective_mat(1.0f),
+    _orbit_cam({10.0f, 0.0f, 90.0f}), _scale(1.0f), _perspective_mat(1.0f),
     _light({glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.8f, 1.0f, 0.5f, 0.0f}),
     _ambient_light(0.4f, 0.4f, 0.4f),
     _active_graph(nullptr)
@@ -344,7 +344,7 @@ void Graph_disp::resize(Gtk::Allocation & allocation)
     {
         glViewport(0, 0, glWindow.getSize().x, glWindow.getSize().y);
         _perspective_mat = glm::perspective(30.0f, (float)glWindow.getSize().x / (float)glWindow.getSize().y,
-            0.1f, 100.0f);
+            0.1f, 1000.0f);
         invalidate();
     }
 }
@@ -354,7 +354,18 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // set up transformation matrices
-    glm::mat4 view_model = glm::scale(_cam.view_mat(), glm::vec3(_scale));
+    glm::mat4 view_model;
+    if(use_orbit_cam)
+    {
+        view_model = glm::rotate(glm::rotate(glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -_orbit_cam.r)),
+            -_orbit_cam.phi, glm::vec3(1.0f, 0.0f, 0.0f)), -_orbit_cam.theta, glm::vec3(0.0f, 0.0f, 1.0f));
+    }
+    else
+    {
+        view_model = _cam.view_mat();
+    }
+    view_model = glm::scale(view_model, glm::vec3(_scale));
+
     glm::mat4 view_model_perspective = _perspective_mat * view_model;
     glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
@@ -436,7 +447,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
     {
         glUseProgram(_prog_tex);
 
-        view_model = glm::scale(glm::translate(glm::scale(_cam.view_mat(), glm::vec3(_scale)), _active_graph->cursor_pos()), glm::vec3(0.25f / _scale));
+        view_model = glm::scale(glm::translate(view_model, _active_graph->cursor_pos()), glm::vec3(0.25f / _scale));
         view_model_perspective = _perspective_mat * view_model;
         normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
@@ -456,7 +467,6 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
     return true;
 }
 
-// TODO: add zoom w/ mouse wheel
 bool Graph_disp::input()
 {
     static std::unordered_map<sf::Keyboard::Key, bool, std::hash<int>> key_lock;
@@ -482,17 +492,6 @@ bool Graph_disp::input()
         {
             // Camera controls
 
-            // reset
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
-            {
-                key_lock[sf::Keyboard::R] = true;
-                _cam.set();
-                _scale = 1.0f;
-                invalidate();
-            }
-            else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
-                key_lock[sf::Keyboard::R] = false;
-
             float mov_scale = 0.1f;
 
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
@@ -505,40 +504,139 @@ bool Graph_disp::input()
                 mov_scale *= 0.1f;
             }
 
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+            if(use_orbit_cam)
             {
-                _cam.translate(mov_scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
-                invalidate();
-            }
+                // reset
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
+                {
+                    key_lock[sf::Keyboard::R] = true;
+                    _orbit_cam.r = 10.0f;
+                    _orbit_cam.theta = 0.0f;
+                    _orbit_cam.phi = 90.0f;
+                    _scale = 1.0f;
+                    invalidate();
+                }
+                else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+                    key_lock[sf::Keyboard::R] = false;
 
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-            {
-                _cam.translate(-mov_scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
-                invalidate();
-            }
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+                {
+                    _orbit_cam.phi += 2.0 * mov_scale;
+                    invalidate();
+                }
 
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-            {
-                _cam.translate(-mov_scale * _cam.right());
-                invalidate();
-            }
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+                {
+                    _orbit_cam.phi -= 2.0 * mov_scale;
+                    invalidate();
+                }
 
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-            {
-                _cam.translate(mov_scale * _cam.right());
-                invalidate();
-            }
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+                {
+                    _orbit_cam.theta += 2.0 * mov_scale;
+                    invalidate();
+                }
 
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-            {
-                _cam.translate(mov_scale * glm::vec3(0.0f, 0.0f, 1.0f));
-                invalidate();
-            }
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+                {
+                    _orbit_cam.theta -= 2.0 * mov_scale;
+                    invalidate();
+                }
 
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+                {
+                    _orbit_cam.r -= mov_scale;
+                    invalidate();
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+                {
+                    _orbit_cam.r += mov_scale;
+                    invalidate();
+                }
+
+                if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+                {
+                    int d_x = new_mouse_pos.x - old_mouse_pos.x;
+                    int d_y = new_mouse_pos.y - old_mouse_pos.y;
+
+                    _orbit_cam.theta -= 0.1f * d_x;
+                    _orbit_cam.phi -= 0.1f * d_y;
+
+                    invalidate();
+                }
+
+                // wrap theta
+                if(_orbit_cam.theta > 360.0f)
+                    _orbit_cam.theta -= 360.0f;
+                if(_orbit_cam.theta < 0.0f)
+                    _orbit_cam.theta += 360.0f;
+
+                // clamp phi
+                if(_orbit_cam.phi > 180.0f)
+                    _orbit_cam.phi = 180.0f;
+                if(_orbit_cam.phi < 0.0f)
+                    _orbit_cam.phi = 0.0f;
+            }
+            else
             {
-                _cam.translate(-mov_scale * glm::vec3(0.0f, 0.0f, 1.0f));
-                invalidate();
+                // reset
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
+                {
+                    key_lock[sf::Keyboard::R] = true;
+                    _cam.set(glm::vec3(0.0f, -10.0f, 0.0f));
+                    _scale = 1.0f;
+                    invalidate();
+                }
+                else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+                    key_lock[sf::Keyboard::R] = false;
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+                {
+                    _cam.translate(mov_scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
+                    invalidate();
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+                {
+                    _cam.translate(-mov_scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
+                    invalidate();
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+                {
+                    _cam.translate(-mov_scale * _cam.right());
+                    invalidate();
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+                {
+                    _cam.translate(mov_scale * _cam.right());
+                    invalidate();
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+                {
+                    _cam.translate(mov_scale * glm::vec3(0.0f, 0.0f, 1.0f));
+                    invalidate();
+                }
+
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+                {
+                    _cam.translate(-mov_scale * glm::vec3(0.0f, 0.0f, 1.0f));
+                    invalidate();
+                }
+
+                if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+                {
+                    int d_x = new_mouse_pos.x - old_mouse_pos.x;
+                    int d_y = new_mouse_pos.y - old_mouse_pos.y;
+
+                    _cam.rotate(0.001f * d_y, _cam.right());
+                    _cam.rotate(0.001f * d_x, glm::vec3(0.0f, 0.0f, 1.0f));
+
+                    invalidate();
+                }
             }
 
             const int zoom_timeout = 200;
@@ -554,17 +652,6 @@ bool Graph_disp::input()
             {
                 _scale *= 0.5f;
                 zoom_delay.restart();
-                invalidate();
-            }
-
-            if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
-            {
-                int d_x = new_mouse_pos.x - old_mouse_pos.x;
-                int d_y = new_mouse_pos.y - old_mouse_pos.y;
-
-                _cam.rotate(0.001f * d_y, _cam.right());
-                _cam.rotate(0.001f * d_x, glm::vec3(0.0f, 0.0f, 1.0f));
-
                 invalidate();
             }
 

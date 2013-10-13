@@ -27,8 +27,10 @@
 Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::ContextSettings(0, 0, 4, 4, 0)), // these do nothing yet - future SFML version should enable them
     _add_tab_butt("Add"),
     _add_tab_butt_img(Gtk::Stock::ADD, Gtk::ICON_SIZE_MENU),
-    _draw_axes("Draw Axes"),
-    _draw_cursor("Draw Cursor")
+    _draw_axes("Draw axes"),
+    _draw_cursor("Draw cursor"),
+    _use_orbit_cam("Use orbital camera"),
+    _use_free_cam("Use free camera")
 {
     set_title("Graph 3");
     set_default_size(800, 600);
@@ -76,12 +78,14 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
     _main_grid.attach(*_menu->get_widget("/MenuBar"), 0, 0, 3, 1);
 
     _main_grid.attach(_gl_window, 0, 1, 1, 2);
-    _main_grid.attach(_cursor_text, 0, 3, 1, 1);
+    _main_grid.attach(_cursor_text, 0, 3, 1, 2);
 
     _main_grid.attach(_add_tab_butt, 1, 1, 1, 1);
     _main_grid.attach(_notebook, 1, 2, 2, 1);
     _main_grid.attach(_draw_axes, 1, 3, 1, 1);
     _main_grid.attach(_draw_cursor, 2, 3, 1, 1);
+    _main_grid.attach(_use_orbit_cam, 1, 4, 1, 1);
+    _main_grid.attach(_use_free_cam, 2, 4, 1, 1);
 
     _add_tab_butt.set_image(_add_tab_butt_img);
     _add_tab_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
@@ -106,6 +110,11 @@ Graph_window::Graph_window(): _gl_window(sf::VideoMode(800, 600), -1, sf::Contex
 
     _draw_axes.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
     _draw_cursor.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
+
+    Gtk::RadioButton::Group cam_g = _use_orbit_cam.get_group();
+    _use_free_cam.set_group(cam_g);
+    _use_orbit_cam.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
+    _use_free_cam.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
 
     _gl_window.invalidate();
 }
@@ -157,6 +166,8 @@ void Graph_window::change_flags()
         update_cursor("");
     else
         dynamic_cast<Graph_page *>(_notebook.get_nth_page(_notebook.get_current_page()))->set_active();
+
+    _gl_window.use_orbit_cam = _use_orbit_cam.get_active();
 
     _gl_window.invalidate();
 }
