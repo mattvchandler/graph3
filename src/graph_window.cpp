@@ -245,12 +245,14 @@ void Graph_window::load_graph()
     graph_chooser.add_shortcut_folder("./examples");
 
     if(!curr_dir.empty())
-        graph_chooser.set_current_folder(curr_dir);
+    {
+        if(!curr_file.empty())
+            graph_chooser.select_filename(curr_dir + "/" + curr_file);
+        else
+            graph_chooser.set_current_folder(curr_dir);
+    }
     else
         graph_chooser.set_current_folder(".");
-
-    if(!curr_file.empty())
-        graph_chooser.select_filename(curr_dir + curr_file);
 
     if(graph_chooser.run() != Gtk::RESPONSE_OK)
         return;
