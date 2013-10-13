@@ -392,6 +392,7 @@ bool Graph_page::load_graph(const std::string & filename)
     change_type();
     change_coloring();
 
+    apply();
     return true;
 }
 
