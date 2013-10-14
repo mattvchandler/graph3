@@ -28,12 +28,12 @@
 #include <string>
 
 #include <gtkmm/button.h>
-#include <gtkmm/checkbutton.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
-#include <gtkmm/radiobutton.h>
+#include <gtkmm/radioaction.h>
+#include <gtkmm/toggleaction.h>
 #include <gtkmm/uimanager.h>
 #include <gtkmm/window.h>
 
@@ -68,10 +68,8 @@ private:
     // widgets
     Graph_disp _gl_window;
     Gtk::Label _cursor_text;
-    Gtk::Button _add_tab_butt;
-    Gtk::Image _add_tab_butt_img;
-    Gtk::CheckButton _draw_axes, _draw_cursor;
-    Gtk::RadioButton _use_orbit_cam, _use_free_cam;
+    Glib::RefPtr<Gtk::ToggleAction> _draw_axes, _draw_cursor;
+    Glib::RefPtr<Gtk::RadioAction> _use_orbit_cam, _use_free_cam;
 
     sigc::connection _cursor_conn;
 
