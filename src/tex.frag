@@ -41,6 +41,11 @@ uniform float const_atten;
 uniform float linear_atten;
 uniform float quad_atten;
 
+uniform vec3 dir_light_color;
+uniform vec3 dir_light_dir;
+uniform float dir_light_strength;
+uniform vec3 dir_half_vec;
+
 uniform vec3 cam_forward;
 
 in vec2 tex_coords;
@@ -61,15 +66,22 @@ void main()
     vec3 half_vec = normalize(light_dir + cam_forward);
 
     float diffuse_mul, specular_mul;
+    float dir_diffuse_mul, dir_specular_mul;
     if(gl_FrontFacing)
     {
         diffuse_mul = max(0.0, dot(normal_vec, light_dir));
         specular_mul = max(0.0, dot(normal_vec, half_vec));
+        
+        dir_diffuse_mul = max(0.0, dot(normal_vec, normalize(dir_light_dir)));
+        dir_specular_mul = max(0.0, dot(normal_vec, half_vec));
     }
     else
     {
         diffuse_mul = max(0.0, dot(-normal_vec, light_dir));
         specular_mul = max(0.0, dot(-normal_vec, half_vec));
+        
+        dir_diffuse_mul = max(0.0, dot(-normal_vec, normalize(dir_light_dir)));
+        dir_specular_mul = max(0.0, dot(-normal_vec, dir_half_vec));
     }
 
     if(diffuse_mul <= 0.0001)
@@ -77,8 +89,13 @@ void main()
     else
         specular_mul = pow(specular_mul, shininess) * light_strength;
 
-    vec3 scattered = ambient_color + light_color * diffuse_mul * atten;
-    vec3 reflected = light_color * specular_mul * atten * specular;
+    if(dir_diffuse_mul <= 0.0001)
+        dir_specular_mul = 0.0;
+    else
+        dir_specular_mul = pow(dir_specular_mul, shininess) * dir_light_strength;
+
+    vec3 scattered = ambient_color + light_color * diffuse_mul * atten + dir_light_color * dir_diffuse_mul;
+    vec3 reflected = light_color * specular_mul * atten * specular + dir_light_color * dir_specular_mul * specular;
     vec3 rgb = min(texture(tex, tex_coords).rgb * scattered + reflected, vec3(1.0));
     frag_color = vec4(rgb, texture(tex, tex_coords).a);
 }

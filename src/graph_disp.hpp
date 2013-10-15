@@ -152,6 +152,7 @@ private:
 
     glm::mat4 _perspective_mat;
     Light _light;
+    Light _dir_light;
     glm::vec3 _ambient_light;
 
     // non-owned storage for graphs
