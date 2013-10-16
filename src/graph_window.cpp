@@ -52,6 +52,7 @@ Graph_window::Graph_window():
     _menu_act->add(_use_free_cam, sigc::mem_fun(*this, &Graph_window::change_flags));
 
     _menu_act->add(Gtk::Action::create("Toolbar_add", Gtk::Stock::ADD, "Add Graph", "Add new graph"), sigc::mem_fun(*this, &Graph_window::tab_new));
+    _menu_act->get_action("Toolbar_add")->set_is_important(true);
 
     _menu = Gtk::UIManager::create();
     _menu->insert_action_group(_menu_act);
@@ -98,17 +99,16 @@ Graph_window::Graph_window():
     _notebook.set_vexpand(true);
     _notebook.set_scrollable(true);
 
+    _cursor_text.set_halign(Gtk::ALIGN_CENTER);
+
     add(_main_grid);
 
     _main_grid.attach(*_menu->get_widget("/Menubar"), 0, 0, 2, 1);
     _main_grid.attach(*_menu->get_widget("/Toolbar"), 0, 1, 2, 1);
 
-    _main_grid.attach(_gl_window, 0, 2, 1, 2);
-    _main_grid.attach(_cursor_text, 0, 4, 1, 2);
-    _main_grid.attach(_notebook, 1, 2, 1, 2);
-
-    // _add_tab_butt.set_image(_add_tab_butt_img);
-    // _add_tab_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
+    _main_grid.attach(_gl_window, 0, 2, 1, 1);
+    _main_grid.attach(_notebook, 1, 2, 1, 1);
+    _main_grid.attach(_cursor_text, 0, 3, 2, 1);
 
     _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &Graph_window::tab_change));
 

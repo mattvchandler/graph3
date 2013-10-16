@@ -69,13 +69,9 @@ private:
     std::unique_ptr<Graph> _graph;
 
     Gtk::RadioButton _r_car, _r_cyl, _r_sph, _r_par;
-    Gtk::Label _eqn_l;
     Gtk::Entry _eqn;
-    Gtk::Label _eqn_par_y_l, _eqn_par_z_l;
     Gtk::Entry _eqn_par_y, _eqn_par_z;
-    Gtk::Label _row_min_l, _row_max_l;
     Gtk::Entry _row_min, _row_max;
-    Gtk::Label _col_min_l, _col_max_l;
     Gtk::Entry _col_min, _col_max;
     Gtk::Label _row_res_l, _col_res_l;
     Gtk::SpinButton _row_res, _col_res;

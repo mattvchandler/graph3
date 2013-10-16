@@ -25,6 +25,7 @@
 #include <gtkmm/colorchooserdialog.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/messagedialog.h>
+#include <gtkmm/separator.h>
 #include <gtkmm/stock.h>
 
 #include <gdkmm.h>
@@ -46,15 +47,8 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _r_cyl("Cylindrical"),
     _r_sph("Spherical"),
     _r_par("Parametric"),
-    _eqn_l("z(x,y)="),
-    _eqn_par_y_l("y(u,v)="),
-    _eqn_par_z_l("z(u,v)="),
-    _row_min_l("x min="),
-    _row_max_l("x max="),
-    _col_min_l("y min="),
-    _col_max_l("y max="),
-    _row_res_l("x resolution="),
-    _col_res_l("y resolution="),
+    _row_res_l("x resolution"),
+    _col_res_l("y resolution"),
     _row_res(Gtk::Adjustment::create(50.0, 1.0, 1000.0)),
     _col_res(Gtk::Adjustment::create(50.0, 1.0, 1000.0)),
     _draw("Draw Graph"),
@@ -68,35 +62,49 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _color(start_color),
     _apply_butt_img(Gtk::Stock::APPLY, Gtk::ICON_SIZE_SMALL_TOOLBAR)
 {
-    attach(_r_car, 0, 1, 2, 1);
-    attach(_r_cyl, 2, 1, 2, 1);
-    attach(_r_sph, 0, 2, 2, 1);
-    attach(_r_par, 2, 2, 2, 1);
-    attach(_eqn_l, 0, 3, 1, 1);
-    attach(_eqn, 1, 3, 3, 1);
-    attach(_eqn_par_y_l, 0, 4, 1, 1);
-    attach(_eqn_par_y, 1, 4, 3, 1);
-    attach(_eqn_par_z_l, 0, 5, 1, 1);
-    attach(_eqn_par_z, 1, 5, 3, 1);
-    attach(_row_min_l, 0, 6, 1, 1);
-    attach(_row_min, 1, 6, 1, 1);
-    attach(_row_max_l, 2, 6, 1, 1);
-    attach(_row_max, 3, 6, 1, 1);
-    attach(_col_min_l, 0, 7, 1, 1);
-    attach(_col_min, 1, 7, 1, 1);
-    attach(_col_max_l, 2, 7, 1, 1);
-    attach(_col_max, 3, 7, 1, 1);
-    attach(_row_res_l, 0, 8, 1, 1);
-    attach(_row_res, 1, 8, 1, 1);
-    attach(_col_res_l, 2, 8, 1, 1);
-    attach(_col_res, 3, 8, 1, 1);
-    attach(_draw, 0, 9, 1, 1);
-    attach(_draw_grid, 1, 9, 1, 1);
-    attach(_draw_normals, 2, 9, 2, 1);
-    attach(_use_color, 0, 10, 2, 1);
-    attach(_use_tex, 0, 11, 2, 1);
-    attach(_tex_butt, 2, 10, 2, 2);
-    attach(_apply_butt, 3, 12, 1, 1);
+    Gtk::Separator * sep_1 = Gtk::manage(new Gtk::Separator);
+    Gtk::Separator * sep_2 = Gtk::manage(new Gtk::Separator);
+    Gtk::Separator * sep_3 = Gtk::manage(new Gtk::Separator);
+    Gtk::Separator * sep_4 = Gtk::manage(new Gtk::Separator);
+    sep_1->set_size_request(-1, 5);
+    sep_2->set_size_request(-1, 5);
+    sep_3->set_size_request(-1, 5);
+    sep_4->set_size_request(-1, 5);
+
+    _tex_butt.set_valign(Gtk::ALIGN_CENTER);
+    _tex_butt.set_halign(Gtk::ALIGN_CENTER);
+    _tex_butt.set_vexpand(false);
+    _tex_butt.set_hexpand(false);
+
+    _apply_butt.set_halign(Gtk::ALIGN_CENTER);
+    _apply_butt.set_hexpand(false);
+
+    attach(_r_car, 0, 1, 1, 1);
+    attach(_r_cyl, 1, 1, 1, 1);
+    attach(_r_sph, 0, 2, 1, 1);
+    attach(_r_par, 1, 2, 1, 1);
+    attach(*sep_1, 0, 3, 2, 1);
+    attach(_eqn, 0, 4, 2, 1);
+    attach(_eqn_par_y, 0, 5, 2, 1);
+    attach(_eqn_par_z, 0, 6, 2, 1);
+    attach(_row_min, 0, 7, 1, 1);
+    attach(_row_max, 1, 7, 1, 1);
+    attach(_col_min, 0, 8, 1, 1);
+    attach(_col_max, 1, 8, 1, 1);
+    attach(_row_res_l, 0, 9, 1, 1);
+    attach(_row_res, 1, 9, 1, 1);
+    attach(_col_res_l, 0, 10, 1, 1);
+    attach(_col_res, 1, 10, 1, 1);
+    attach(*sep_2, 0, 11, 2, 1);
+    attach(_draw, 0, 12, 1, 1);
+    attach(_draw_grid, 1, 12, 1, 1);
+    attach(_draw_normals, 0, 13, 1, 1);
+    attach(*sep_3, 0, 14, 2, 1);
+    attach(_use_color, 0, 15, 1, 1);
+    attach(_use_tex, 0, 16, 1, 1);
+    attach(_tex_butt, 1, 15, 1, 2);
+    attach(*sep_4, 0, 17, 2, 1);
+    attach(_apply_butt, 0, 18, 2, 1);
 
     Gtk::RadioButton::Group type_g = _r_car.get_group();
     _r_cyl.set_group(type_g);
@@ -155,9 +163,7 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
     show_all_children();
-    _eqn_par_y_l.hide();
     _eqn_par_y.hide();
-    _eqn_par_z_l.hide();
     _eqn_par_z.hide();
 
     // TODO: tooltips, widget spacing/layout, abs paths for images/examples
@@ -409,78 +415,54 @@ void Graph_page::change_type()
 {
     if(_r_car.get_active())
     {
-        _eqn_l.set_text("z(x,y)=");
-        _row_min_l.set_text("x min=");
-        _row_max_l.set_text("x max=");
-        _col_min_l.set_text("y min=");
-        _col_max_l.set_text("y max=");
-        _row_res_l.set_text("x resolution");
-        _col_res_l.set_text("y resolution");
-
         _eqn.set_placeholder_text("z(x,y)");
         _row_min.set_placeholder_text("x min");
         _row_max.set_placeholder_text("x max");
         _col_min.set_placeholder_text("y min");
         _col_max.set_placeholder_text("y max");
+
+        _row_res_l.set_text("x resolution");
+        _col_res_l.set_text("y resolution");
     }
     else if(_r_cyl.get_active())
     {
-        _eqn_l.set_text(u8"z(r,θ)=");
-        _row_min_l.set_text("r min=");
-        _row_max_l.set_text("r max=");
-        _col_min_l.set_text(u8"θ min=");
-        _col_max_l.set_text(u8"θ max=");
-        _row_res_l.set_text("r resolution");
-        _col_res_l.set_text(u8"θ resolution");
-
         _eqn.set_placeholder_text(u8"z(r,θ)");
         _row_min.set_placeholder_text("r min");
         _row_max.set_placeholder_text("r max");
         _col_min.set_placeholder_text(u8"θ min");
         _col_max.set_placeholder_text(u8"θ max");
+
+        _row_res_l.set_text("r resolution");
+        _col_res_l.set_text(u8"θ resolution");
     }
     else if(_r_sph.get_active())
     {
-        _eqn_l.set_text(u8"z(θ,ϕ)=");
-        _row_min_l.set_text(u8"θ min=");
-        _row_max_l.set_text(u8"θ max=");
-        _col_min_l.set_text(u8"ϕ min=");
-        _col_max_l.set_text(u8"ϕ max=");
-        _row_res_l.set_text(u8"θ resolution");
-        _col_res_l.set_text(u8"ϕ resolution");
-
         _eqn.set_placeholder_text(u8"z(θ,ϕ)");
         _row_min.set_placeholder_text(u8"θ min");
         _row_max.set_placeholder_text(u8"θ max");
         _col_min.set_placeholder_text(u8"ϕ min");
         _col_max.set_placeholder_text(u8"ϕ max");
+
+        _row_res_l.set_text(u8"θ resolution");
+        _col_res_l.set_text(u8"ϕ resolution");
     }
     if(_r_par.get_active())
     {
-        _eqn_l.set_text("x(u,v)=");
-        _row_min_l.set_text("u min=");
-        _row_max_l.set_text("u max=");
-        _col_min_l.set_text("v min=");
-        _col_max_l.set_text("v max=");
-        _row_res_l.set_text("u resolution");
-        _col_res_l.set_text("v resolution");
-
         _eqn.set_placeholder_text("x(u,v)");
         _row_min.set_placeholder_text("u min");
         _row_max.set_placeholder_text("u max");
         _col_min.set_placeholder_text("v min");
         _col_max.set_placeholder_text("v max");
 
-        _eqn_par_y_l.show();
+        _row_res_l.set_text("u resolution");
+        _col_res_l.set_text("v resolution");
+
         _eqn_par_y.show();
-        _eqn_par_z_l.show();
         _eqn_par_z.show();
     }
     else
     {
-        _eqn_par_y_l.hide();
         _eqn_par_y.hide();
-        _eqn_par_z_l.hide();
         _eqn_par_z.hide();
     }
 }
