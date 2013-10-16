@@ -101,6 +101,10 @@ Graph_window::Graph_window():
 
     _cursor_text.set_halign(Gtk::ALIGN_CENTER);
 
+    _main_grid.set_border_width(3);
+    _main_grid.set_row_spacing(3);
+    _main_grid.set_column_spacing(3);
+
     add(_main_grid);
 
     _main_grid.attach(*_menu->get_widget("/Menubar"), 0, 0, 2, 1);

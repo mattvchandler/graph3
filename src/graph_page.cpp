@@ -62,15 +62,6 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _color(start_color),
     _apply_butt_img(Gtk::Stock::APPLY, Gtk::ICON_SIZE_SMALL_TOOLBAR)
 {
-    Gtk::Separator * sep_1 = Gtk::manage(new Gtk::Separator);
-    Gtk::Separator * sep_2 = Gtk::manage(new Gtk::Separator);
-    Gtk::Separator * sep_3 = Gtk::manage(new Gtk::Separator);
-    Gtk::Separator * sep_4 = Gtk::manage(new Gtk::Separator);
-    sep_1->set_size_request(-1, 5);
-    sep_2->set_size_request(-1, 5);
-    sep_3->set_size_request(-1, 5);
-    sep_4->set_size_request(-1, 5);
-
     _tex_butt.set_valign(Gtk::ALIGN_CENTER);
     _tex_butt.set_halign(Gtk::ALIGN_CENTER);
     _tex_butt.set_vexpand(false);
@@ -79,32 +70,35 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
     _apply_butt.set_halign(Gtk::ALIGN_CENTER);
     _apply_butt.set_hexpand(false);
 
+    set_border_width(3);
+    set_row_spacing(3);
+    set_column_spacing(3);
+
     attach(_r_car, 0, 1, 1, 1);
     attach(_r_cyl, 1, 1, 1, 1);
     attach(_r_sph, 0, 2, 1, 1);
     attach(_r_par, 1, 2, 1, 1);
-    attach(*sep_1, 0, 3, 2, 1);
-    attach(_eqn, 0, 4, 2, 1);
-    attach(_eqn_par_y, 0, 5, 2, 1);
-    attach(_eqn_par_z, 0, 6, 2, 1);
-    attach(_row_min, 0, 7, 1, 1);
-    attach(_row_max, 1, 7, 1, 1);
-    attach(_col_min, 0, 8, 1, 1);
-    attach(_col_max, 1, 8, 1, 1);
-    attach(_row_res_l, 0, 9, 1, 1);
-    attach(_row_res, 1, 9, 1, 1);
-    attach(_col_res_l, 0, 10, 1, 1);
-    attach(_col_res, 1, 10, 1, 1);
-    attach(*sep_2, 0, 11, 2, 1);
-    attach(_draw, 0, 12, 1, 1);
-    attach(_draw_grid, 1, 12, 1, 1);
-    attach(_draw_normals, 0, 13, 1, 1);
-    attach(*sep_3, 0, 14, 2, 1);
-    attach(_use_color, 0, 15, 1, 1);
-    attach(_use_tex, 0, 16, 1, 1);
-    attach(_tex_butt, 1, 15, 1, 2);
-    attach(*sep_4, 0, 17, 2, 1);
-    attach(_apply_butt, 0, 18, 2, 1);
+    attach(_eqn, 0, 3, 2, 1);
+    attach(_eqn_par_y, 0, 4, 2, 1);
+    attach(_eqn_par_z, 0, 5, 2, 1);
+    attach(_row_min, 0, 6, 1, 1);
+    attach(_row_max, 1, 6, 1, 1);
+    attach(_col_min, 0, 7, 1, 1);
+    attach(_col_max, 1, 7, 1, 1);
+    attach(_row_res_l, 0, 8, 1, 1);
+    attach(_row_res, 1, 8, 1, 1);
+    attach(_col_res_l, 0, 9, 1, 1);
+    attach(_col_res, 1, 9, 1, 1);
+    attach(*Gtk::manage(new Gtk::Separator), 0, 10, 2, 1);
+    attach(_draw, 0, 11, 1, 1);
+    attach(_draw_grid, 1, 11, 1, 1);
+    attach(_draw_normals, 0, 12, 1, 1);
+    attach(*Gtk::manage(new Gtk::Separator), 0, 13, 2, 1);
+    attach(_use_color, 0, 14, 1, 1);
+    attach(_use_tex, 0, 15, 1, 1);
+    attach(_tex_butt, 1, 14, 1, 2);
+    attach(*Gtk::manage(new Gtk::Separator), 0, 16, 2, 1);
+    attach(_apply_butt, 0, 17, 2, 1);
 
     Gtk::RadioButton::Group type_g = _r_car.get_group();
     _r_cyl.set_group(type_g);
