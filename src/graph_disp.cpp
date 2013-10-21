@@ -20,6 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <iostream>
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "gl_helpers.hpp"
@@ -199,6 +201,7 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_reqest, const 
     // All OpenGL initialization has to wait until the drawing context actually exists
     // move it to the realize method
     signal_realize().connect(sigc::mem_fun(*this, &Graph_disp::realize));
+
     signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
     signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::draw));
     signal_key_press_event().connect(sigc::mem_fun(*this, &Graph_disp::key_press));
@@ -216,13 +219,21 @@ bool Graph_disp::key_press(GdkEventKey * e)
     return true;
 }
 
+// TODO: change calls to exit into caught exceptions to allow stack unwinding / dctors to be called
 void Graph_disp::realize()
 {
-    // TODO: add check for required OpenGL features
     // init glew
     if(glewInit() != GLEW_OK)
     {
         std::cerr<<"Error loading glew. Aborting"<<std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    // check for required OpenGL version
+    if(!GLEW_VERSION_3_0)
+    {
+        std::cerr<<"OpenGL version too low. Version 3.0 required"<<std::endl;
+        std::cerr<<"Installed version is: "<<glGetString(GL_VERSION)<<std::endl;
         exit(EXIT_FAILURE);
     }
 
