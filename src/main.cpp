@@ -20,15 +20,14 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <gtkmm/main.h>
+#include <gtkmm/application.h>
 
 #include "graph_window.hpp"
 
 int main(int argc, char* argv[])
 {
-    Gtk::Main kit(argc, argv);
+    Glib::RefPtr<Gtk::Application> app = Gtk::Application::create(argc, argv);
     Graph_window gtk_window;
 
-    Gtk::Main::run(gtk_window);
-    return EXIT_SUCCESS;
+    return app->run(gtk_window);
 }

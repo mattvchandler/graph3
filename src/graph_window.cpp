@@ -90,7 +90,7 @@ Graph_window::Graph_window():
     catch(const Glib::Error & e)
     {
         std::cerr<<"Error building menu: "<<e.what()<<std::endl;
-        exit(EXIT_FAILURE);
+        get_application()->quit();
     }
 
     _gl_window.set_hexpand(true);

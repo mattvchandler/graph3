@@ -22,6 +22,8 @@
 
 #include <iostream>
 
+#include <gtkmm/window.h>
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "gl_helpers.hpp"
@@ -135,7 +137,7 @@ void Cursor::build(const std::string & tex_file_name)
     catch(Glib::Exception &e)
     {
         std::cerr<<"Error reading cursor image file:"<<std::endl<<e.what()<<std::endl;
-        exit(EXIT_FAILURE);
+        throw;
     }
 }
 
@@ -219,14 +221,14 @@ bool Graph_disp::key_press(GdkEventKey * e)
     return true;
 }
 
-// TODO: change calls to exit into caught exceptions to allow stack unwinding / dctors to be called
+// TODO: find some way to exit with both return code of EXIT_FAILURE and call dctors
 void Graph_disp::realize()
 {
     // init glew
     if(glewInit() != GLEW_OK)
     {
         std::cerr<<"Error loading glew. Aborting"<<std::endl;
-        exit(EXIT_FAILURE);
+        dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
     }
 
     // check for required OpenGL version
@@ -234,7 +236,7 @@ void Graph_disp::realize()
     {
         std::cerr<<"OpenGL version too low. Version 3.0 required"<<std::endl;
         std::cerr<<"Installed version is: "<<glGetString(GL_VERSION)<<std::endl;
-        exit(EXIT_FAILURE);
+        dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
     }
 
     // init GL state vars
@@ -258,14 +260,14 @@ void Graph_disp::realize()
     GLuint flat_color_frag = compile_shader("src/flat_color.frag", GL_FRAGMENT_SHADER);
 
     if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0 || flat_color_frag == 0)
-        exit(EXIT_FAILURE);
+        dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
 
     _prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag});
     _prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag});
     _prog_line = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag});
 
     if(_prog_tex == 0 || _prog_color == 0 || _prog_line == 0)
-        exit(EXIT_FAILURE);
+        dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
 
     glDeleteShader(graph_vert);
     glDeleteShader(line_vert);
@@ -356,7 +358,14 @@ void Graph_disp::realize()
     glUseProgram(_prog_line);
     glBindAttribLocation(_prog_line, 0, "vert_pos");
 
-    _cursor.build("img/cursor.png"); // TODO: global location?
+    try
+    {
+        _cursor.build("img/cursor.png"); // TODO: global location?
+    }
+    catch(Glib::Exception &e)
+    {
+        dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+    }
 
     _axes.build();
     _axes.color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
