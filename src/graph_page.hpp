@@ -44,7 +44,7 @@
 class Graph_page final: public Gtk::Grid
 {
 public:
-    Graph_page(Graph_disp * gl_window);
+    Graph_page(Graph_disp & gl_window);
     ~Graph_page();
 
     void set_active();
@@ -65,7 +65,7 @@ private:
     void change_tex();
     void update_cursor(const std::string & text) const;
 
-    Graph_disp * _gl_window;
+    Graph_disp & _gl_window;
     std::unique_ptr<Graph> _graph;
 
     Gtk::RadioButton _r_car, _r_cyl, _r_sph, _r_par;

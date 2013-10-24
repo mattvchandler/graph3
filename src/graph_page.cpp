@@ -42,7 +42,7 @@
 
 const glm::vec3 Graph_page::start_color = glm::vec3(0.2f, 0.5f, 0.2f);
 
-Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nullptr),
+Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nullptr),
     _r_car("Cartesian"),
     _r_cyl("Cylindrical"),
     _r_sph("Spherical"),
@@ -165,20 +165,20 @@ Graph_page::Graph_page(Graph_disp * gl_window): _gl_window(gl_window), _graph(nu
 
 Graph_page::~Graph_page()
 {
-    _gl_window->remove_graph(_graph.get());
-    _gl_window->invalidate();
+    _gl_window.remove_graph(_graph.get());
+    _gl_window.invalidate();
 }
 
 void Graph_page::set_active()
 {
-    _gl_window->set_active_graph(_graph.get());
+    _gl_window.set_active_graph(_graph.get());
 
-    if(_graph.get() && _gl_window->draw_cursor_flag)
+    if(_graph.get() && _gl_window.draw_cursor_flag)
         update_cursor(_graph->cursor_text());
     else
         update_cursor("");
 
-    _gl_window->invalidate();
+    _gl_window.invalidate();
 }
 
 void Graph_page::save_graph(const std::string & filename)
@@ -463,7 +463,7 @@ void Graph_page::change_type()
 
 void Graph_page::apply()
 {
-    _gl_window->remove_graph(_graph.get());
+    _gl_window.remove_graph(_graph.get());
     _graph.reset();
 
     try
@@ -558,8 +558,8 @@ void Graph_page::apply()
 
         _graph.reset();
         update_cursor("");
-        _gl_window->invalidate();
-        _gl_window->set_active_graph(nullptr);
+        _gl_window.invalidate();
+        _gl_window.set_active_graph(nullptr);
         return;
     }
 
@@ -587,11 +587,11 @@ void Graph_page::apply()
 
     update_cursor(_graph->cursor_text());
 
-    _gl_window->add_graph(_graph.get());
-    _gl_window->set_active_graph(_graph.get());
+    _gl_window.add_graph(_graph.get());
+    _gl_window.set_active_graph(_graph.get());
 
     _graph->signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_page::update_cursor));
-    _gl_window->invalidate();
+    _gl_window.invalidate();
 }
 
 void Graph_page::change_flags()
@@ -601,7 +601,7 @@ void Graph_page::change_flags()
         _graph->draw_flag = _draw.get_active();
         _graph->draw_grid_flag = _draw_grid.get_active();
         _graph->draw_normals_flag = _draw_normals.get_active();
-        _gl_window->invalidate();
+        _gl_window.invalidate();
     }
 }
 
@@ -610,7 +610,7 @@ void Graph_page::change_coloring()
     if(_graph.get())
     {
         _graph->use_tex = _use_tex.get_active();
-        _gl_window->invalidate();
+        _gl_window.invalidate();
     }
 
     if(_use_tex.get_active())
@@ -660,7 +660,7 @@ void Graph_page::change_tex()
                 if(_graph.get())
                 {
                     _graph->set_texture(_tex_filename);
-                    _gl_window->invalidate();
+                    _gl_window.invalidate();
                 }
             }
             catch(Glib::Exception &e)
@@ -690,7 +690,7 @@ void Graph_page::change_tex()
             if(_graph.get())
             {
                 _graph->color = glm::vec4(_color, 1.0f);
-                _gl_window->invalidate();
+                _gl_window.invalidate();
             }
 
             guint8 r = (guint8)(_color.r * 256.0f);

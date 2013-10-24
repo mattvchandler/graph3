@@ -118,7 +118,7 @@ Graph_window::Graph_window():
 
     show_all_children();
 
-    _pages.push_back(std::unique_ptr<Graph_page>(new Graph_page(&_gl_window)));
+    _pages.push_back(std::unique_ptr<Graph_page>(new Graph_page(_gl_window)));
     _notebook.append_page(*_pages.back(), *Gtk::manage(new Tab_label));
 
     dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back()))
@@ -134,7 +134,7 @@ Graph_window::Graph_window():
 
 void Graph_window::tab_new()
 {
-    _pages.push_back(std::unique_ptr<Graph_page>(new Graph_page(&_gl_window)));
+    _pages.push_back(std::unique_ptr<Graph_page>(new Graph_page(_gl_window)));
     _notebook.append_page(*_pages.back(), *Gtk::manage(new Tab_label));
 
     dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back()))
