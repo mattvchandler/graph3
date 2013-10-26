@@ -21,29 +21,9 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <limits>
-#include <sstream>
 
 #include "gl_helpers.hpp"
 #include "graph.hpp"
-
-// TODO: remove these debug funcs
-std::ostream & operator<<(std::ostream & out, const glm::vec2 & v)
-{
-    out<<"("<<v.x<<", "<<v.y<<")";
-    return out;
-}
-
-std::ostream & operator<<(std::ostream & out, const glm::vec3 & v)
-{
-    out<<"("<<v.x<<", "<<v.y<<", "<<v.z<<")";
-    return out;
-}
-
-std::ostream & operator<<(std::ostream & out, const glm::dvec3 & v)
-{
-    out<<"("<<v.x<<", "<<v.y<<", "<<v.z<<")";
-    return out;
-}
 
 Graph_exception::Graph_exception(const mu::Parser::exception_type & mu_e, const Location l):
     mu::Parser::exception_type(mu_e), _location(l)
@@ -75,7 +55,7 @@ glm::vec3 get_normal (glm::vec3 center,
     double length;
 
     // get tangents through surrounding points
-    glm::dvec3 t_up, t_ur, t_rt, t_lr, t_dn, t_ll, t_lf, t_ul; 
+    glm::dvec3 t_up, t_ur, t_rt, t_lr, t_dn, t_ll, t_lf, t_ul;
 
     // check to make sure we have no 0-length vectors, and then normalize
     if(up_def)
@@ -611,7 +591,6 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
     }
     if(start != grid_index.size())
         _grid_segs.push_back(std::make_pair(start, (GLuint)(grid_index.size() - start)));
-
 
     // generate required OpenGL structures
     glGenBuffers(1, &_grid_ebo);

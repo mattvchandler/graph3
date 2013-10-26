@@ -19,13 +19,14 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#include <gtkmm/stock.h>
+
 #include <gtkmm/filechooserdialog.h>
+#include <gtkmm/stock.h>
 
 #include "graph_window.hpp"
 
 Graph_window::Graph_window():
-    _gl_window(sf::VideoMode(800, 600), -1, sf::ContextSettings(0, 0, 4, 4, 0)) // these do nothing yet - future SFML version should enable them
+    _gl_window(sf::VideoMode(800, 600), -1)
 {
     set_title("Graph 3");
     set_default_size(800, 600);
@@ -121,11 +122,11 @@ Graph_window::Graph_window():
     _pages.push_back(std::unique_ptr<Graph_page>(new Graph_page(_gl_window)));
     _notebook.append_page(*_pages.back(), *Gtk::manage(new Tab_label));
 
-    dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back()))
-        ->signal_close_tab().connect(sigc::bind<Graph_page *>(sigc::mem_fun(*this, &Graph_window::tab_close),
-        _pages.back().get()));
-    dynamic_cast<Graph_page *>(_pages.back().get())->signal_tex_changed()
-        .connect(sigc::mem_fun(*dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back())),
+    dynamic_cast<Tab_label &>(*_notebook.get_tab_label(*_pages.back())).
+        signal_close_tab().connect(sigc::bind<Graph_page &>(sigc::mem_fun(*this, &Graph_window::tab_close),
+        *_pages.back()));
+    dynamic_cast<Graph_page &>(*_pages.back()).signal_tex_changed()
+        .connect(sigc::mem_fun(dynamic_cast<Tab_label &>(*_notebook.get_tab_label(*_pages.back())),
         &Tab_label::set_img));
     _pages.back()->show();
 
@@ -137,17 +138,17 @@ void Graph_window::tab_new()
     _pages.push_back(std::unique_ptr<Graph_page>(new Graph_page(_gl_window)));
     _notebook.append_page(*_pages.back(), *Gtk::manage(new Tab_label));
 
-    dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back()))
-        ->signal_close_tab().connect(sigc::bind<Graph_page *>(sigc::mem_fun(*this, &Graph_window::tab_close),
-        _pages.back().get()));
-    dynamic_cast<Graph_page *>(_pages.back().get())->signal_tex_changed()
-        .connect(sigc::mem_fun(*dynamic_cast<Tab_label *>(_notebook.get_tab_label(*_pages.back())),
+    dynamic_cast<Tab_label &>(*_notebook.get_tab_label(*_pages.back())).
+        signal_close_tab().connect(sigc::bind<Graph_page &>(sigc::mem_fun(*this, &Graph_window::tab_close),
+        *_pages.back()));
+    dynamic_cast<Graph_page &>(*_pages.back()).signal_tex_changed()
+        .connect(sigc::mem_fun(dynamic_cast<Tab_label &>(*_notebook.get_tab_label(*_pages.back())),
         &Tab_label::set_img));
 
     _pages.back()->show();
 }
 
-void Graph_window::tab_close(Graph_page * page)
+void Graph_window::tab_close(Graph_page & page)
 {
     if(_notebook.get_n_pages() == 1)
     {
@@ -155,8 +156,8 @@ void Graph_window::tab_close(Graph_page * page)
             _cursor_conn.disconnect();
         _cursor_text.set_text("");
     }
-    guint page_no = _notebook.page_num(*page);
-    _notebook.remove_page(*page);
+    guint page_no = _notebook.page_num(page);
+    _notebook.remove_page(page);
     _pages.erase(std::next(_pages.begin(), page_no));
 }
 
@@ -165,9 +166,9 @@ void Graph_window::tab_change(Gtk::Widget * page, guint page_no)
     if(_cursor_conn.connected())
         _cursor_conn.disconnect();
 
-    _cursor_conn = dynamic_cast<Graph_page *>(page)->signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_window::update_cursor));
+    _cursor_conn = dynamic_cast<Graph_page &>(*page).signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_window::update_cursor));
 
-    dynamic_cast<Graph_page *>(page)->set_active();
+    dynamic_cast<Graph_page &>(*page).set_active();
 }
 
 void Graph_window::change_flags()
@@ -178,7 +179,7 @@ void Graph_window::change_flags()
     if(!_draw_cursor->get_active())
         update_cursor("");
     else
-        dynamic_cast<Graph_page *>(_notebook.get_nth_page(_notebook.get_current_page()))->set_active();
+        dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page())).set_active();
 
     _gl_window.use_orbit_cam = _use_orbit_cam->get_active();
 
@@ -233,7 +234,7 @@ void Graph_window::save_graph()
     curr_dir = graph_chooser.get_current_folder();
     curr_file = filename.substr(curr_dir.size() + 1);
 
-    dynamic_cast<Graph_page *>(_notebook.get_nth_page(_notebook.get_current_page()))->save_graph(filename);
+    dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page())).save_graph(filename);
 }
 
 void Graph_window::load_graph()
@@ -278,8 +279,8 @@ void Graph_window::load_graph()
 
     tab_new();
     _notebook.set_current_page(_notebook.get_n_pages() - 1);
-    Graph_page * new_tab = dynamic_cast<Graph_page *>(_notebook.get_nth_page(_notebook.get_current_page()));
-    if(!new_tab->load_graph(filename))
+    Graph_page & new_tab = dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page()));
+    if(!new_tab.load_graph(filename))
     {
        tab_close(new_tab);
        _notebook.set_current_page(current_tab);

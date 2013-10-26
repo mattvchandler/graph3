@@ -22,10 +22,11 @@
 
 #ifndef __GRAPH_DISP_H__
 #define __GRAPH_DISP_H__
+
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
-#include <set>
 #include <vector>
 
 #include <GL/glew.h>
@@ -112,7 +113,7 @@ private:
 class Graph_disp final: public SFMLWidget
 {
 public:
-    Graph_disp(const sf::VideoMode & mode, const int size_reqest = - 1, const sf::ContextSettings & context_settings = sf::ContextSettings());
+    Graph_disp(const sf::VideoMode & mode, const int size_request = - 1);
 
     // key press handler
     bool key_press(GdkEventKey * e);
@@ -126,6 +127,7 @@ public:
     void add_graph(const Graph * graph);
     void remove_graph(const Graph * graph);
 
+    // display settings
     bool draw_cursor_flag;
     bool draw_axes_flag;
     bool use_orbit_cam;

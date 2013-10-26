@@ -52,7 +52,7 @@ public:
 
 private:
     void tab_new();
-    void tab_close(Graph_page * page);
+    void tab_close(Graph_page & page);
     void tab_change(Widget * page, guint page_no);
     void change_flags();
     void update_cursor(const std::string & text);

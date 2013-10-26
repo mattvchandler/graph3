@@ -19,6 +19,7 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 #include <gtkmm/stock.h>
 
 #include "graph_page.hpp"
@@ -26,22 +27,27 @@
 
 Tab_label::Tab_label(): _close_img(Gtk::Stock::CLOSE, Gtk::ICON_SIZE_MENU)
 {
+    // convert color vector to 32-bit color val
     guint8 r = (guint8)(Graph_page::start_color.r * 256.0f);
     guint8 g = (guint8)(Graph_page::start_color.g * 256.0f);
     guint8 b = (guint8)(Graph_page::start_color.b * 256.0f);
 
     guint32 hex_color = r << 24 | g << 16 | b << 8;
 
+    // create image with the color
     Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 16, 16);
     image->fill(hex_color);
     _tab_pic.set(image);
 
+    // set widget params
     _close_butt.set_always_show_image(true);
     _close_butt.set_image(_close_img);
 
+    // attach widgets
     attach(_tab_pic, 0, 0, 1, 1);
     attach(_close_butt, 1, 0, 1, 1);
 
+    // connect signal handlers
     _close_butt.signal_clicked().connect(sigc::mem_fun(*this, &Tab_label::on_button_press));
 
     show_all_children();

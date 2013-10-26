@@ -162,7 +162,7 @@ void Axes::draw() const
 
 void Axes::build()
 {
-    std::vector<glm::vec3> coords = 
+    std::vector<glm::vec3> coords =
     {
         // X axis
         glm::vec3(0.0f, 0.0f, 0.0f),
@@ -189,8 +189,8 @@ void Axes::build()
     _num_indexes = coords.size();
 }
 
-Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_reqest, const sf::ContextSettings & context_settings):
-    SFMLWidget(mode, size_reqest),
+Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request):
+    SFMLWidget(mode, size_request),
     draw_cursor_flag(true), draw_axes_flag(true), use_orbit_cam(true),
     _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
     _orbit_cam({10.0f, 0.0f, 90.0f}), _scale(1.0f), _perspective_mat(1.0f),
@@ -221,7 +221,7 @@ bool Graph_disp::key_press(GdkEventKey * e)
     return true;
 }
 
-// TODO: find some way to exit with both return code of EXIT_FAILURE and call dctors
+// TODO: try to find some way to exit with both return code of EXIT_FAILURE and call dctors
 void Graph_disp::realize()
 {
     // init glew
@@ -373,7 +373,7 @@ void Graph_disp::realize()
     invalidate();
 }
 
-void Graph_disp::resize(Gtk::Allocation & allocation)
+void Graph_disp::resize(Gtk::Allocation & unused)
 {
     if(m_refGdkWindow)
     {
@@ -384,7 +384,7 @@ void Graph_disp::resize(Gtk::Allocation & allocation)
     }
 }
 
-bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & cr)
+bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -688,7 +688,7 @@ bool Graph_disp::input()
                 zoom_delay.restart();
                 invalidate();
             }
-            
+
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::X) && zoom_delay.getElapsedTime().asMilliseconds() >= zoom_timeout)
             {
                 _scale *= 0.5f;

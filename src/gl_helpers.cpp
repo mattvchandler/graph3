@@ -23,7 +23,8 @@
 #include <iostream>
 #include <fstream>
 #include <utility>
-#include <cmath>
+
+#include <gdkmm.h>
 
 #include "gl_helpers.hpp"
 

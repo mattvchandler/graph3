@@ -28,8 +28,6 @@
 #include <gtkmm/separator.h>
 #include <gtkmm/stock.h>
 
-#include <gdkmm.h>
-
 #include <libconfig.h++>
 
 #include "graph_page.hpp"
@@ -160,7 +158,7 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _eqn_par_y.hide();
     _eqn_par_z.hide();
 
-    // TODO: tooltips, widget spacing/layout, abs paths for images/examples
+    // TODO: cleanup, tooltips, widget spacing/layout, abs paths for images/examples, icon, comments / docs
 }
 
 Graph_page::~Graph_page()

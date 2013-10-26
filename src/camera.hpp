@@ -23,23 +23,10 @@
 #ifndef __CAMERA_H__
 #define __CAMERA_H__
 
-#include <ostream>
+#include <cmath>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-// TODO remove these
-inline std::ostream & operator<<(std::ostream & out, const glm::vec2 & v)
-{
-    out<<"("<<v.x<<", "<<v.y<<")";
-    return out;
-}
-
-inline std::ostream & operator<<(std::ostream & out, const glm::vec3 & v)
-{
-    out<<"("<<v.x<<", "<<v.y<<", "<<v.z<<")";
-    return out;
-}
 
 class Camera
 {
@@ -109,7 +96,9 @@ public:
     }
 
 private:
+    // camera pos in world-space
     glm::vec3 _pos;
+    // camera orientation vectors
     glm::vec3 _forward, _up;
 };
 

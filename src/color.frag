@@ -71,7 +71,7 @@ void main()
     {
         diffuse_mul = max(0.0, dot(normal_vec, light_dir));
         specular_mul = max(0.0, dot(normal_vec, half_vec));
-        
+
         dir_diffuse_mul = max(0.0, dot(normal_vec, normalize(dir_light_dir)));
         dir_specular_mul = max(0.0, dot(normal_vec, half_vec));
     }
@@ -79,7 +79,7 @@ void main()
     {
         diffuse_mul = max(0.0, dot(-normal_vec, light_dir));
         specular_mul = max(0.0, dot(-normal_vec, half_vec));
-        
+
         dir_diffuse_mul = max(0.0, dot(-normal_vec, normalize(dir_light_dir)));
         dir_specular_mul = max(0.0, dot(-normal_vec, dir_half_vec));
     }

@@ -21,7 +21,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <iomanip>
-#include <utility>
+#include <sstream>
 
 #include "graph_parametric.hpp"
 
@@ -90,7 +90,6 @@ Graph_parametric::Graph_parametric(const std::string & eqn_x,
         Graph_exception ge(e, Graph_exception::COL_MAX);
         throw ge;
     }
-
 
     _v_min = std::min(min, max);
     _v_max = std::max(min, max);

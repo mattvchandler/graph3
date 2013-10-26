@@ -28,8 +28,6 @@
 
 #include <GL/glew.h>
 
-#include <gdkmm.h>
-
 #include <SFML/OpenGL.hpp>
 
 void check_error(const std::string & at);

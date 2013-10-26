@@ -44,12 +44,6 @@
 #define M_E 2.718281828
 #endif
 
-// TODO: remove debug funcs
-
-std::ostream & operator<<(std::ostream & out, const glm::vec2 & v);
-std::ostream & operator<<(std::ostream & out, const glm::vec3 & v);
-std::ostream & operator<<(std::ostream & out, const glm::dvec3 & v);
-
 // derive from muparser exception
 class Graph_exception: public mu::Parser::exception_type
 {
@@ -57,6 +51,7 @@ public:
     typedef enum {ROW_MIN, ROW_MAX, COL_MIN, COL_MAX, EQN, EQN_X, EQN_Y, EQN_Z} Location;
     Graph_exception(const mu::Parser::exception_type & mu_e, const Location l);
     Location GetLocation() const;
+
 private:
     Location _location;
 };
