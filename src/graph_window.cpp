@@ -33,20 +33,14 @@ Graph_window::Graph_window():
     set_title("Graph 3");
     set_default_size(800, 600);
 
-    // TODO: why are these still blurry?
-    std::vector<Glib::RefPtr<Gdk::Pixbuf>> icon_list;
-    for(const std::string & i: {"img/icon_16.png", "img/icon_32.png", "img/icon_48.png", "img/icon_64.png", "img/icon_128.png"})
+    try
     {
-        try
-        {
-            icon_list.push_back(Gdk::Pixbuf::create_from_file(i));
-        }
-        catch(Glib::Exception & e)
-        {
-            // do nothing on errors. use default "broken image" ico if we can't load any icons
-        }
+        set_default_icon_from_file("img/icon.svg");
     }
-    set_default_icon_list(icon_list);
+    catch(Glib::Exception & e)
+    {
+        // do nothing on errors. use default "broken image" ico if we can't load any icons
+    }
 
     // build menu
     _menu_act = Gtk::ActionGroup::create();
