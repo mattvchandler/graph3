@@ -330,7 +330,6 @@ void Graph_disp::realize()
     glUniform1f(_prog_tex_uniforms["linear_atten"], _light.linear_attenuation);
     glUniform1f(_prog_tex_uniforms["quad_atten"], _light.quad_attenuation);
     glUniform3fv(_prog_tex_uniforms["dir_light_color"], 1, &_dir_light.color[0]);
-    glUniform3fv(_prog_tex_uniforms["dir_light_dir"], 1, &_dir_light.pos[0]);
     glUniform1f(_prog_tex_uniforms["dir_light_strength"], _dir_light.strength);
     glUniform3fv(_prog_tex_uniforms["cam_forward"], 1, &light_forward[0]);
 
@@ -347,7 +346,6 @@ void Graph_disp::realize()
     glUniform1f(_prog_color_uniforms["linear_atten"], _light.linear_attenuation);
     glUniform1f(_prog_color_uniforms["quad_atten"], _light.quad_attenuation);
     glUniform3fv(_prog_color_uniforms["dir_light_color"], 1, &_dir_light.color[0]);
-    glUniform3fv(_prog_color_uniforms["dir_light_dir"], 1, &_dir_light.pos[0]);
     glUniform1f(_prog_color_uniforms["dir_light_strength"], _dir_light.strength);
     glUniform3fv(_prog_color_uniforms["cam_forward"], 1, &light_forward[0]);
 
@@ -405,7 +403,10 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
     glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
-    glm::vec3 dir_half_vec = glm::normalize(light_forward + glm::vec3(view_model_perspective * glm::vec4(glm::normalize(-_dir_light.pos), 1.0f)));
+
+    // directional light
+    glm::vec3 dir_light_dir = normal_transform * glm::normalize(-_dir_light.pos);
+    glm::vec3 dir_half_vec = glm::normalize(light_forward + dir_light_dir);
 
     // draw axes
     if(draw_axes_flag)
@@ -436,6 +437,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
                 // material properties
                 glUniform1f(_prog_tex_uniforms["shininess"], graph->shininess);
                 glUniform3fv(_prog_tex_uniforms["specular"], 1, &graph->specular[0]);
+                glUniform3fv(_prog_tex_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
                 glUniform3fv(_prog_tex_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
             }
             else
@@ -450,6 +452,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
                 glUniform4fv(_prog_color_uniforms["color"], 1, &graph->color[0]);
                 glUniform1f(_prog_color_uniforms["shininess"], graph->shininess);
                 glUniform3fv(_prog_color_uniforms["specular"], 1, &graph->specular[0]);
+                glUniform3fv(_prog_color_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
                 glUniform3fv(_prog_color_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
             }
             check_error("geometry draw");
@@ -498,6 +501,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
         // material properties
         glUniform1f(_prog_tex_uniforms["shininess"], _cursor.shininess);
         glUniform3fv(_prog_tex_uniforms["specular"], 1, &_cursor.specular[0]);
+        glUniform3fv(_prog_tex_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
         glUniform3fv(_prog_tex_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
 
         _cursor.draw();
