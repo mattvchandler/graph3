@@ -22,14 +22,22 @@
 
 #include <gtkmm/application.h>
 
+#include <glibmm/exception.h>
+
 #include "graph_window.hpp"
 
 int main(int argc, char * argv[])
 {
     // create app and window objects
     Glib::RefPtr<Gtk::Application> app = Gtk::Application::create(argc, argv);
-    Graph_window gtk_window;
-
-    // run main window
-    return app->run(gtk_window);
+    try
+    {
+        Graph_window gtk_window;
+        // run main window
+        return app->run(gtk_window);
+    }
+    catch(const Glib::Error & e)
+    {
+        return EXIT_FAILURE;
+    }
 }
