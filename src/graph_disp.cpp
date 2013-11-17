@@ -229,6 +229,7 @@ void Graph_disp::realize()
     {
         std::cerr<<"Error loading glew. Aborting"<<std::endl;
         dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        return;
     }
 
     // check for required OpenGL version
@@ -237,6 +238,7 @@ void Graph_disp::realize()
         std::cerr<<"OpenGL version too low. Version 3.0 required"<<std::endl;
         std::cerr<<"Installed version is: "<<glGetString(GL_VERSION)<<std::endl;
         dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        return;
     }
 
     // init GL state vars
@@ -260,14 +262,20 @@ void Graph_disp::realize()
     GLuint flat_color_frag = compile_shader("src/flat_color.frag", GL_FRAGMENT_SHADER);
 
     if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0 || flat_color_frag == 0)
+    {
         dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        return;
+    }
 
     _prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag});
     _prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag});
     _prog_line = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag});
 
     if(_prog_tex == 0 || _prog_color == 0 || _prog_line == 0)
+    {
         dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        return;
+    }
 
     glDeleteShader(graph_vert);
     glDeleteShader(line_vert);
@@ -363,6 +371,7 @@ void Graph_disp::realize()
     catch(Glib::Exception &e)
     {
         dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        return;
     }
 
     _axes.build();
