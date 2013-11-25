@@ -23,12 +23,20 @@
 #include <glibmm/exception.h>
 
 #include <gtkmm/filechooserdialog.h>
+#include <gtkmm/separator.h>
 #include <gtkmm/stock.h>
 
 #include "graph_window.hpp"
 
 Graph_window::Graph_window():
-    _gl_window(sf::VideoMode(800, 600), -1)
+    _gl_window(sf::VideoMode(800, 600), -1),
+    _save_butt(Gtk::Stock::SAVE),
+    _load_butt(Gtk::Stock::OPEN),
+    _draw_axes("Draw Axes"),
+    _draw_cursor("Draw Cursor"),
+    _use_orbit_cam("Use Orbiting Camera"),
+    _use_free_cam("Use Free Camera"),
+    _add_butt(Gtk::Stock::ADD)
 {
     set_title("Graph 3");
     set_default_size(800, 600);
@@ -50,19 +58,6 @@ Graph_window::Graph_window():
     _menu_act->add(Gtk::Action::create("File_open", Gtk::Stock::OPEN, "_Open", "Open"), sigc::mem_fun(*this, &Graph_window::load_graph));
     _menu_act->add(Gtk::Action::create("File_quit", Gtk::Stock::QUIT, "_Quit", "Quit"), sigc::mem_fun(*this, &Graph_window::hide));
 
-    _menu_act->add(Gtk::Action::create("Display", "Display"));
-
-    _draw_axes = Gtk::ToggleAction::create("Display_draw_axes", "Draw Axes", "Enable / Disable drawing of axes", true);
-    _draw_cursor = Gtk::ToggleAction::create("Display_draw_cursor", "Draw Cursor", "Enable / Disable drawing of cursors", true);
-    _menu_act->add(_draw_axes, sigc::mem_fun(*this, &Graph_window::change_flags));
-    _menu_act->add(_draw_cursor, sigc::mem_fun(*this, &Graph_window::change_flags));
-
-    Gtk::RadioAction::Group cam_g;
-    _use_orbit_cam = Gtk::RadioAction::create(cam_g, "Display_orbit_cam", "Orbital camera", "Use orbital camera");
-    _use_free_cam = Gtk::RadioAction::create(cam_g, "Display_free_cam", "Free camera", "Use free camera");
-    _menu_act->add(_use_orbit_cam, sigc::mem_fun(*this, &Graph_window::change_flags));
-    _menu_act->add(_use_free_cam, sigc::mem_fun(*this, &Graph_window::change_flags));
-
     _menu_act->add(Gtk::Action::create("Toolbar_add", Gtk::Stock::ADD, "Add Graph", "Add new graph"), sigc::mem_fun(*this, &Graph_window::tab_new));
     _menu_act->get_action("Toolbar_add")->set_is_important(true);
 
@@ -79,20 +74,7 @@ Graph_window::Graph_window():
     "           <separator/>"
     "           <menuitem action='File_quit'/>"
     "       </menu>"
-    "       <menu action='Display'>"
-    "           <menuitem action='Display_draw_axes'/>"
-    "           <menuitem action='Display_draw_cursor'/>"
-    "           <separator/>"
-    "           <menuitem action='Display_orbit_cam'/>"
-    "           <menuitem action='Display_free_cam'/>"
-    "       </menu>"
     "   </menubar>"
-    "   <toolbar name='Toolbar'>"
-    "       <toolitem action='File_save'/>"
-    "       <toolitem action='File_open'/>"
-    "       <separator expand='true'/>"
-    "       <toolitem action='Toolbar_add'/>"
-    "   </toolbar>"
     "</ui>";
 
     try
@@ -116,15 +98,50 @@ Graph_window::Graph_window():
     _main_grid.set_border_width(3);
     _main_grid.set_row_spacing(3);
     _main_grid.set_column_spacing(3);
+    _toolbar.set_border_width(3);
+    _toolbar.set_column_spacing(3);
 
     add(_main_grid);
 
     _main_grid.attach(*_menu->get_widget("/Menubar"), 0, 0, 2, 1);
-    _main_grid.attach(*_menu->get_widget("/Toolbar"), 0, 1, 2, 1);
+    _main_grid.attach(_toolbar, 0, 1, 2, 1);
+
+    // build toolbar
+    _toolbar.attach(_save_butt, 0, 0, 1, 1);
+    _toolbar.attach(_load_butt, 1, 0, 1, 1);
+    _toolbar.attach(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_VERTICAL)), 2, 0, 1, 1);
+    _toolbar.attach(_draw_axes, 3, 0, 1, 1);
+    _toolbar.attach(_draw_cursor, 4, 0, 1, 1);
+    _toolbar.attach(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_VERTICAL)), 5, 0, 1, 1);
+    _toolbar.attach(_use_orbit_cam, 6, 0, 1, 1);
+    _toolbar.attach(_use_free_cam, 7, 0, 1, 1);
+
+    Gtk::Label * tool_sep = Gtk::manage(new Gtk::Label); // blank label for spacing
+    tool_sep->set_hexpand(true);
+    _toolbar.attach(*tool_sep, 8, 0, 1, 1);
+
+    _toolbar.attach(_add_butt, 9, 0, 1, 1);
 
     _main_grid.attach(_gl_window, 0, 2, 1, 1);
     _main_grid.attach(_notebook, 1, 2, 1, 1);
     _main_grid.attach(_cursor_text, 0, 3, 2, 1);
+
+    _save_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::save_graph));
+    _load_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::load_graph));
+
+    _draw_axes.set_active(true);
+    _draw_cursor.set_active(true);
+
+    _draw_axes.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
+    _draw_cursor.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
+
+    Gtk::RadioButton::Group cam_g = _use_orbit_cam.get_group();
+    _use_free_cam.set_group(cam_g);
+
+    _use_free_cam.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
+    _use_orbit_cam.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
+
+    _add_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
 
     _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &Graph_window::tab_change));
 
@@ -184,15 +201,15 @@ void Graph_window::tab_change(Gtk::Widget * page, guint page_no)
 
 void Graph_window::change_flags()
 {
-    _gl_window.draw_axes_flag = _draw_axes->get_active();
-    _gl_window.draw_cursor_flag = _draw_cursor->get_active();
+    _gl_window.draw_axes_flag = _draw_axes.get_active();
+    _gl_window.draw_cursor_flag = _draw_cursor.get_active();
 
-    if(!_draw_cursor->get_active())
+    if(!_draw_cursor.get_active())
         update_cursor("");
     else
         dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page())).set_active();
 
-    _gl_window.use_orbit_cam = _use_orbit_cam->get_active();
+    _gl_window.use_orbit_cam = _use_orbit_cam.get_active();
 
     _gl_window.invalidate();
 }

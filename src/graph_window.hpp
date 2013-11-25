@@ -28,12 +28,12 @@
 #include <string>
 
 #include <gtkmm/button.h>
+#include <gtkmm/checkbutton.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
-#include <gtkmm/radioaction.h>
-#include <gtkmm/toggleaction.h>
+#include <gtkmm/radiobutton.h>
 #include <gtkmm/uimanager.h>
 #include <gtkmm/window.h>
 
@@ -56,7 +56,6 @@ private:
     void tab_change(Widget * page, guint page_no);
     void change_flags();
     void update_cursor(const std::string & text);
-
     void save_graph();
     void load_graph();
 
@@ -64,12 +63,15 @@ private:
     Glib::RefPtr<Gtk::ActionGroup> _menu_act;
 
     Gtk::Grid _main_grid;
+    Gtk::Grid _toolbar;
 
     // widgets
     Graph_disp _gl_window;
     Gtk::Label _cursor_text;
-    Glib::RefPtr<Gtk::ToggleAction> _draw_axes, _draw_cursor;
-    Glib::RefPtr<Gtk::RadioAction> _use_orbit_cam, _use_free_cam;
+    Gtk::Button _save_butt, _load_butt;
+    Gtk::CheckButton _draw_axes, _draw_cursor;
+    Gtk::RadioButton _use_orbit_cam, _use_free_cam;
+    Gtk::Button _add_butt;
 
     sigc::connection _cursor_conn;
 
