@@ -28,6 +28,7 @@
 
 #include "graph_window.hpp"
 
+// TODO: probably change button labels to mouseover text
 Graph_window::Graph_window():
     _gl_window(sf::VideoMode(800, 600), -1),
     _save_butt(Gtk::Stock::SAVE),
@@ -36,6 +37,7 @@ Graph_window::Graph_window():
     _draw_cursor("Draw Cursor"),
     _use_orbit_cam("Use Orbiting Camera"),
     _use_free_cam("Use Free Camera"),
+    _reset_cam_butt("Reset Camera"),
     _add_butt(Gtk::Stock::ADD)
 {
     set_title("Graph 3");
@@ -115,12 +117,13 @@ Graph_window::Graph_window():
     _toolbar.attach(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_VERTICAL)), 5, 0, 1, 1);
     _toolbar.attach(_use_orbit_cam, 6, 0, 1, 1);
     _toolbar.attach(_use_free_cam, 7, 0, 1, 1);
+    _toolbar.attach(_reset_cam_butt, 8, 0, 1, 1);
 
     Gtk::Label * tool_sep = Gtk::manage(new Gtk::Label); // blank label for spacing
     tool_sep->set_hexpand(true);
-    _toolbar.attach(*tool_sep, 8, 0, 1, 1);
+    _toolbar.attach(*tool_sep, 9, 0, 1, 1);
 
-    _toolbar.attach(_add_butt, 9, 0, 1, 1);
+    _toolbar.attach(_add_butt, 10, 0, 1, 1);
 
     _main_grid.attach(_gl_window, 0, 2, 1, 1);
     _main_grid.attach(_notebook, 1, 2, 1, 1);
@@ -141,6 +144,9 @@ Graph_window::Graph_window():
     _use_free_cam.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
     _use_orbit_cam.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
 
+    _reset_cam_butt.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::REFRESH, Gtk::ICON_SIZE_SMALL_TOOLBAR)));
+    _reset_cam_butt.signal_clicked().connect(sigc::mem_fun(_gl_window, &Graph_disp::reset_cam));
+
     _add_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
 
     _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &Graph_window::tab_change));
@@ -159,64 +165,6 @@ Graph_window::Graph_window():
     _pages.back()->show();
 
     _gl_window.invalidate();
-}
-
-void Graph_window::tab_new()
-{
-    _pages.push_back(std::unique_ptr<Graph_page>(new Graph_page(_gl_window)));
-    _notebook.append_page(*_pages.back(), *Gtk::manage(new Tab_label));
-
-    dynamic_cast<Tab_label &>(*_notebook.get_tab_label(*_pages.back())).
-        signal_close_tab().connect(sigc::bind<Graph_page &>(sigc::mem_fun(*this, &Graph_window::tab_close),
-        *_pages.back()));
-    dynamic_cast<Graph_page &>(*_pages.back()).signal_tex_changed()
-        .connect(sigc::mem_fun(dynamic_cast<Tab_label &>(*_notebook.get_tab_label(*_pages.back())),
-        &Tab_label::set_img));
-
-    _pages.back()->show();
-}
-
-void Graph_window::tab_close(Graph_page & page)
-{
-    if(_notebook.get_n_pages() == 1)
-    {
-        if(_cursor_conn.connected())
-            _cursor_conn.disconnect();
-        _cursor_text.set_text("");
-    }
-    guint page_no = _notebook.page_num(page);
-    _notebook.remove_page(page);
-    _pages.erase(std::next(_pages.begin(), page_no));
-}
-
-void Graph_window::tab_change(Gtk::Widget * page, guint page_no)
-{
-    if(_cursor_conn.connected())
-        _cursor_conn.disconnect();
-
-    _cursor_conn = dynamic_cast<Graph_page &>(*page).signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_window::update_cursor));
-
-    dynamic_cast<Graph_page &>(*page).set_active();
-}
-
-void Graph_window::change_flags()
-{
-    _gl_window.draw_axes_flag = _draw_axes.get_active();
-    _gl_window.draw_cursor_flag = _draw_cursor.get_active();
-
-    if(!_draw_cursor.get_active())
-        update_cursor("");
-    else
-        dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page())).set_active();
-
-    _gl_window.use_orbit_cam = _use_orbit_cam.get_active();
-
-    _gl_window.invalidate();
-}
-
-void Graph_window::update_cursor(const std::string & text)
-{
-    _cursor_text.set_text(text);
 }
 
 std::string curr_dir = "";
@@ -313,4 +261,62 @@ void Graph_window::load_graph()
        tab_close(new_tab);
        _notebook.set_current_page(current_tab);
     }
+}
+
+void Graph_window::change_flags()
+{
+    _gl_window.draw_axes_flag = _draw_axes.get_active();
+    _gl_window.draw_cursor_flag = _draw_cursor.get_active();
+
+    if(!_draw_cursor.get_active())
+        update_cursor("");
+    else
+        dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page())).set_active();
+
+    _gl_window.use_orbit_cam = _use_orbit_cam.get_active();
+
+    _gl_window.invalidate();
+}
+
+void Graph_window::update_cursor(const std::string & text)
+{
+    _cursor_text.set_text(text);
+}
+
+void Graph_window::tab_new()
+{
+    _pages.push_back(std::unique_ptr<Graph_page>(new Graph_page(_gl_window)));
+    _notebook.append_page(*_pages.back(), *Gtk::manage(new Tab_label));
+
+    dynamic_cast<Tab_label &>(*_notebook.get_tab_label(*_pages.back())).
+        signal_close_tab().connect(sigc::bind<Graph_page &>(sigc::mem_fun(*this, &Graph_window::tab_close),
+        *_pages.back()));
+    dynamic_cast<Graph_page &>(*_pages.back()).signal_tex_changed()
+        .connect(sigc::mem_fun(dynamic_cast<Tab_label &>(*_notebook.get_tab_label(*_pages.back())),
+        &Tab_label::set_img));
+
+    _pages.back()->show();
+}
+
+void Graph_window::tab_close(Graph_page & page)
+{
+    if(_notebook.get_n_pages() == 1)
+    {
+        if(_cursor_conn.connected())
+            _cursor_conn.disconnect();
+        _cursor_text.set_text("");
+    }
+    guint page_no = _notebook.page_num(page);
+    _notebook.remove_page(page);
+    _pages.erase(std::next(_pages.begin(), page_no));
+}
+
+void Graph_window::tab_change(Gtk::Widget * page, guint page_no)
+{
+    if(_cursor_conn.connected())
+        _cursor_conn.disconnect();
+
+    _cursor_conn = dynamic_cast<Graph_page &>(*page).signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_window::update_cursor));
+
+    dynamic_cast<Graph_page &>(*page).set_active();
 }

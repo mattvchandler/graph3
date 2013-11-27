@@ -564,11 +564,7 @@ bool Graph_disp::input()
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
                 {
                     key_lock[sf::Keyboard::R] = true;
-                    _orbit_cam.r = 10.0f;
-                    _orbit_cam.theta = 0.0f;
-                    _orbit_cam.phi = 90.0f;
-                    _scale = 1.0f;
-                    invalidate();
+                    reset_cam();
                 }
                 else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
                     key_lock[sf::Keyboard::R] = false;
@@ -638,9 +634,7 @@ bool Graph_disp::input()
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
                 {
                     key_lock[sf::Keyboard::R] = true;
-                    _cam.set(glm::vec3(0.0f, -10.0f, 0.0f));
-                    _scale = 1.0f;
-                    invalidate();
+                    reset_cam();
                 }
                 else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
                     key_lock[sf::Keyboard::R] = false;
@@ -769,4 +763,21 @@ void Graph_disp::remove_graph(const Graph * graph)
     if(graph == _active_graph)
         _active_graph = nullptr;
     _graphs.erase(graph);
+}
+
+void Graph_disp::reset_cam()
+{
+    if(use_orbit_cam)
+    {
+        _orbit_cam.r = 10.0f;
+        _orbit_cam.theta = 0.0f;
+        _orbit_cam.phi = 90.0f;
+    }
+    else
+    {
+        _cam.set(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    }
+
+    _scale = 1.0f;
+    invalidate();
 }

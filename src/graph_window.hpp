@@ -51,13 +51,13 @@ public:
     Graph_window();
 
 private:
+    void save_graph();
+    void load_graph();
+    void change_flags();
+    void update_cursor(const std::string & text);
     void tab_new();
     void tab_close(Graph_page & page);
     void tab_change(Widget * page, guint page_no);
-    void change_flags();
-    void update_cursor(const std::string & text);
-    void save_graph();
-    void load_graph();
 
     Glib::RefPtr<Gtk::UIManager> _menu;
     Glib::RefPtr<Gtk::ActionGroup> _menu_act;
@@ -71,6 +71,7 @@ private:
     Gtk::Button _save_butt, _load_butt;
     Gtk::CheckButton _draw_axes, _draw_cursor;
     Gtk::RadioButton _use_orbit_cam, _use_free_cam;
+    Gtk::Button _reset_cam_butt;
     Gtk::Button _add_butt;
 
     sigc::connection _cursor_conn;

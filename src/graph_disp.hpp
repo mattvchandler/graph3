@@ -127,6 +127,9 @@ public:
     void add_graph(const Graph * graph);
     void remove_graph(const Graph * graph);
 
+    // reset camera to starting position / orientation
+    void reset_cam();
+
     // display settings
     bool draw_cursor_flag;
     bool draw_axes_flag;
