@@ -52,10 +52,16 @@ GLuint compile_shader(const std::string & filename, GLenum shader_type)
         in.read(buff.data(), in_size);
 
         if(!in)
+        {
+            std::cerr<<"Error reading shader: "<<filename<<std::endl;
             return 0;
+        }
     }
     else
+    {
+        std::cerr<<"Error opening shader: "<<filename<<std::endl;
         return 0;
+    }
 
     GLuint shader = glCreateShader(shader_type);
 
