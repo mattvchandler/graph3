@@ -29,6 +29,8 @@
 #include "gl_helpers.hpp"
 #include "graph_disp.hpp"
 
+extern int return_code; // from main.cpp
+
 Cursor::Cursor(): shininess(90.0f), specular(1.0f),
     _tex(0), _vao(0), _vbo(0), _num_indexes(0)
 {
@@ -229,6 +231,7 @@ void Graph_disp::realize()
     {
         std::cerr<<"Error loading glew. Aborting"<<std::endl;
         dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        return_code = EXIT_FAILURE;
         return;
     }
 
@@ -238,6 +241,7 @@ void Graph_disp::realize()
         std::cerr<<"OpenGL version too low. Version 3.0 required"<<std::endl;
         std::cerr<<"Installed version is: "<<glGetString(GL_VERSION)<<std::endl;
         dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        return_code = EXIT_FAILURE;
         return;
     }
 
@@ -264,6 +268,7 @@ void Graph_disp::realize()
     if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0 || flat_color_frag == 0)
     {
         dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        return_code = EXIT_FAILURE;
         return;
     }
 
@@ -274,6 +279,7 @@ void Graph_disp::realize()
     if(_prog_tex == 0 || _prog_color == 0 || _prog_line == 0)
     {
         dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        return_code = EXIT_FAILURE;
         return;
     }
 
@@ -371,6 +377,7 @@ void Graph_disp::realize()
     catch(Glib::Exception &e)
     {
         dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        return_code = EXIT_FAILURE;
         return;
     }
 

@@ -104,7 +104,6 @@ double Graph_spherical::eval(const double theta, const double phi)
         Graph_exception ge(e, Graph_exception::EQN);
         throw ge;
     }
-
 }
 
 // OpenGL needs to be initialized before this is run, hence it's not in the ctor

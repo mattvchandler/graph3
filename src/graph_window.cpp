@@ -28,6 +28,8 @@
 
 #include "graph_window.hpp"
 
+extern int return_code; // from main.cpp
+
 // TODO: probably change button labels to mouseover text
 Graph_window::Graph_window():
     _gl_window(sf::VideoMode(800, 600), -1),
@@ -86,6 +88,7 @@ Graph_window::Graph_window():
     catch(const Glib::Error & e)
     {
         std::cerr<<"Error building menu: "<<e.what()<<std::endl;
+        return_code = EXIT_FAILURE;
         throw;
     }
 

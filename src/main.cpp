@@ -26,6 +26,8 @@
 
 #include "graph_window.hpp"
 
+int return_code = EXIT_SUCCESS; // to be used w/ extern by any module that needs it
+
 int main(int argc, char * argv[])
 {
     // create app and window objects
@@ -34,7 +36,11 @@ int main(int argc, char * argv[])
     {
         Graph_window gtk_window;
         // run main window
-        return app->run(gtk_window);
+        int gtk_return_code = app->run(gtk_window);
+        if(return_code == EXIT_SUCCESS)
+            return gtk_return_code;
+        else
+            return return_code;
     }
     catch(const Glib::Error & e)
     {
