@@ -159,7 +159,7 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _eqn_par_z.hide();
 
     // TODO: cleanup, tooltips, widget spacing/layout, abs paths for images/examples, comments / docs, lighting options, OGL error/version checking
-    // move menu options to toolbar / widget, use Gtk::manage on static widgets
+    //  use Gtk::manage on static widgets
 }
 
 Graph_page::~Graph_page()

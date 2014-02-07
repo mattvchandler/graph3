@@ -24,6 +24,7 @@
 
 #include <gtkmm/window.h>
 
+#define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "gl_helpers.hpp"
@@ -195,7 +196,7 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request):
     SFMLWidget(mode, size_request),
     draw_cursor_flag(true), draw_axes_flag(true), use_orbit_cam(true),
     _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-    _orbit_cam({10.0f, 0.0f, 90.0f}), _scale(1.0f), _perspective_mat(1.0f),
+    _orbit_cam({10.0f, 0.0f, (float)M_PI / 2.0f}), _scale(1.0f), _perspective_mat(1.0f),
     _light({glm::vec3(0.0f), glm::vec3(1.0f), 0.2f, 1.0f, 0.5f, 0.0f}),
     _dir_light({glm::vec3(-1.0f), glm::vec3(0.5f), 0.2f, 1.0f, 1.0f, 1.0f}),
     _ambient_light(0.4f, 0.4f, 0.4f),
@@ -392,7 +393,7 @@ void Graph_disp::resize(Gtk::Allocation & unused)
     if(m_refGdkWindow)
     {
         glViewport(0, 0, glWindow.getSize().x, glWindow.getSize().y);
-        _perspective_mat = glm::perspective(30.0f, (float)glWindow.getSize().x / (float)glWindow.getSize().y,
+        _perspective_mat = glm::perspective((float)M_PI / 6.0f, (float)glWindow.getSize().x / (float)glWindow.getSize().y,
             0.1f, 1000.0f);
         invalidate();
     }
@@ -578,25 +579,25 @@ bool Graph_disp::input()
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
                 {
-                    _orbit_cam.phi += 2.0 * mov_scale;
+                    _orbit_cam.phi += (float)M_PI / 90.0f * mov_scale;
                     invalidate();
                 }
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
                 {
-                    _orbit_cam.phi -= 2.0 * mov_scale;
+                    _orbit_cam.phi -= (float)M_PI / 90.0f * mov_scale;
                     invalidate();
                 }
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
                 {
-                    _orbit_cam.theta += 2.0 * mov_scale;
+                    _orbit_cam.theta += (float)M_PI / 90.0f * mov_scale;
                     invalidate();
                 }
 
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
                 {
-                    _orbit_cam.theta -= 2.0 * mov_scale;
+                    _orbit_cam.theta -= (float)M_PI / 90.0f * mov_scale;
                     invalidate();
                 }
 
@@ -617,21 +618,21 @@ bool Graph_disp::input()
                     int d_x = new_mouse_pos.x - old_mouse_pos.x;
                     int d_y = new_mouse_pos.y - old_mouse_pos.y;
 
-                    _orbit_cam.theta -= 0.1f * d_x;
-                    _orbit_cam.phi -= 0.1f * d_y;
+                    _orbit_cam.theta -= 0.005f * d_x;
+                    _orbit_cam.phi -= 0.005f * d_y;
 
                     invalidate();
                 }
 
                 // wrap theta
-                if(_orbit_cam.theta > 360.0f)
-                    _orbit_cam.theta -= 360.0f;
+                if(_orbit_cam.theta > (float)M_PI * 2.0f)
+                    _orbit_cam.theta -= (float)M_PI * 2.0f;
                 if(_orbit_cam.theta < 0.0f)
-                    _orbit_cam.theta += 360.0f;
+                    _orbit_cam.theta += (float)M_PI * 2.0f;
 
                 // clamp phi
-                if(_orbit_cam.phi > 180.0f)
-                    _orbit_cam.phi = 180.0f;
+                if(_orbit_cam.phi > (float)M_PI)
+                    _orbit_cam.phi = (float)M_PI;
                 if(_orbit_cam.phi < 0.0f)
                     _orbit_cam.phi = 0.0f;
             }
@@ -778,7 +779,7 @@ void Graph_disp::reset_cam()
     {
         _orbit_cam.r = 10.0f;
         _orbit_cam.theta = 0.0f;
-        _orbit_cam.phi = 90.0f;
+        _orbit_cam.phi = (float)M_PI / 2.0f;
     }
     else
     {

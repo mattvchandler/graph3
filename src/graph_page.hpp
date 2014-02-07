@@ -37,6 +37,7 @@
 
 #include <sigc++/sigc++.h>
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
 #include "graph_disp.hpp"

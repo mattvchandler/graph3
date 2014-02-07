@@ -36,6 +36,7 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Window.hpp>
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
 #include "SFMLWidget/SFMLWidget.hpp"

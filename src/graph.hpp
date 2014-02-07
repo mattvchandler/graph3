@@ -32,6 +32,7 @@
 
 #include <SFML/OpenGL.hpp>
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
 #include <muParser.h>
