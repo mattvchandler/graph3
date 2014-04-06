@@ -388,12 +388,13 @@ void Graph_disp::realize()
     invalidate();
 }
 
-void Graph_disp::resize(Gtk::Allocation & unused)
+void Graph_disp::resize(Gtk::Allocation & allocation)
 {
     if(m_refGdkWindow)
     {
-        glViewport(0, 0, glWindow.getSize().x, glWindow.getSize().y);
-        _perspective_mat = glm::perspective((float)M_PI / 6.0f, (float)glWindow.getSize().x / (float)glWindow.getSize().y,
+        glViewport(0, 0, allocation.get_width(), allocation.get_height());
+        _perspective_mat = glm::perspective((float)M_PI / 6.0f,
+            (float)allocation.get_width() / (float)allocation.get_height(),
             0.1f, 1000.0f);
         invalidate();
     }

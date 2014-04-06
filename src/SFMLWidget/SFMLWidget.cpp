@@ -44,9 +44,9 @@ SFMLWidget::~SFMLWidget()
 
 void SFMLWidget::on_size_allocate(Gtk::Allocation& allocation)
 {
-    //Do something with the space that we have actually been given:
-    //(We will not be given heights or widths less than we have requested, though
-    //we might get more)
+    // Do something with the space that we have actually been given:
+    // (We will not be given heights or widths less than we have requested, though
+    // we might get more)
 
     this->set_allocation(allocation);
 
@@ -55,7 +55,7 @@ void SFMLWidget::on_size_allocate(Gtk::Allocation& allocation)
         m_refGdkWindow->move_resize(allocation.get_x(),
                                     allocation.get_y(),
                                     allocation.get_width(),
-                                    allocation.get_height() );
+                                    allocation.get_height());
         glWindow.setSize(sf::Vector2u(allocation.get_width(),
                                           allocation.get_height()));
     }
