@@ -33,14 +33,10 @@ extern int return_code; // from main.cpp
 // TODO: probably change button labels to mouseover text
 Graph_window::Graph_window():
     _gl_window(sf::VideoMode(800, 600), -1),
-    _save_butt(Gtk::Stock::SAVE),
-    _load_butt(Gtk::Stock::OPEN),
     _draw_axes("Draw Axes"),
     _draw_cursor("Draw Cursor"),
     _use_orbit_cam("Use Orbiting Camera"),
-    _use_free_cam("Use Free Camera"),
-    _reset_cam_butt("Reset Camera"),
-    _add_butt(Gtk::Stock::ADD)
+    _use_free_cam("Use Free Camera")
 {
     set_title("Graph 3");
     set_default_size(800, 600);
@@ -112,28 +108,33 @@ Graph_window::Graph_window():
     _main_grid.attach(_toolbar, 0, 1, 2, 1);
 
     // build toolbar
-    _toolbar.attach(_save_butt, 0, 0, 1, 1);
-    _toolbar.attach(_load_butt, 1, 0, 1, 1);
+    Gtk::Button * save_butt = Gtk::manage(new Gtk::Button(Gtk::Stock::SAVE));
+    Gtk::Button * load_butt = Gtk::manage(new Gtk::Button(Gtk::Stock::OPEN));
+    Gtk::Button * reset_cam_butt = Gtk::manage(new Gtk::Button("Reset Camera"));
+
+    _toolbar.attach(*save_butt, 0, 0, 1, 1);
+    _toolbar.attach(*load_butt, 1, 0, 1, 1);
     _toolbar.attach(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_VERTICAL)), 2, 0, 1, 1);
     _toolbar.attach(_draw_axes, 3, 0, 1, 1);
     _toolbar.attach(_draw_cursor, 4, 0, 1, 1);
     _toolbar.attach(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_VERTICAL)), 5, 0, 1, 1);
     _toolbar.attach(_use_orbit_cam, 6, 0, 1, 1);
     _toolbar.attach(_use_free_cam, 7, 0, 1, 1);
-    _toolbar.attach(_reset_cam_butt, 8, 0, 1, 1);
+    _toolbar.attach(*reset_cam_butt, 8, 0, 1, 1);
 
     Gtk::Label * tool_sep = Gtk::manage(new Gtk::Label); // blank label for spacing
     tool_sep->set_hexpand(true);
     _toolbar.attach(*tool_sep, 9, 0, 1, 1);
 
-    _toolbar.attach(_add_butt, 10, 0, 1, 1);
+    Gtk::Button * add_butt = Gtk::manage(new Gtk::Button(Gtk::Stock::ADD));
+    _toolbar.attach(*add_butt, 10, 0, 1, 1);
 
     _main_grid.attach(_gl_window, 0, 2, 1, 1);
     _main_grid.attach(_notebook, 1, 2, 1, 1);
     _main_grid.attach(_cursor_text, 0, 3, 2, 1);
 
-    _save_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::save_graph));
-    _load_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::load_graph));
+    save_butt->signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::save_graph));
+    load_butt->signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::load_graph));
 
     _draw_axes.set_active(true);
     _draw_cursor.set_active(true);
@@ -147,10 +148,10 @@ Graph_window::Graph_window():
     _use_free_cam.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
     _use_orbit_cam.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
 
-    _reset_cam_butt.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::REFRESH, Gtk::ICON_SIZE_SMALL_TOOLBAR)));
-    _reset_cam_butt.signal_clicked().connect(sigc::mem_fun(_gl_window, &Graph_disp::reset_cam));
+    reset_cam_butt->set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::REFRESH, Gtk::ICON_SIZE_SMALL_TOOLBAR)));
+    reset_cam_butt->signal_clicked().connect(sigc::mem_fun(_gl_window, &Graph_disp::reset_cam));
 
-    _add_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
+    add_butt->signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
 
     _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &Graph_window::tab_change));
 

@@ -68,11 +68,8 @@ private:
     // widgets
     Graph_disp _gl_window;
     Gtk::Label _cursor_text;
-    Gtk::Button _save_butt, _load_butt;
     Gtk::CheckButton _draw_axes, _draw_cursor;
     Gtk::RadioButton _use_orbit_cam, _use_free_cam;
-    Gtk::Button _reset_cam_butt;
-    Gtk::Button _add_butt;
 
     sigc::connection _cursor_conn;
 

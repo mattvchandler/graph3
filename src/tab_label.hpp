@@ -42,8 +42,6 @@ private:
     void on_button_press();
 
     Gtk::Image _tab_pic;
-    Gtk::Button _close_butt;
-    Gtk::Image _close_img;
     sigc::signal<void> _signal_close_tab;
 };
 

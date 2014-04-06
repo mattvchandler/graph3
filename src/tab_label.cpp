@@ -25,7 +25,7 @@
 #include "graph_page.hpp"
 #include "tab_label.hpp"
 
-Tab_label::Tab_label(): _close_img(Gtk::Stock::CLOSE, Gtk::ICON_SIZE_MENU)
+Tab_label::Tab_label()
 {
     // convert color vector to 32-bit color val
     guint8 r = (guint8)(Graph_page::start_color.r * 256.0f);
@@ -40,15 +40,16 @@ Tab_label::Tab_label(): _close_img(Gtk::Stock::CLOSE, Gtk::ICON_SIZE_MENU)
     _tab_pic.set(image);
 
     // set widget params
-    _close_butt.set_always_show_image(true);
-    _close_butt.set_image(_close_img);
+    Gtk::Button * close_butt = Gtk::manage(new Gtk::Button);
+    close_butt->set_always_show_image(true);
+    close_butt->set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::CLOSE, Gtk::ICON_SIZE_MENU)));
 
     // attach widgets
     attach(_tab_pic, 0, 0, 1, 1);
-    attach(_close_butt, 1, 0, 1, 1);
+    attach(*close_butt, 1, 0, 1, 1);
 
     // connect signal handlers
-    _close_butt.signal_clicked().connect(sigc::mem_fun(*this, &Tab_label::on_button_press));
+    close_butt->signal_clicked().connect(sigc::mem_fun(*this, &Tab_label::on_button_press));
 
     show_all_children();
 }
