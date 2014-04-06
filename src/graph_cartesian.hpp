@@ -25,6 +25,7 @@
 
 #include "graph.hpp"
 
+// Cartesian graph class - z(x,y)
 class Graph_cartesian final: public Graph
 {
 public:
@@ -32,25 +33,31 @@ public:
         const std::string & x_min, const std::string & x_max, size_t x_res,
         const std::string & y_min, const std::string & y_max, size_t y_res);
 
+    // evaluate a point on the graph
     double eval(const double x, const double y);
+    // calculate & build graph geometry
     void build_graph() override;
 
     // cursor funcs
     void move_cursor(const Cursor_dir dir) override;
     glm::vec3 cursor_pos() const override;
     bool cursor_defined() const override;
+    // return cursor position as a string
     std::string cursor_text() const override;
 
 private:
+    // parser object
     mu::Parser _p;
     std::string _eqn;
 
+    // bounds
     double _x, _y;
     double _x_min, _x_max;
     size_t _x_res;
     double _y_min, _y_max;
     size_t _y_res;
 
+    // cursor vars
     glm::vec3 _cursor_pos;
     bool _cursor_defined;
 };

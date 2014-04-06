@@ -28,6 +28,7 @@
 
 #include "gl_helpers.hpp"
 
+// check for OpenGL error and print message
 void check_error(const std::string & at)
 {
     GLenum e = glGetError();
@@ -36,8 +37,10 @@ void check_error(const std::string & at)
     std::cerr<<"OpenGL Error at "<<at<<": "<<gluErrorString(e)<<std::endl;
 }
 
+// compile a shader object
 GLuint compile_shader(const std::string & filename, GLenum shader_type)
 {
+    // open shader file
     std::ifstream in(filename, std::ios::binary | std::ios::in);
     std::vector <char> buff;
 
@@ -63,13 +66,15 @@ GLuint compile_shader(const std::string & filename, GLenum shader_type)
         return 0;
     }
 
+    // create shader object
     GLuint shader = glCreateShader(shader_type);
 
+    // load & compile
     const char * src = buff.data();
     glShaderSource(shader, 1, &src, NULL);
-
     glCompileShader(shader);
 
+    // error handling
     GLint compile_status;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
 
@@ -91,14 +96,17 @@ GLuint compile_shader(const std::string & filename, GLenum shader_type)
     return shader;
 }
 
+// link shader objects into shader progra,
 GLuint link_shader_prog(const std::vector<GLuint> & shaders)
 {
+    // create program and load shader objects
     GLuint prog = glCreateProgram();
     for(auto &i: shaders)
         glAttachShader(prog, i);
 
     glLinkProgram(prog);
 
+    // error handling
     GLint link_status;
     glGetProgramiv(prog, GL_LINK_STATUS, &link_status);
 
@@ -120,12 +128,15 @@ GLuint link_shader_prog(const std::vector<GLuint> & shaders)
     return prog;
 }
 
+// create & load a texture from a filename
 GLuint create_texture_from_file(const std::string & filename)
 {
+    // greate GTK image object from file
     const Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create_from_file(filename);
     int w = image->get_width();
     int h = image->get_height();
 
+    // raw image data
     std::vector<float> float_data(w * h * 4);
 
     // get data and load into float array
@@ -161,15 +172,18 @@ GLuint create_texture_from_file(const std::string & filename)
         }
     }
 
-    // copy to OpenGL
+    // create OpenGL texture
     glEnable(GL_TEXTURE_2D);
     GLuint tex;
     glGenTextures(1, &tex);
 
+    // copy data to OpenGL
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexStorage2D(GL_TEXTURE_2D, (int)(log2(std::min(w, h))) + 1,
         GL_RGBA8, w, h);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_FLOAT, float_data.data());
+
+    // set texture properties
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

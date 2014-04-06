@@ -25,6 +25,7 @@
 
 #include "graph.hpp"
 
+// Spherical graph class - r(θ,ϕ)
 class Graph_spherical final: public Graph
 {
 public:
@@ -32,25 +33,31 @@ public:
         const std::string & theta_min, const std::string & theta_max, size_t theta_res,
         const std::string & phi_min, const std::string & phi_max, size_t phi_res);
 
+    // evaluate a point on the graph
     double eval(const double theta, const double phi);
+    // calculate & build graph geometry
     void build_graph() override;
 
     // cursor funcs
     void move_cursor(const Cursor_dir dir) override;
     glm::vec3 cursor_pos() const override;
     bool cursor_defined() const override;
+    // return cursor position as a string
     std::string cursor_text() const override;
 
 private:
+    // parser object
     mu::Parser _p;
     std::string _eqn;
 
+    // bounds
     double  _theta, _phi;
     double _theta_min, _theta_max;
     size_t _theta_res;
     double _phi_min, _phi_max;
     size_t _phi_res;
 
+    // cursor vars
     double _cursor_theta, _cursor_phi, _cursor_r;
     glm::vec3 _cursor_pos;
     bool _cursor_defined;

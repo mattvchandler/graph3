@@ -29,12 +29,12 @@ Graph_spherical::Graph_spherical(const std::string & eqn,
     const std::string & theta_min, const std::string & theta_max, size_t theta_res,
     const std::string & phi_min, const std::string & phi_max, size_t phi_res):
     _eqn(eqn), _theta(0.0), _phi(0.0), _theta_res(theta_res), _phi_res(phi_res)
-
 {
     _p.DefineConst("pi", M_PI);
     _p.DefineConst("e", M_E);
     double min, max;
 
+    // try to evaluate mins and maxes strings
     _p.SetExpr(theta_min);
     try
     {
@@ -92,6 +92,7 @@ Graph_spherical::Graph_spherical(const std::string & eqn,
     build_graph();
 }
 
+// evaluate a point on the graph
 double Graph_spherical::eval(const double theta, const double phi)
 {
     _theta = theta; _phi = phi;
@@ -106,14 +107,16 @@ double Graph_spherical::eval(const double theta, const double phi)
     }
 }
 
-// OpenGL needs to be initialized before this is run, hence it's not in the ctor
+// calculate & build graph geometry
 void Graph_spherical::build_graph()
 {
+    // OpenGL needs to be initialized before this is run, hence it's not in the ctor
     std::vector<glm::vec3> coords(_theta_res * _phi_res);
     std::vector<glm::vec2> tex_coords(_theta_res * _phi_res);
     std::vector<glm::vec3> normals(_theta_res * _phi_res);
     std::vector<bool> defined(_theta_res * _phi_res);
 
+    // small offsets for calculating normals
     float h_phi = 1e-3f * (_phi_max - _phi_min) / (float)_phi_res;
     float h_theta = 1e-3f * (_theta_max - _theta_min) / (float)_theta_res;
 
@@ -126,17 +129,21 @@ void Graph_spherical::build_graph()
         {
             double r = eval(theta, phi);
 
+            // check for undefined / infinity
             if(std::fpclassify(r) != FP_NORMAL &&
                 std::fpclassify(r) != FP_ZERO)
             {
+                // fallback values
                 coords[phi_i * _theta_res + theta_i] = glm::vec3(0.0f);
                 tex_coords[phi_i * _theta_res + theta_i] = glm::vec2(0.0f);
                 normals[phi_i * _theta_res + theta_i] = glm::vec3(0.0f, 0.0f, 1.0f);
+                // set undefined
                 defined[phi_i * _theta_res + theta_i] = false;
                 continue;
             }
 
             // convert into cartesian coordinates
+            // add vertex to lists
             coords[phi_i * _theta_res + theta_i] = glm::vec3((float)r * sinf(phi) * cosf(theta),
                 (float)r * sinf(phi) * sinf(theta), (float)r * cosf(phi));
             tex_coords[phi_i * _theta_res + theta_i] = glm::vec2(
@@ -149,6 +156,7 @@ void Graph_spherical::build_graph()
             bool up_def = false, dn_def = false, lf_def = false, rt_def = false,
                  ul_def = false, ur_def = false, ll_def = false, lr_def = false;
 
+            // add offsets
             float l_theta = (float)theta - h_theta;
             float r_theta = (float)theta + h_theta;
             float u_phi = (float)phi + h_phi;
@@ -226,6 +234,7 @@ void Graph_spherical::build_graph()
                 lf = glm::vec3(r * sinf(phi) * cosf(l_theta), r * sinf(phi) * sinf(l_theta), r * cosf(phi));
             }
 
+            // get normal
             normals[phi_i * _theta_res + theta_i] = get_normal(coords[phi_i * _theta_res + theta_i],
                 up, up_def,
                 ur, ur_def,
@@ -238,6 +247,7 @@ void Graph_spherical::build_graph()
         }
     }
 
+    // build OpenGL geometry data from vertexes
     build_graph_geometry(_theta_res, _phi_res, coords, tex_coords, normals, defined);
 
     // initialize cursor
@@ -251,6 +261,7 @@ void Graph_spherical::build_graph()
     _signal_cursor_moved.emit(cursor_text());
 }
 
+// cursor funcs
 void Graph_spherical::move_cursor(const Cursor_dir dir)
 {
     switch(dir)
@@ -279,11 +290,14 @@ void Graph_spherical::move_cursor(const Cursor_dir dir)
         break;
     }
 
+    // evaluate cursors new position
     _cursor_r = eval(_cursor_theta, _cursor_phi);
     _cursor_pos.x = _cursor_r * sinf(_cursor_phi) * cosf(_cursor_theta);
     _cursor_pos.y = _cursor_r * sinf(_cursor_phi) * sinf(_cursor_theta);
     _cursor_pos.z = _cursor_r * cosf(_cursor_phi);
     _cursor_defined = std::fpclassify(_cursor_r) == FP_NORMAL || std::fpclassify(_cursor_r) == FP_ZERO;
+
+    // signal the move
     _signal_cursor_moved.emit(cursor_text());
 }
 
@@ -297,11 +311,13 @@ bool Graph_spherical::cursor_defined() const
     return _cursor_defined;
 }
 
+// return cursor position as a string
 std::string Graph_spherical::cursor_text() const
 {
     std::ostringstream str;
     std::string eqn = _eqn;
 
+    // limit to 50 chars
     if(_eqn.size() > 50)
         eqn = _eqn.substr(0, 49) + "…";
 

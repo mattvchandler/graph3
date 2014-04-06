@@ -37,7 +37,9 @@ out vec3 pos;
 void main()
 {
     tex_coords = tex;
+    // transform the vertex normal into view space coordinates
     normal_vec = normalize(normal_transform * normal);
+    // same with vertex position
     pos = vec3(view_model * vec4(vert_pos, 1.0));
     gl_Position = view_model_perspective * vec4(vert_pos, 1.0);
 }

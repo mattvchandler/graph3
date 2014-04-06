@@ -117,7 +117,6 @@ glm::vec3 get_normal (glm::vec3 center,
 
     // get cross-products from combinations of surrounding points
     // check for colinearity
-
     if(up_def)
     {
         if(ur_def)
@@ -318,6 +317,7 @@ glm::vec3 get_normal (glm::vec3 center,
         }
     }
 
+    // add surrounding vectors together (for averaging)
     glm::dvec3 normal(0.0f);
     for(auto &i: surrounding)
     {
@@ -332,6 +332,7 @@ glm::vec3 get_normal (glm::vec3 center,
     if(surrounding.size() > 0 && glm::length(normal) > epsilon)
         return glm::vec3(glm::normalize(normal));
     else
+        // fall back to up vector
         return glm::vec3(0.0f, 0.0f, 1.0f);
 }
 
@@ -347,6 +348,7 @@ Graph::Graph():
 
 Graph::~Graph()
 {
+    // free OpenGL resources
     if(_tex)
         glDeleteTextures(1, &_tex);
 
@@ -366,7 +368,7 @@ Graph::~Graph()
         glDeleteBuffers(1, &_normal_vbo);
 }
 
-// drawing code
+// draw graph geometry
 void Graph::draw() const
 {
     glBindVertexArray(_vao);
@@ -378,6 +380,7 @@ void Graph::draw() const
         glDrawElements(GL_TRIANGLE_STRIP, i.second, GL_UNSIGNED_INT, (GLvoid *)(sizeof(GLuint) * i.first));
 }
 
+// draw gridlines
 void Graph::draw_grid() const
 {
     glBindVertexArray(_vao);
@@ -388,6 +391,7 @@ void Graph::draw_grid() const
         glDrawElements(GL_LINE_STRIP, i.second, GL_UNSIGNED_INT, (GLvoid *)(sizeof(GLuint) * i.first));
 }
 
+// draw normals
 void Graph::draw_normals() const
 {
     glBindVertexArray(_normal_vao);
@@ -396,18 +400,22 @@ void Graph::draw_normals() const
     glDrawArrays(GL_LINES, 0, _normal_num_indexes);
 }
 
+// change texture given a filename
+// deletes texture when empty filename is given
 void Graph::set_texture(const std::string & filename)
 {
+    // free any existing texture
     if(_tex)
         glDeleteTextures(1, &_tex);
 
-    // so we're in a good state if the texture creation line throws
+    // zero vars so we're in a good state if the texture creation line throws
     _tex = 0;
     valid_tex = false;
 
     if(filename.size() == 0)
         return;
 
+    // load texture
     _tex = create_texture_from_file(filename);
     valid_tex = true;
 }
@@ -417,6 +425,7 @@ sigc::signal<void, const std::string &> Graph::signal_cursor_moved()
     return _signal_cursor_moved;
 }
 
+// helper function to build OpenGL objects from verticies
 void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
     const std::vector<glm::vec3> & coords,
     const std::vector<glm::vec2> & tex_coords,
@@ -432,11 +441,13 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
     {
         for(size_t column = 0; column < num_columns - 1; ++column)
         {
+            // 4 corner indexes
             int ul = row * num_columns + column;
             int ur = row * num_columns + column + 1;
             int ll = (row + 1) * num_columns + column;
             int lr = (row + 1) * num_columns + column + 1;
 
+            // draw appropriate triangles for defined verticies
             if(defined[ul] && defined[ur] && defined[ll] && defined[lr])
             {
                 index.push_back(ul);
@@ -592,7 +603,7 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
     if(start != grid_index.size())
         _grid_segs.push_back(std::make_pair(start, (GLuint)(grid_index.size() - start)));
 
-    // generate required OpenGL structures
+    // generate & load required OpenGL structures
     glGenBuffers(1, &_grid_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _grid_ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * grid_index.size(), grid_index.data(), GL_STATIC_DRAW);
@@ -609,6 +620,7 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
         }
     }
 
+    // generate & load required OpenGL structures
     glGenVertexArrays(1, &_normal_vao);
     glBindVertexArray(_normal_vao);
 

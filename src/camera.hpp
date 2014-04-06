@@ -29,6 +29,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+// free camera - position and direction
 class Camera
 {
 public:

@@ -33,6 +33,7 @@ Graph_parametric::Graph_parametric(const std::string & eqn_x,
     _eqn_x(eqn_x), _eqn_y(eqn_y), _eqn_z(eqn_z),
     _u(0.0), _v(0.0), _u_res(u_res),_v_res(v_res)
 {
+    // set constants for all 3 equation parsers
     _p_x.DefineConst("pi", M_PI);
     _p_x.DefineConst("e", M_E);
 
@@ -44,6 +45,7 @@ Graph_parametric::Graph_parametric(const std::string & eqn_x,
 
     double min, max;
 
+    // try to evaluate mins and maxes strings
     _p_x.SetExpr(u_min);
     try
     {
@@ -109,6 +111,7 @@ Graph_parametric::Graph_parametric(const std::string & eqn_x,
     build_graph();
 }
 
+// evaluate a point on the graph
 glm::vec3 Graph_parametric::eval(const double u, const double v)
 {
     _u = u; _v = v;
@@ -146,14 +149,16 @@ glm::vec3 Graph_parametric::eval(const double u, const double v)
     return glm::vec3(x, y, z);
 }
 
-// OpenGL needs to be initialized before this is run, hence it's not in the ctor
+// calculate & build graph geometry
 void Graph_parametric::build_graph()
 {
+    // OpenGL needs to be initialized before this is run, hence it's not in the ctor
     std::vector<glm::vec3> coords(_v_res * _u_res);
     std::vector<glm::vec2> tex_coords(_v_res * _u_res);
     std::vector<glm::vec3> normals(_v_res * _u_res);
     std::vector<bool> defined(_v_res * _u_res);
 
+    // small offsets for calculating normals
     float h_u = 1e-3f * (_u_max - _u_min) / (float)_u_res;
     float h_v = 1e-3f * (_v_max - _v_min) / (float)_v_res;
 
@@ -166,6 +171,7 @@ void Graph_parametric::build_graph()
         {
             glm::vec3 pos = eval(u, v);
 
+            // check for undefined / infinity
             if((std::fpclassify(pos.x) != FP_NORMAL &&
                 std::fpclassify(pos.x) != FP_ZERO) ||
                 (std::fpclassify(pos.y) != FP_NORMAL &&
@@ -173,13 +179,16 @@ void Graph_parametric::build_graph()
                 (std::fpclassify(pos.z) != FP_NORMAL &&
                 std::fpclassify(pos.z) != FP_ZERO))
             {
+                // fallback values
                 coords[v_i * _u_res + u_i] = glm::vec3(0.0f);
                 tex_coords[v_i * _u_res + u_i] = glm::vec2(0.0f);
                 normals[v_i * _u_res + u_i] = glm::vec3(0.0f, 0.0f, 1.0f);
+                // set undefined
                 defined[v_i * _u_res + u_i] = false;
                 continue;
             }
 
+            // add vertex to lists
             coords[v_i * _u_res + u_i] = pos;
             tex_coords[v_i * _u_res + u_i] = glm::vec2((float)((u - _u_min) / (_u_max - _u_min)), (float)((_v_max - v) / (_v_max - _v_min)));
             defined[v_i * _u_res + u_i] = true;
@@ -189,6 +198,7 @@ void Graph_parametric::build_graph()
             bool up_def = false, dn_def = false, lf_def = false, rt_def = false,
                  ul_def = false, ur_def = false, ll_def = false, lr_def = false;
 
+            // add offsets
             float l_u = (float)u - h_u;
             float r_u = (float)u + h_u;
             float u_v = (float)v + h_v;
@@ -298,6 +308,7 @@ void Graph_parametric::build_graph()
                 lf = pos;
             }
 
+            // get normal
             normals[v_i * _u_res + u_i] = get_normal(coords[v_i * _u_res + u_i],
                 up, up_def,
                 ur, ur_def,
@@ -310,6 +321,7 @@ void Graph_parametric::build_graph()
         }
     }
 
+    // build OpenGL geometry data from vertexes
     build_graph_geometry(_v_res, _u_res, coords, tex_coords, normals, defined);
 
     // initialize cursor
@@ -322,6 +334,7 @@ void Graph_parametric::build_graph()
     _signal_cursor_moved.emit(cursor_text());
 }
 
+// cursor funcs
 void Graph_parametric::move_cursor(const Cursor_dir dir)
 {
     switch(dir)
@@ -350,11 +363,13 @@ void Graph_parametric::move_cursor(const Cursor_dir dir)
         break;
     }
 
+    // evaluate cursors new position
     _cursor_pos = eval(_cursor_u, _cursor_v);
     _cursor_defined = (std::fpclassify(_cursor_pos.x) == FP_NORMAL || std::fpclassify(_cursor_pos.x) == FP_ZERO) &&
         (std::fpclassify(_cursor_pos.y) == FP_NORMAL || std::fpclassify(_cursor_pos.y) == FP_ZERO) &&
         (std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO);
 
+    // signal the move
     _signal_cursor_moved.emit(cursor_text());
 }
 
@@ -368,11 +383,13 @@ bool Graph_parametric::cursor_defined() const
     return _cursor_defined;
 }
 
+// return cursor position as a string
 std::string Graph_parametric::cursor_text() const
 {
     std::ostringstream str;
     std::string eqn = _eqn_x + "," + _eqn_y + "," + _eqn_z;
 
+    // limit to 50 chars
     if(eqn.size() > 50)
         eqn = eqn.substr(0, 49) + "…";
 

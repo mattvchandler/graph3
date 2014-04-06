@@ -39,6 +39,7 @@ Cursor::Cursor(): shininess(90.0f), specular(1.0f),
 
 Cursor::~Cursor()
 {
+    // free OpenGL resources
     if(_tex)
         glDeleteTextures(1, &_tex);
     if(_vao)
@@ -49,15 +50,19 @@ Cursor::~Cursor()
 
 void Cursor::draw() const
 {
+    // load the vertices and texture
     glBindVertexArray(_vao);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBindTexture(GL_TEXTURE_2D, _tex);
 
+    // draw the geometry
     glDrawArrays(GL_TRIANGLES, 0, _num_indexes);
 }
 
+// create a new cursor
 void Cursor::build(const std::string & tex_file_name)
 {
+    // vertex coordinates
     std::vector<glm::vec3> coords =
     {
         glm::vec3(0.0f, 0.0f, sqrtf(2) / 2.0f),
@@ -95,6 +100,7 @@ void Cursor::build(const std::string & tex_file_name)
     std::vector<glm::vec2> tex_coords;
     std::vector<glm::vec3> normals;
 
+    // assign texture coords and normals
     for(size_t i = 0; i < coords.size(); i += 3)
     {
         tex_coords.push_back(glm::vec2(0.5f, 1.0f - sqrtf(3.0f) / 2.0f));
@@ -107,7 +113,7 @@ void Cursor::build(const std::string & tex_file_name)
             normals.push_back(norm);
     }
 
-    // OpenGL structs
+    // create OpenGL vertex objects
     glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
 
@@ -122,6 +128,7 @@ void Cursor::build(const std::string & tex_file_name)
     glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size(),
         sizeof(glm::vec3) * normals.size(), normals.data());
 
+    // set pointers to coordinates, texture coords, normals
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(0);
 
@@ -157,14 +164,17 @@ Axes::~Axes()
 }
 void Axes::draw() const
 {
+    // load the vertices and texture
     glBindVertexArray(_vao);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 
+    // draw the geometry
     glDrawArrays(GL_LINES, 0, _num_indexes);
 }
 
 void Axes::build()
 {
+    // vertex coordinates
     std::vector<glm::vec3> coords =
     {
         // X axis
@@ -178,7 +188,7 @@ void Axes::build()
         glm::vec3(0.0f, 0.0f, 1.0f)
     };
 
-    // OpenGL structs
+    // create OpenGL vertex objects
     glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
 
@@ -204,27 +214,65 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request):
 
 {
     // All OpenGL initialization has to wait until the drawing context actually exists
-    // move it to the realize method
+    // it is in the realize method - hook into that signal now
     signal_realize().connect(sigc::mem_fun(*this, &Graph_disp::realize));
 
+    // connect event signals
     signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
     signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::draw));
     signal_key_press_event().connect(sigc::mem_fun(*this, &Graph_disp::key_press));
+
+    // input is checked every 10ms
     Glib::signal_timeout().connect(sigc::mem_fun(*this, &Graph_disp::input), 10);
 
     set_can_focus();
     set_can_default();
 }
 
-// key press handler
-bool Graph_disp::key_press(GdkEventKey * e)
+// set and get the active graph (the one w/ the cursor on it)
+void Graph_disp::set_active_graph(Graph * graph)
 {
-    // returning true means we don't propagate key presses up - keep them in this widget
-    // (and disregard them entirely because we're using SFML for handling the keyboard, not GTK)
-    return true;
+    _active_graph = graph;
 }
 
-// TODO: try to find some way to exit with both return code of EXIT_FAILURE and call dctors
+// return ptr to active graph
+Graph * Graph_disp::get_active_graph() const
+{
+    return _active_graph;
+}
+
+// give and take graphs from the display
+void Graph_disp::add_graph(const Graph * graph)
+{
+    _graphs.insert(graph);
+}
+
+void Graph_disp::remove_graph(const Graph * graph)
+{
+    if(graph == _active_graph)
+        _active_graph = nullptr;
+    _graphs.erase(graph);
+}
+
+// reset camera to starting position / orientation
+void Graph_disp::reset_cam()
+{
+    if(use_orbit_cam)
+    {
+        _orbit_cam.r = 10.0f;
+        _orbit_cam.theta = 0.0f;
+        _orbit_cam.phi = (float)M_PI / 2.0f;
+    }
+    else
+    {
+        _cam.set(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    }
+
+    _scale = 1.0f;
+    invalidate();
+}
+
+// called when OpenGL context is ready and GTK widget is ready
 void Graph_disp::realize()
 {
     // init glew
@@ -268,29 +316,33 @@ void Graph_disp::realize()
 
     if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0 || flat_color_frag == 0)
     {
+        // error messages are displayed by the compile_shader function
         dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
         return_code = EXIT_FAILURE;
         return;
     }
 
+    // link shaders
     _prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag});
     _prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag});
     _prog_line = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag});
 
     if(_prog_tex == 0 || _prog_color == 0 || _prog_line == 0)
     {
+        // error messages are displayed by the link_shader_prog function
         dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
         return_code = EXIT_FAILURE;
         return;
     }
 
+    // free shader objects
     glDeleteShader(graph_vert);
     glDeleteShader(line_vert);
     glDeleteShader(tex_frag);
     glDeleteShader(color_frag);
     glDeleteShader(flat_color_frag);
 
-    // get uniform locations
+    // get uniform locations for each shader
     _prog_tex_uniforms["view_model_perspective"] = glGetUniformLocation(_prog_tex, "view_model_perspective");
     _prog_tex_uniforms["view_model"] = glGetUniformLocation(_prog_tex, "view_model");
     _prog_tex_uniforms["normal_transform"] = glGetUniformLocation(_prog_tex, "normal_transform");
@@ -371,6 +423,7 @@ void Graph_disp::realize()
     glUseProgram(_prog_line);
     glBindAttribLocation(_prog_line, 0, "vert_pos");
 
+    // create static geometry objects - cursor, axes
     try
     {
         _cursor.build("img/cursor.png"); // TODO: global location?
@@ -385,26 +438,29 @@ void Graph_disp::realize()
     _axes.build();
     _axes.color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    invalidate();
+    invalidate(); // redraw
 }
 
+// called when window is resized
 void Graph_disp::resize(Gtk::Allocation & allocation)
 {
     if(m_refGdkWindow)
     {
+        // set the GL viewport dimensions and perspective matrix
         glViewport(0, 0, allocation.get_width(), allocation.get_height());
         _perspective_mat = glm::perspective((float)M_PI / 6.0f,
             (float)allocation.get_width() / (float)allocation.get_height(),
             0.1f, 1000.0f);
-        invalidate();
+        invalidate(); // redraw
     }
 }
 
+// main drawing code
 bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // set up transformation matrices
+    // set up viewmodel matrices
     glm::mat4 view_model;
     if(use_orbit_cam)
     {
@@ -440,12 +496,15 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
         check_error("axes draw"); // TODO: clean these up
     }
 
+    // draw graphs
     for(auto &graph: _graphs)
     {
+        // draw geometry
         if(graph->draw_flag)
         {
             if(graph->use_tex && graph->valid_tex)
             {
+                // draw with texture
                 glUseProgram(_prog_tex);
 
                 glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
@@ -460,6 +519,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             }
             else
             {
+                // draw with one color
                 glUseProgram(_prog_color);
 
                 glUniformMatrix4fv(_prog_color_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
@@ -473,11 +533,12 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
                 glUniform3fv(_prog_color_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
                 glUniform3fv(_prog_color_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
             }
-            check_error("geometry draw");
+            check_error("geometry draw"); // TODO: cleanup
 
             graph->draw();
         }
 
+        // draw grid
         if(graph->draw_grid_flag)
         {
             // switch to line shader
@@ -489,6 +550,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             graph->draw_grid();
         }
 
+        // draw normal vectors
         if(graph->draw_normals_flag)
         {
             // switch to line shader
@@ -500,7 +562,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             graph->draw_normals();
         }
 
-        check_error("draw");
+        check_error("draw"); // TODO: cleanup
     }
 
     // draw cursor
@@ -525,27 +587,31 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
         _cursor.draw();
     }
 
-    check_error("cursor draw");
-    display();
+    check_error("cursor draw"); // TODO: cleanup
+
+    display(); // swap display buffers
     return true;
 }
 
+// main input processing
 bool Graph_disp::input()
 {
+    // state vars
     static std::unordered_map<sf::Keyboard::Key, bool, std::hash<int>> key_lock;
     static sf::Vector2i old_mouse_pos = sf::Mouse::getPosition(glWindow);
     static sf::Clock cursor_delay;
     static sf::Clock zoom_delay;
 
     // the neat thing about having this in a timeout func is that we
-    // don't need to calc dt for movement controls.
+    // don't need to calculate dt for movement controls.
     // it is always (almost) exactly 10ms
+
+    // only process when the window is active and display is focused
     if(dynamic_cast<Gtk::Window *>(get_toplevel())->is_active())
     {
         sf::Vector2i new_mouse_pos = sf::Mouse::getPosition(glWindow);
 
-        if(!has_focus() && sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-            new_mouse_pos.x >= 0 && new_mouse_pos.y >= 0 &&
+        if(!has_focus() && new_mouse_pos.x >= 0 && new_mouse_pos.y >= 0 &&
             new_mouse_pos.x < (int)glWindow.getSize().x && new_mouse_pos.y < (int)glWindow.getSize().y)
         {
             grab_focus();
@@ -567,6 +633,7 @@ bool Graph_disp::input()
                 mov_scale *= 0.1f;
             }
 
+            // orbiting rotational cam
             if(use_orbit_cam)
             {
                 // reset
@@ -578,42 +645,49 @@ bool Graph_disp::input()
                 else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
                     key_lock[sf::Keyboard::R] = false;
 
+                // tilt up
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
                 {
                     _orbit_cam.phi += (float)M_PI / 90.0f * mov_scale;
                     invalidate();
                 }
 
+                // tilt down
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
                 {
                     _orbit_cam.phi -= (float)M_PI / 90.0f * mov_scale;
                     invalidate();
                 }
 
+                // rotate clockwise
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
                 {
                     _orbit_cam.theta += (float)M_PI / 90.0f * mov_scale;
                     invalidate();
                 }
 
+                // rotate counter-clockwise
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
                 {
                     _orbit_cam.theta -= (float)M_PI / 90.0f * mov_scale;
                     invalidate();
                 }
 
+                // move camera in
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
                 {
                     _orbit_cam.r -= mov_scale;
                     invalidate();
                 }
 
+                // move camera out
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::E))
                 {
                     _orbit_cam.r += mov_scale;
                     invalidate();
                 }
 
+                // rotate w/ mouse click & drag
                 if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
                 {
                     int d_x = new_mouse_pos.x - old_mouse_pos.x;
@@ -637,7 +711,7 @@ bool Graph_disp::input()
                 if(_orbit_cam.phi < 0.0f)
                     _orbit_cam.phi = 0.0f;
             }
-            else
+            else // free camera
             {
                 // reset
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !key_lock[sf::Keyboard::R])
@@ -648,42 +722,49 @@ bool Graph_disp::input()
                 else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::R))
                     key_lock[sf::Keyboard::R] = false;
 
+                // move forward
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
                 {
                     _cam.translate(mov_scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
                     invalidate();
                 }
 
+                // move backwards
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
                 {
                     _cam.translate(-mov_scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
                     invalidate();
                 }
 
+                // move left
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
                 {
                     _cam.translate(-mov_scale * _cam.right());
                     invalidate();
                 }
 
+                // move right
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
                 {
                     _cam.translate(mov_scale * _cam.right());
                     invalidate();
                 }
 
+                // move up
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
                 {
                     _cam.translate(mov_scale * glm::vec3(0.0f, 0.0f, 1.0f));
                     invalidate();
                 }
 
+                // move down
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::E))
                 {
                     _cam.translate(-mov_scale * glm::vec3(0.0f, 0.0f, 1.0f));
                     invalidate();
                 }
 
+                // rotate view with mouse click & drag
                 if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
                 {
                     int d_x = new_mouse_pos.x - old_mouse_pos.x;
@@ -698,6 +779,7 @@ bool Graph_disp::input()
 
             const int zoom_timeout = 200;
 
+            // zoom in
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && zoom_delay.getElapsedTime().asMilliseconds() >= zoom_timeout)
             {
                 _scale *= 2.0f;
@@ -705,6 +787,7 @@ bool Graph_disp::input()
                 invalidate();
             }
 
+            // zoom out
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::X) && zoom_delay.getElapsedTime().asMilliseconds() >= zoom_timeout)
             {
                 _scale *= 0.5f;
@@ -712,9 +795,9 @@ bool Graph_disp::input()
                 invalidate();
             }
 
+            // move cursor with arrow keys
             if(draw_cursor_flag && _active_graph)
             {
-                // Cursor controls
                 const int cursor_timeout = 200;
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && cursor_delay.getElapsedTime().asMilliseconds() >= cursor_timeout)
                 {
@@ -750,43 +833,10 @@ bool Graph_disp::input()
     return true;
 }
 
-// set and get the active graph (the one w/ the cursor on it)
-void Graph_disp::set_active_graph(Graph * graph)
+// GTK key press handler
+bool Graph_disp::key_press(GdkEventKey * e)
 {
-    _active_graph = graph;
-}
-
-Graph * Graph_disp::get_active_graph() const
-{
-    return _active_graph;
-}
-
-// give and take graphs from the display
-void Graph_disp::add_graph(const Graph * graph)
-{
-    _graphs.insert(graph);
-}
-
-void Graph_disp::remove_graph(const Graph * graph)
-{
-    if(graph == _active_graph)
-        _active_graph = nullptr;
-    _graphs.erase(graph);
-}
-
-void Graph_disp::reset_cam()
-{
-    if(use_orbit_cam)
-    {
-        _orbit_cam.r = 10.0f;
-        _orbit_cam.theta = 0.0f;
-        _orbit_cam.phi = (float)M_PI / 2.0f;
-    }
-    else
-    {
-        _cam.set(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    }
-
-    _scale = 1.0f;
-    invalidate();
+    // returning true means we don't propagate key presses up - keep them in this widget
+    // (and disregard them entirely because we're using SFML for handling the keyboard, not GTK)
+    return true;
 }

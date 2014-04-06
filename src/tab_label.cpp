@@ -54,14 +54,17 @@ Tab_label::Tab_label()
     show_all_children();
 }
 
+// set the thumbnail
 void Tab_label::set_img(const Gtk::Image & img)
 {
     if(img.get_pixbuf())
         _tab_pic.set(img.get_pixbuf()->scale_simple(16, 16, Gdk::InterpType::INTERP_BILINEAR));
     else
+        // use fallback
         _tab_pic.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_SMALL_TOOLBAR);
 }
 
+    // called when close button is pressed
 void Tab_label::on_button_press()
 {
     _signal_close_tab.emit();

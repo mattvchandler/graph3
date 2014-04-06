@@ -45,6 +45,7 @@
 #define M_E 2.718281828
 #endif
 
+// exception type with data about where the error occured
 // derive from muparser exception
 class Graph_exception: public mu::Parser::exception_type
 {
@@ -68,16 +69,22 @@ glm::vec3 get_normal (glm::vec3 center,
     glm::vec3 lf, bool lf_def,
     glm::vec3 ul, bool ul_def);
 
+// graph base class
+// common methods and ownership of OpenGL resources
 class Graph: public sigc::trackable
 {
 public:
     Graph();
     virtual ~Graph();
 
+    // draw graph geometry
     void draw() const;
+    // draw gridlines
     void draw_grid() const;
+    // draw normals
     void draw_normals() const;
 
+    // change texture given a filename
     void set_texture(const std::string & filename);
 
     // cursor funcs
@@ -98,18 +105,23 @@ public:
     glm::vec4 grid_color;
     glm::vec4 normal_color;
 
+    // toggle drawing on and off
     bool draw_flag;
     bool draw_grid_flag;
     bool draw_normals_flag;
 
 protected:
+    // calculate & build graph geometry
     virtual void build_graph() = 0;
+
+    // helper function to build OpenGL objects from verticies
     void build_graph_geometry(size_t num_rows, size_t num_columns,
         const std::vector<glm::vec3> & coords,
         const std::vector<glm::vec2> & tex_coords,
         const std::vector<glm::vec3> & normals,
         const std::vector<bool> & defined);
 
+    // OpenGL objects
     GLuint _tex;
     GLuint _ebo;
     GLuint _vao;
@@ -123,6 +135,7 @@ protected:
     GLuint _normal_vbo;
     GLuint _normal_num_indexes;
 
+    // signaled on cursor move
     sigc::signal<void, const std::string &> _signal_cursor_moved;
 
 private:

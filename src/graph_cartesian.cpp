@@ -34,6 +34,7 @@ Graph_cartesian::Graph_cartesian(const std::string & eqn,
     _p.DefineConst("e", M_E);
     double min, max;
 
+    // try to evaluate mins and maxes strings
     _p.SetExpr(x_min);
     try
     {
@@ -91,6 +92,7 @@ Graph_cartesian::Graph_cartesian(const std::string & eqn,
     build_graph();
 }
 
+// evaluate a point on the graph
 double Graph_cartesian::eval(const double x, const double y)
 {
     _x = x; _y = y;
@@ -105,14 +107,16 @@ double Graph_cartesian::eval(const double x, const double y)
     }
 }
 
-// OpenGL needs to be initialized before this is run, hence it's not in the ctor
+// calculate & build graph geometry
 void Graph_cartesian::build_graph()
 {
+    // OpenGL needs to be initialized before this is run, hence it's not in the ctor
     std::vector<glm::vec3> coords(_y_res * _x_res);
     std::vector<glm::vec2> tex_coords(_y_res * _x_res);
     std::vector<glm::vec3> normals(_y_res * _x_res);
     std::vector<bool> defined(_y_res * _x_res);
 
+    // small offsets for calculating normals
     float h_x = 1e-3f * (_x_max - _x_min) / (float)_x_res;
     float h_y = 1e-3f * (_y_max - _y_min) / (float)_y_res;
 
@@ -125,16 +129,20 @@ void Graph_cartesian::build_graph()
         {
             double z = eval(x, y);
 
+            // check for undefined / infinity
             if(std::fpclassify(z) != FP_NORMAL &&
                 std::fpclassify(z) != FP_ZERO)
             {
+                // fallback values
                 coords[y_i * _x_res + x_i] = glm::vec3(0.0f);
                 tex_coords[y_i * _x_res + x_i] = glm::vec2(0.0f);
                 normals[y_i * _x_res + x_i] = glm::vec3(0.0f, 0.0f, 1.0f);
+                // set undefined
                 defined[y_i * _x_res + x_i] = false;
                 continue;
             }
 
+            // add vertex to lists
             coords[y_i * _x_res + x_i] = glm::vec3((float)x, (float)y, (float)z);
             tex_coords[y_i * _x_res + x_i] = glm::vec2((float)((x - _x_min) / (_x_max - _x_min)), (float)((_y_max - y) / (_y_max - _y_min)));
             defined[y_i * _x_res + x_i] = true;
@@ -144,6 +152,7 @@ void Graph_cartesian::build_graph()
             bool up_def = false, dn_def = false, lf_def = false, rt_def = false,
                  ul_def = false, ur_def = false, ll_def = false, lr_def = false;
 
+            // add offsets
             float l_x = (float)x - h_x;
             float r_x = (float)x + h_x;
             float u_y = (float)y + h_y;
@@ -221,6 +230,7 @@ void Graph_cartesian::build_graph()
                 lf = glm::vec3(l_x, y, z);
             }
 
+            // get normal
             normals[y_i * _x_res + x_i] = get_normal(coords[y_i * _x_res + x_i],
                 up, up_def,
                 ur, ur_def,
@@ -233,6 +243,7 @@ void Graph_cartesian::build_graph()
         }
     }
 
+    // build OpenGL geometry data from vertexes
     build_graph_geometry(_y_res, _x_res, coords, tex_coords, normals, defined);
 
     // initialize cursor
@@ -243,6 +254,7 @@ void Graph_cartesian::build_graph()
     _signal_cursor_moved.emit(cursor_text());
 }
 
+// cursor funcs
 void Graph_cartesian::move_cursor(const Cursor_dir dir)
 {
     switch(dir)
@@ -270,8 +282,12 @@ void Graph_cartesian::move_cursor(const Cursor_dir dir)
     default:
         break;
     }
+
+    // evaluate cursors new position
     _cursor_pos.z = eval(_cursor_pos.x, _cursor_pos.y);
     _cursor_defined = std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO;
+
+    // signal the move
     _signal_cursor_moved.emit(cursor_text());
 }
 
@@ -285,11 +301,13 @@ bool Graph_cartesian::cursor_defined() const
     return _cursor_defined;
 }
 
+// return cursor position as a string
 std::string Graph_cartesian::cursor_text() const
 {
     std::ostringstream str;
     std::string eqn = _eqn;
 
+    // limit to 50 chars
     if(_eqn.size() > 50)
         eqn = _eqn.substr(0, 49) + "…";
 

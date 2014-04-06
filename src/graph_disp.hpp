@@ -49,11 +49,14 @@ struct Light
     glm::vec3 pos;
     glm::vec3 color;
     float strength;
+    // attenuation properties
     float const_attenuation;
     float linear_attenuation;
     float quad_attenuation;
 };
 
+// 'orbital' camera
+// always points to center but can rotate graph around
 struct Orbit_cam
 {
     float r;
@@ -61,6 +64,7 @@ struct Orbit_cam
     float phi;
 };
 
+// octahedral cursor object
 class Cursor
 {
 public:
@@ -68,6 +72,7 @@ public:
     ~Cursor();
 
     void draw() const;
+    // build and set text
     void build(const std::string & filename);
 
     // material properties
@@ -88,6 +93,7 @@ private:
     Cursor & operator=(const Cursor &&) = delete;
 };
 
+// X, Y, and Z axes at origin
 class Axes
 {
 public:
@@ -111,13 +117,13 @@ private:
     Axes & operator=(const Axes &&) = delete;
 };
 
+// main OpenGL display class
+// all graphics code is done here or in sub-classes
+// is a hybrid of a GTK widget and SFML window
 class Graph_disp final: public SFMLWidget
 {
 public:
     Graph_disp(const sf::VideoMode & mode, const int size_request = - 1);
-
-    // key press handler
-    bool key_press(GdkEventKey * e);
 
     // openGL initialization should go here
     // set and get the active graph (the one w/ the cursor on it)
@@ -137,11 +143,18 @@ public:
     bool use_orbit_cam;
 
 private:
+    // called when OpenGL context is ready and GTK widget is ready
     void realize();
+    // called when window is resized
     void resize(Gtk::Allocation & allocation);
+    // main drawing code
     bool draw(const Cairo::RefPtr<Cairo::Context> & cr);
+    // main input processing
     bool input();
+    // GTK key press handler
+    bool key_press(GdkEventKey * e);
 
+    // shader vars
     GLuint _prog_tex;
     GLuint _prog_color;
     GLuint _prog_line;
@@ -149,19 +162,22 @@ private:
     std::unordered_map<std::string, GLuint> _prog_color_uniforms;
     std::unordered_map<std::string, GLuint> _prog_line_uniforms;
 
+    // static geometry
     Cursor _cursor;
     Axes _axes;
 
+    // cameras
     Camera _cam;
     Orbit_cam _orbit_cam;
     float _scale;
 
+    // lighting vars
     glm::mat4 _perspective_mat;
     Light _light;
     Light _dir_light;
     glm::vec3 _ambient_light;
 
-    // non-owned storage for graphs
+    // storage for graphs (we do not own them here)
     Graph * _active_graph;
     std::set<const Graph *> _graphs;
 

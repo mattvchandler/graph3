@@ -29,16 +29,21 @@
 
 #include <sigc++/sigc++.h>
 
+// label for a notebook page
+// has a color/texture thumbnail and close button
 class Tab_label final: public Gtk::Grid
 {
 public:
     Tab_label();
 
+    // signals the lose button has been pressed
     sigc::signal<void> signal_close_tab();
+    // set the thumbnail
     void set_img(const Gtk::Image & filename);
 
 private:
 
+    // called when close button is pressed
     void on_button_press();
 
     Gtk::Image _tab_pic;

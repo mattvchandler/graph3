@@ -88,6 +88,7 @@ Graph_window::Graph_window():
         throw;
     }
 
+    // widget layout
     _gl_window.set_hexpand(true);
     _gl_window.set_vexpand(true);
 
@@ -151,12 +152,15 @@ Graph_window::Graph_window():
     reset_cam_butt->set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::REFRESH, Gtk::ICON_SIZE_SMALL_TOOLBAR)));
     reset_cam_butt->signal_clicked().connect(sigc::mem_fun(_gl_window, &Graph_disp::reset_cam));
 
+    // signal when new page is requested
     add_butt->signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::tab_new));
 
+    // signal when page is changed
     _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &Graph_window::tab_change));
 
     show_all_children();
 
+    // create a starting page
     _pages.push_back(std::unique_ptr<Graph_page>(new Graph_page(_gl_window)));
     _notebook.append_page(*_pages.back(), *Gtk::manage(new Tab_label));
 
@@ -171,11 +175,14 @@ Graph_window::Graph_window():
     _gl_window.invalidate();
 }
 
+// global vars to track last selected file
 std::string curr_dir = "";
 std::string curr_file = "";
 
+// select file to save to
 void Graph_window::save_graph()
 {
+    // create file chooser
     Gtk::FileChooserDialog graph_chooser("Save Graph", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_SAVE);
     Glib::RefPtr<Gtk::FileFilter> graph_types;
     Glib::RefPtr<Gtk::FileFilter> all_types;
@@ -190,6 +197,7 @@ void Graph_window::save_graph()
     all_types->set_name("All files");
     graph_chooser.add_filter(all_types);
 
+    // try to set last selected file & directory
     if(!curr_dir.empty())
         graph_chooser.set_current_folder(curr_dir);
     else
@@ -210,15 +218,19 @@ void Graph_window::save_graph()
     if(graph_chooser.run() != Gtk::RESPONSE_OK)
         return;
 
+    // save selected filename & directory
     std::string filename = graph_chooser.get_filename();
     curr_dir = graph_chooser.get_current_folder();
     curr_file = filename.substr(curr_dir.size() + 1);
 
+    // have the graph page save its graph
     dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page())).save_graph(filename);
 }
 
+// select file to load from
 void Graph_window::load_graph()
 {
+    // create file chooser
     Gtk::FileChooserDialog graph_chooser("Open Graph", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_OPEN);
     Glib::RefPtr<Gtk::FileFilter> graph_types;
     Glib::RefPtr<Gtk::FileFilter> all_types;
@@ -238,6 +250,7 @@ void Graph_window::load_graph()
 
     graph_chooser.add_shortcut_folder("./examples");
 
+    // try to set last selected file & directory
     if(!curr_dir.empty())
     {
         if(!curr_file.empty())
@@ -251,24 +264,30 @@ void Graph_window::load_graph()
     if(graph_chooser.run() != Gtk::RESPONSE_OK)
         return;
 
+    // save selected filename & directory
     std::string filename = graph_chooser.get_filename();
     curr_dir = graph_chooser.get_current_folder();
     curr_file = filename.substr(curr_dir.size() + 1);
 
     int current_tab = _notebook.get_current_page();
 
+    // create a new Grap_page and graph from file
     tab_new();
     _notebook.set_current_page(_notebook.get_n_pages() - 1);
     Graph_page & new_tab = dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page()));
+
     if(!new_tab.load_graph(filename))
     {
-       tab_close(new_tab);
-       _notebook.set_current_page(current_tab);
+        // revert
+        tab_close(new_tab);
+        _notebook.set_current_page(current_tab);
     }
 }
 
+// called when checkbox or radio buttons are pressed
 void Graph_window::change_flags()
 {
+    // pass changes to GL display
     _gl_window.draw_axes_flag = _draw_axes.get_active();
     _gl_window.draw_cursor_flag = _draw_cursor.get_active();
 
@@ -282,19 +301,24 @@ void Graph_window::change_flags()
     _gl_window.invalidate();
 }
 
+// update cursor text
 void Graph_window::update_cursor(const std::string & text)
 {
     _cursor_text.set_text(text);
 }
 
+// create a new graph page
 void Graph_window::tab_new()
 {
+    // create and associate a new Graph_page
     _pages.push_back(std::unique_ptr<Graph_page>(new Graph_page(_gl_window)));
     _notebook.append_page(*_pages.back(), *Gtk::manage(new Tab_label));
 
+    // connect close signal
     dynamic_cast<Tab_label &>(*_notebook.get_tab_label(*_pages.back())).
         signal_close_tab().connect(sigc::bind<Graph_page &>(sigc::mem_fun(*this, &Graph_window::tab_close),
         *_pages.back()));
+    // connect texture change signal
     dynamic_cast<Graph_page &>(*_pages.back()).signal_tex_changed()
         .connect(sigc::mem_fun(dynamic_cast<Tab_label &>(*_notebook.get_tab_label(*_pages.back())),
         &Tab_label::set_img));
@@ -302,6 +326,7 @@ void Graph_window::tab_new()
     _pages.back()->show();
 }
 
+// close a graph page and delete the graph
 void Graph_window::tab_close(Graph_page & page)
 {
     if(_notebook.get_n_pages() == 1)
@@ -315,12 +340,16 @@ void Graph_window::tab_close(Graph_page & page)
     _pages.erase(std::next(_pages.begin(), page_no));
 }
 
+// change active graph
 void Graph_window::tab_change(Gtk::Widget * page, guint page_no)
 {
+    // disconnect existing cursor signal
     if(_cursor_conn.connected())
         _cursor_conn.disconnect();
 
+    // connect the new one
     _cursor_conn = dynamic_cast<Graph_page &>(*page).signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_window::update_cursor));
 
+    // tell the page that it is now active
     dynamic_cast<Graph_page &>(*page).set_active();
 }

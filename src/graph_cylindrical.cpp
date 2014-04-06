@@ -29,12 +29,12 @@ Graph_cylindrical::Graph_cylindrical(const std::string & eqn,
     const std::string & r_min, const std::string & r_max, size_t r_res,
     const std::string & theta_min, const std::string & theta_max, size_t theta_res):
     _eqn(eqn), _r(0.0), _theta(0.0), _r_res(r_res), _theta_res(theta_res)
-
 {
     _p.DefineConst("pi", M_PI);
     _p.DefineConst("e", M_E);
     double min, max;
 
+    // try to evaluate mins and maxes strings
     _p.SetExpr(r_min);
     try
     {
@@ -92,6 +92,7 @@ Graph_cylindrical::Graph_cylindrical(const std::string & eqn,
     build_graph();
 }
 
+// evaluate a point on the graph
 double Graph_cylindrical::eval(const double r, const double theta)
 {
     _r = r; _theta = theta;
@@ -106,14 +107,16 @@ double Graph_cylindrical::eval(const double r, const double theta)
     }
 }
 
-// OpenGL needs to be initialized before this is run, hence it's not in the ctor
+// calculate & build graph geometry
 void Graph_cylindrical::build_graph()
 {
+    // OpenGL needs to be initialized before this is run, hence it's not in the ctor
     std::vector<glm::vec3> coords(_theta_res * _r_res);
     std::vector<glm::vec2> tex_coords(_theta_res * _r_res);
     std::vector<glm::vec3> normals(_theta_res * _r_res);
     std::vector<bool> defined(_theta_res * _r_res);
 
+    // small offsets for calculating normals
     float h_r = 1e-3f * (_r_max - _r_min) / (float)_r_res;
     float h_theta = 1e-3f * (_theta_max - _theta_min) / (float)_theta_res;
 
@@ -126,17 +129,21 @@ void Graph_cylindrical::build_graph()
         {
             double z = eval(r, theta);
 
+            // check for undefined / infinity
             if(std::fpclassify(z) != FP_NORMAL &&
                 std::fpclassify(z) != FP_ZERO)
             {
+                // fallback values
                 coords[theta_i * _r_res + r_i] = glm::vec3(0.0f);
                 tex_coords[theta_i * _r_res + r_i] = glm::vec2(0.0f);
                 normals[theta_i * _r_res + r_i] = glm::vec3(0.0f, 0.0f, 1.0f);
+                // set undefined
                 defined[theta_i * _r_res + r_i] = false;
                 continue;
             }
 
             // convert into cartesian coordinates
+            // add vertex to lists
             coords[theta_i * _r_res + r_i] = glm::vec3((float)r * cosf(theta), (float)r * sinf(theta), (float)z);
             tex_coords[theta_i * _r_res + r_i] = glm::vec2((coords[theta_i * _r_res + r_i].x + _r_max) / (float)(2 * _r_max),
                 (_r_max - coords[theta_i * _r_res + r_i].y) / (float)(2 * _r_max));
@@ -147,6 +154,7 @@ void Graph_cylindrical::build_graph()
             bool up_def = false, dn_def = false, lf_def = false, rt_def = false,
                  ul_def = false, ur_def = false, ll_def = false, lr_def = false;
 
+            // add offsets
             float l_r = (float)r - h_r;
             float r_r = (float)r + h_r;
             float u_theta = (float)theta + h_theta;
@@ -224,6 +232,7 @@ void Graph_cylindrical::build_graph()
                 lf = glm::vec3(l_r * cosf(theta), l_r * sinf(theta), z);
             }
 
+            // get normal
             normals[theta_i * _r_res + r_i] = get_normal(coords[theta_i * _r_res + r_i],
                 up, up_def,
                 ur, ur_def,
@@ -236,6 +245,7 @@ void Graph_cylindrical::build_graph()
         }
     }
 
+    // build OpenGL geometry data from vertexes
     build_graph_geometry(_theta_res, _r_res, coords, tex_coords, normals, defined);
 
     // initialize cursor
@@ -248,6 +258,7 @@ void Graph_cylindrical::build_graph()
     _signal_cursor_moved.emit(cursor_text());
 }
 
+// cursor funcs
 void Graph_cylindrical::move_cursor(const Cursor_dir dir)
 {
     switch(dir)
@@ -276,10 +287,13 @@ void Graph_cylindrical::move_cursor(const Cursor_dir dir)
         break;
     }
 
+    // evaluate cursors new position
     _cursor_pos.x = _cursor_r * cosf(_cursor_theta);
     _cursor_pos.y = _cursor_r * sinf(_cursor_theta);
     _cursor_pos.z = eval(_cursor_r, _cursor_theta);
     _cursor_defined = std::fpclassify(_cursor_pos.z) == FP_NORMAL || std::fpclassify(_cursor_pos.z) == FP_ZERO;
+
+    // signal the move
     _signal_cursor_moved.emit(cursor_text());
 }
 
@@ -293,11 +307,13 @@ bool Graph_cylindrical::cursor_defined() const
     return _cursor_defined;
 }
 
+// return cursor position as a string
 std::string Graph_cylindrical::cursor_text() const
 {
     std::ostringstream str;
     std::string eqn = _eqn;
 
+    // limit to 50 chars
     if(_eqn.size() > 50)
         eqn = _eqn.substr(0, 49) + "…";
 

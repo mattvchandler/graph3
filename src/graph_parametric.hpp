@@ -25,6 +25,7 @@
 
 #include "graph.hpp"
 
+// Parametric graph class - x(u,v), y(u,v), z(u,v)
 class Graph_parametric final: public Graph
 {
 public:
@@ -34,25 +35,31 @@ public:
         const std::string & u_min, const std::string & u_max, size_t u_res,
         const std::string & v_min, const std::string & v_max, size_t v_res);
 
+    // evaluate a point on the graph
     glm::vec3 eval(const double u, const double v);
+    // calculate & build graph geometry
     void build_graph() override;
 
     // cursor funcs
     void move_cursor(const Cursor_dir dir) override;
     glm::vec3 cursor_pos() const override;
     bool cursor_defined() const override;
+    // return cursor position as a string
     std::string cursor_text() const override;
 
 private:
+    // parser object
     mu::Parser _p_x, _p_y, _p_z;
     std::string _eqn_x, _eqn_y, _eqn_z;
 
+    // bounds
     double _u, _v;
     double _u_min, _u_max;
     size_t _u_res;
     double _v_min, _v_max;
     size_t _v_res;
 
+    // cursor vars
     double _cursor_u, _cursor_v;
     glm::vec3 _cursor_pos;
     bool _cursor_defined;

@@ -42,51 +42,68 @@
 
 #include "graph_disp.hpp"
 
+// Graph parameters and properties page
+// allows user to set equations, bounds, color/textures
+// this class has ownership of the graph itself
 class Graph_page final: public Gtk::Grid
 {
 public:
     Graph_page(Graph_disp & gl_window);
     ~Graph_page();
 
+    // sets the graph as the active graph
     void set_active();
-
+    // save and load to / from a file
     void save_graph(const std::string & filename);
     bool load_graph(const std::string & filename);
 
+    // signaled when the cursor has moved and needs updating
     sigc::signal<void, const std::string &> signal_cursor_moved() const;
+
+    // signaled when the user selects a new texture
     sigc::signal<void, const Gtk::Image &> signal_tex_changed() const;
 
     static const glm::vec3 start_color;
 
 private:
+    // called when the type changes (cartesian, cylindrical, etc.)
     void change_type();
-    void apply();
+    // called when checkboxes for displaying grid, normals are pressed
     void change_flags();
+    // called when switching between color and texture
     void change_coloring();
+    // called when the color or texture is changed
     void change_tex();
+    // apply changes and create/update graph
+    void apply();
+    // called when the cursor needs changed
     void update_cursor(const std::string & text) const;
 
+    // reference to the OpenGL window/context
     Graph_disp & _gl_window;
+    // the graph itself
     std::unique_ptr<Graph> _graph;
 
-    Gtk::RadioButton _r_car, _r_cyl, _r_sph, _r_par;
-    Gtk::Entry _eqn;
-    Gtk::Entry _eqn_par_y, _eqn_par_z;
-    Gtk::Entry _row_min, _row_max;
+    // UI widgets
+    Gtk::RadioButton _r_car, _r_cyl, _r_sph, _r_par; // for selecting type
+    Gtk::Entry _eqn; // equation entry
+    Gtk::Entry _eqn_par_y, _eqn_par_z; // exra boxes for parametric graphs
+    Gtk::Entry _row_min, _row_max; // bounds
     Gtk::Entry _col_min, _col_max;
-    Gtk::Label _row_res_l, _col_res_l;
+    Gtk::Label _row_res_l, _col_res_l; // resolution
     Gtk::SpinButton _row_res, _col_res;
-    Gtk::CheckButton _draw, _draw_grid, _draw_normals;
-    Gtk::RadioButton _use_color, _use_tex;
-    Gtk::Button _tex_butt;
-    Gtk::Button _apply_butt;
+    Gtk::RadioButton _use_color, _use_tex; // color/texture selection
+    Gtk::Button _tex_butt; // color / texture chooser
+    Gtk::CheckButton _draw, _draw_grid, _draw_normals; // selects what is drawn
+    Gtk::Button _apply_butt; // app;y changes
 
+    // UI resources
     Gtk::Image _color_ico;
     Gtk::Image _tex_ico;
     glm::vec3 _color;
     std::string _tex_filename;
-    Gtk::Image _apply_butt_img;
 
+    // signal tyes
     sigc::signal<void, const std::string &> _signal_cursor_moved;
     sigc::signal<void, const Gtk::Image &> _signal_tex_changed;
 

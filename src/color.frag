@@ -26,7 +26,6 @@ out vec4 frag_color;
 
 // material vars
 uniform vec4 color;
-
 uniform float shininess;
 uniform vec3 specular;
 
@@ -46,6 +45,7 @@ uniform vec3 dir_light_dir;
 uniform float dir_light_strength;
 uniform vec3 dir_half_vec;
 
+// camera facing direction
 uniform vec3 cam_forward;
 
 in vec2 tex_coords;
@@ -54,17 +54,21 @@ in vec3 pos;
 
 void main()
 {
+    // light location
     vec3 light_dir = light_pos - pos;
     float light_dist = length(light_dir);
 
     light_dir = light_dir / light_dist;
 
+    // calculate light falloff
     float atten = 1.0 / (const_atten
         + linear_atten * light_dist
         + quad_atten * light_dist * light_dist);
 
+    // midway between light and camera - for reflection calc
     vec3 half_vec = normalize(light_dir + cam_forward);
 
+    // calculate ammt of diffuse and specular shading
     float diffuse_mul, specular_mul;
     float dir_diffuse_mul, dir_specular_mul;
     if(gl_FrontFacing)
@@ -84,6 +88,7 @@ void main()
         dir_specular_mul = max(0.0, dot(-normal_vec, dir_half_vec));
     }
 
+    // calculate specular shine strength
     if(diffuse_mul <= 0.0001)
         specular_mul = 0.0;
     else
@@ -94,8 +99,11 @@ void main()
     else
         dir_specular_mul = pow(dir_specular_mul, shininess) * dir_light_strength;
 
+    // diffuse light color
     vec3 scattered = ambient_color + light_color * diffuse_mul * atten + dir_light_color * dir_diffuse_mul;
+    // specular light color
     vec3 reflected = light_color * specular_mul * atten * specular + dir_light_color * dir_specular_mul * specular;
+    // add to material color (from material color) to lighting for final color
     vec3 rgb = min(color.rgb * scattered + reflected, vec3(1.0));
     frag_color = vec4(rgb, color.a);
 }

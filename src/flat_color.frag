@@ -29,5 +29,6 @@ uniform vec4 color;
 
 void main()
 {
+    // set the color
     frag_color = color;
 }

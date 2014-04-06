@@ -49,29 +49,22 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _col_res_l("y resolution"),
     _row_res(Gtk::Adjustment::create(50.0, 1.0, 1000.0)),
     _col_res(Gtk::Adjustment::create(50.0, 1.0, 1000.0)),
-    _draw("Draw Graph"),
-    _draw_grid("Draw Gridlines"),
-    _draw_normals("Draw normals"),
     _use_color("Use Color"),
     _use_tex("Use Texture"),
     _tex_butt("Choose Color"),
+    _draw("Draw Graph"),
+    _draw_grid("Draw Gridlines"),
+    _draw_normals("Draw normals"),
     _apply_butt("Apply"),
     _tex_ico(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR),
-    _color(start_color),
-    _apply_butt_img(Gtk::Stock::APPLY, Gtk::ICON_SIZE_SMALL_TOOLBAR)
+    _color(start_color)
 {
-    _tex_butt.set_valign(Gtk::ALIGN_CENTER);
-    _tex_butt.set_halign(Gtk::ALIGN_CENTER);
-    _tex_butt.set_vexpand(false);
-    _tex_butt.set_hexpand(false);
-
-    _apply_butt.set_halign(Gtk::ALIGN_CENTER);
-    _apply_butt.set_hexpand(false);
-
+    // set page properties
     set_border_width(3);
     set_row_spacing(3);
     set_column_spacing(3);
 
+    // add and position widgets to page
     attach(_r_car, 0, 1, 1, 1);
     attach(_r_cyl, 1, 1, 1, 1);
     attach(_r_sph, 0, 2, 1, 1);
@@ -88,16 +81,26 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     attach(_col_res_l, 0, 9, 1, 1);
     attach(_col_res, 1, 9, 1, 1);
     attach(*Gtk::manage(new Gtk::Separator), 0, 10, 2, 1);
-    attach(_draw, 0, 11, 1, 1);
-    attach(_draw_grid, 1, 11, 1, 1);
-    attach(_draw_normals, 0, 12, 1, 1);
+    attach(_use_color, 0, 11, 1, 1);
+    attach(_use_tex, 0, 12, 1, 1);
+    attach(_tex_butt, 1, 11, 1, 2);
     attach(*Gtk::manage(new Gtk::Separator), 0, 13, 2, 1);
-    attach(_use_color, 0, 14, 1, 1);
-    attach(_use_tex, 0, 15, 1, 1);
-    attach(_tex_butt, 1, 14, 1, 2);
+    attach(_draw, 0, 14, 1, 1);
+    attach(_draw_grid, 1, 14, 1, 1);
+    attach(_draw_normals, 0, 15, 1, 1);
     attach(*Gtk::manage(new Gtk::Separator), 0, 16, 2, 1);
     attach(_apply_butt, 0, 17, 2, 1);
 
+    // set button properties
+    _tex_butt.set_valign(Gtk::ALIGN_CENTER);
+    _tex_butt.set_halign(Gtk::ALIGN_CENTER);
+    _tex_butt.set_vexpand(false);
+    _tex_butt.set_hexpand(false);
+
+    _apply_butt.set_halign(Gtk::ALIGN_CENTER);
+    _apply_butt.set_hexpand(false);
+
+    // set up graph type radio buttons
     Gtk::RadioButton::Group type_g = _r_car.get_group();
     _r_cyl.set_group(type_g);
     _r_sph.set_group(type_g);
@@ -108,6 +111,7 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _r_sph.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
     _r_par.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
 
+    // set signal when Enter is pressed inside a text box
     _eqn.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _eqn_par_y.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _eqn_par_z.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
@@ -118,6 +122,7 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _row_res.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
     _col_res.signal_activate().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
+    // set placeholder text in text boxes
     _eqn.set_placeholder_text("z(x,y)");
     _eqn_par_y.set_placeholder_text("y(u,v)");
     _eqn_par_z.set_placeholder_text("z(u,v)");
@@ -126,62 +131,72 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _col_min.set_placeholder_text("y min");
     _col_max.set_placeholder_text("y max");
 
-    _draw.set_active(true);
-    _draw_grid.set_active(true);
-    _draw.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
-    _draw_grid.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
-    _draw_normals.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
-
+    // set color radio buttons
     Gtk::RadioButton::Group tex_g = _use_color.get_group();
     _use_tex.set_group(tex_g);
 
     _use_color.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_coloring));
     _use_tex.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_coloring));
 
+    // set up color thumbnail
     Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
-
     guint8 r = (guint8)(_color.r * 256.0f);
     guint8 g = (guint8)(_color.g * 256.0f);
     guint8 b = (guint8)(_color.b * 256.0f);
-
     guint32 hex_color = r << 24 | g << 16 | b << 8;
-
     image->fill(hex_color);
     _color_ico.set(image);
     _tex_butt.set_image(_color_ico);
+
+    // connect color / texture change signal
     _tex_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::change_tex));
 
-    _apply_butt.set_image(_apply_butt_img);
+    // setup apply button
+    _apply_butt.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::APPLY, Gtk::ICON_SIZE_SMALL_TOOLBAR)));
     _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
+    // set checkbox properties
+    _draw.set_active(true);
+    _draw_grid.set_active(true);
+    _draw.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
+    _draw_grid.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
+    _draw_normals.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
+
+    // set visibility
     show_all_children();
     _eqn_par_y.hide();
     _eqn_par_z.hide();
-
-    // TODO: cleanup, tooltips, widget spacing/layout, abs paths for images/examples, comments / docs, lighting options, OGL error/version checking
-    //  use Gtk::manage on static widgets
+    // TODO: widget spacing/layout, abs paths for images/examples, docs, lighting options, OGL error/version checking
 }
 
 Graph_page::~Graph_page()
 {
+    // tell the display to drop the graph from its records
     _gl_window.remove_graph(_graph.get());
+    // trigger a re-draw
     _gl_window.invalidate();
 }
 
+// sets the graph as the active graph
 void Graph_page::set_active()
 {
+    // tell display
     _gl_window.set_active_graph(_graph.get());
 
+    // get the cursor pos if we can
     if(_graph.get() && _gl_window.draw_cursor_flag)
         update_cursor(_graph->cursor_text());
     else
         update_cursor("");
 
+    // trigger a re-draw
     _gl_window.invalidate();
 }
 
+// save graph to file
 void Graph_page::save_graph(const std::string & filename)
 {
+    // build the config file from widget properties
     libconfig::Config cfg;
     libconfig::Setting & cfg_root = cfg.getRoot().add("graph", libconfig::Setting::TypeGroup);
 
@@ -218,10 +233,12 @@ void Graph_page::save_graph(const std::string & filename)
 
     try
     {
+        // write file
         cfg.writeFile(filename.c_str());
     }
     catch(const libconfig::FileIOException & e)
     {
+        // create an error message box
         Gtk::MessageDialog error_dialog("Error writing to " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
         error_dialog.set_secondary_text(e.what());
         error_dialog.set_title("Errror");
@@ -229,20 +246,25 @@ void Graph_page::save_graph(const std::string & filename)
     }
 }
 
+// read from a file
 bool Graph_page::load_graph(const std::string & filename)
 {
     libconfig::Config cfg;
     try
     {
+        // open and parse file
         cfg.readFile(filename.c_str());
         libconfig::Setting & cfg_root = cfg.getRoot()["graph"];
 
+        // set properties
         bool r_car = cfg_root["r_car"];
         bool r_cyl = cfg_root["r_cyl"];
         bool r_sph = cfg_root["r_sph"];
         bool r_par = cfg_root["r_par"];
+        // one and only one should be set
         if((int)r_car + (int)r_cyl + (int)r_sph + (int)r_par != 1)
         {
+            // show error message box
             Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
             error_dialog.set_secondary_text("Invalid combination of r_car, r_cyl, r_sph, r_par");
             error_dialog.set_title("Errror");
@@ -268,8 +290,10 @@ bool Graph_page::load_graph(const std::string & filename)
 
         bool use_color = cfg_root["use_color"];
         bool use_tex = cfg_root["use_tex"];
+        // check for mutual exclusion
         if((int)use_color + (int)use_tex != 1)
         {
+            // show error message box
             Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
             error_dialog.set_secondary_text("Invalid combination of use_color, use_tex");
             error_dialog.set_title("Errror");
@@ -278,8 +302,10 @@ bool Graph_page::load_graph(const std::string & filename)
         }
 
         libconfig::Setting & color_l = cfg_root["color"];
+        // check for valid color (list of 3)
         if(!color_l.isList() || color_l.getLength() != 3)
         {
+            // show error message box
             Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
             std::ostringstream msg;
             msg<<"Invalid number of color elements (expected 3, got "<<color_l.getLength()<<")";
@@ -325,7 +351,8 @@ bool Graph_page::load_graph(const std::string & filename)
     }
     catch(const libconfig::FileIOException & e)
     {
-        Gtk::MessageDialog error_dialog("Error writing to " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        // show error message box
+        Gtk::MessageDialog error_dialog("Error reading from " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
         error_dialog.set_secondary_text(e.what());
         error_dialog.set_title("Errror");
         error_dialog.run();
@@ -333,6 +360,7 @@ bool Graph_page::load_graph(const std::string & filename)
     }
     catch(const libconfig::ParseException & e)
     {
+        // show error message box
         Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
         std::ostringstream msg;
         msg<<e.getError()<<" on line: "<<e.getLine();
@@ -343,6 +371,7 @@ bool Graph_page::load_graph(const std::string & filename)
     }
     catch(const libconfig::SettingTypeException & e)
     {
+        // show error message box
         Gtk::MessageDialog error_dialog("Invalid setting type in" + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
         error_dialog.set_secondary_text(e.getPath());
         error_dialog.set_title("Errror");
@@ -351,6 +380,7 @@ bool Graph_page::load_graph(const std::string & filename)
     }
     catch(const libconfig::SettingNotFoundException & e)
     {
+        // show error message box
         Gtk::MessageDialog error_dialog("Could not find setting in" + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
         error_dialog.set_secondary_text(e.getPath());
         error_dialog.set_title("Errror");
@@ -358,6 +388,7 @@ bool Graph_page::load_graph(const std::string & filename)
         return false;
     }
 
+    // try to open the texture file
     if(!_tex_filename.empty())
     {
         try
@@ -366,8 +397,10 @@ bool Graph_page::load_graph(const std::string & filename)
         }
         catch(Glib::Exception &e)
         {
+            // set image thumbnail to fallback
             _tex_ico.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR);
 
+            // show error message box
             Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
             error_dialog.set_title("Errror");
             error_dialog.set_secondary_text("");
@@ -375,37 +408,42 @@ bool Graph_page::load_graph(const std::string & filename)
         }
     }
 
+    // set color thumbnail
     guint8 r = (guint8)(_color.r * 256.0f);
     guint8 g = (guint8)(_color.g * 256.0f);
     guint8 b = (guint8)(_color.b * 256.0f);
-
     guint32 hex_color = r << 24 | g << 16 | b << 8;
-
     Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
     image->fill(hex_color);
     _color_ico.set(image);
 
+    // signal a texture change
     _signal_tex_changed.emit(_tex_ico);
 
+    // set properties from widget values
     change_type();
     change_coloring();
-
     apply();
+
     return true;
 }
 
+// signaled when the cursor has moved and needs updating
 sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved() const
 {
     return _signal_cursor_moved;
 }
 
+// signaled when the user selects a new texture
 sigc::signal<void, const Gtk::Image &> Graph_page::signal_tex_changed() const
 {
     return _signal_tex_changed;
 }
 
+    // called when the type changes (cartesian, cylindrical, etc.)
 void Graph_page::change_type()
 {
+    // change text elements to appropriate values
     if(_r_car.get_active())
     {
         _eqn.set_placeholder_text("z(x,y)");
@@ -450,23 +488,156 @@ void Graph_page::change_type()
         _row_res_l.set_text("u resolution");
         _col_res_l.set_text("v resolution");
 
+        // show extra text boxes
         _eqn_par_y.show();
         _eqn_par_z.show();
     }
     else
     {
+        // hide the extra parametric equation boxes
         _eqn_par_y.hide();
         _eqn_par_z.hide();
     }
 }
 
+// called when checkboxes for displaying grid, normals are pressed
+void Graph_page::change_flags()
+{
+    if(_graph.get())
+    {
+        // pass settings to the graph
+        _graph->draw_flag = _draw.get_active();
+        _graph->draw_grid_flag = _draw_grid.get_active();
+        _graph->draw_normals_flag = _draw_normals.get_active();
+        // redraw
+        _gl_window.invalidate();
+    }
+}
+
+// called when switching between color and texture
+void Graph_page::change_coloring()
+{
+    if(_graph.get())
+    {
+        // set graph settings and redraw
+        _graph->use_tex = _use_tex.get_active();
+        _gl_window.invalidate();
+    }
+
+    // swap text and thumbnail
+    if(_use_tex.get_active())
+    {
+        _tex_butt.set_label("Choose Texture");
+        _tex_butt.set_image(_tex_ico);
+        _signal_tex_changed.emit(_tex_ico);
+    }
+    else
+    {
+        _tex_butt.set_label("Choose Color");
+        _tex_butt.set_image(_color_ico);
+        _signal_tex_changed.emit(_color_ico);
+    }
+}
+
+// called when the color or texture is changed
+void Graph_page::change_tex()
+{
+    if(_use_tex.get_active())
+    {
+        // create file chooser
+        Gtk::FileChooserDialog tex_chooser("Choose Texture", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_OPEN);
+        Glib::RefPtr<Gtk::FileFilter> tex_types;
+        Glib::RefPtr<Gtk::FileFilter> all_types;
+
+        tex_types = Gtk::FileFilter::create();
+        tex_types->add_pixbuf_formats();
+        tex_types->set_name("Image files");
+        tex_chooser.add_filter(tex_types);
+
+        all_types = Gtk::FileFilter::create();
+        all_types->add_pattern("*");
+        all_types->set_name("All files");
+        tex_chooser.add_filter(all_types);
+
+        tex_chooser.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+        tex_chooser.add_button("Select", Gtk::RESPONSE_OK);
+
+        // show the dialog
+        int response = tex_chooser.run();
+
+        if(response == Gtk::RESPONSE_OK)
+        {
+            _tex_filename = tex_chooser.get_filename();
+            try
+            {
+                // try to read chosen file
+                _tex_ico.set(Gdk::Pixbuf::create_from_file(_tex_filename)->scale_simple(32, 32, Gdk::InterpType::INTERP_BILINEAR));
+                if(_graph.get())
+                {
+                    // load the texture into OpenGL and redraw
+                    _graph->set_texture(_tex_filename);
+                    _gl_window.invalidate();
+                }
+            }
+            catch(Glib::Exception &e)
+            {
+                _tex_ico.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR);
+
+                // show error message box
+                Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+                error_dialog.set_title("Errror");
+                error_dialog.set_secondary_text("");
+                error_dialog.run();
+            }
+            // signal that the texture has changed
+            _signal_tex_changed.emit(_tex_ico);
+        }
+    }
+    else
+    {
+        // create and launch color chooser
+        Gtk::ColorChooserDialog color_chooser;
+
+        int response = color_chooser.run();
+
+        if(response == Gtk::RESPONSE_OK)
+        {
+            _color.r = color_chooser.get_rgba().get_red();
+            _color.g = color_chooser.get_rgba().get_green();
+            _color.b = color_chooser.get_rgba().get_blue();
+
+            if(_graph.get())
+            {
+                // set color in graph properties
+                _graph->color = glm::vec4(_color, 1.0f);
+                _gl_window.invalidate();
+            }
+
+            // create thumbnail
+            guint8 r = (guint8)(_color.r * 256.0f);
+            guint8 g = (guint8)(_color.g * 256.0f);
+            guint8 b = (guint8)(_color.b * 256.0f);
+            guint32 hex_color = r << 24 | g << 16 | b << 8;
+            Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
+            image->fill(hex_color);
+            _color_ico.set(image);
+
+            // signal that the texture has changed
+            _signal_tex_changed.emit(_color_ico);
+        }
+    }
+}
+
+// apply changes and create/update graph
 void Graph_page::apply()
 {
+    // destroy any existing graph
     _gl_window.remove_graph(_graph.get());
     _graph.reset();
 
     try
     {
+        // create a new graph object
         if(_r_car.get_active())
         {
             _graph = std::unique_ptr<Graph>(new Graph_cartesian(_eqn.get_text(),
@@ -496,11 +667,11 @@ void Graph_page::apply()
     {
         // show parsing error message
         Gtk::MessageDialog error_dialog(e.GetMsg(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-        error_dialog.set_title("Errror");
+        error_dialog.set_title("Error");
         error_dialog.set_secondary_text("In Expression: " + e.GetExpr());
         error_dialog.run();
 
-        // highlight error
+        // highlight the location of the error
         int start, end;
         if(e.GetToken().size() > 0 && e.GetPos() < e.GetExpr().size())
         {
@@ -555,6 +726,7 @@ void Graph_page::apply()
             break;
         }
 
+        // remove and delete the partiall constructed graph object
         _graph.reset();
         update_cursor("");
         _gl_window.invalidate();
@@ -562,12 +734,13 @@ void Graph_page::apply()
         return;
     }
 
+    // set graph properties
     _graph->draw_flag = _draw.get_active();
     _graph->draw_grid_flag = _draw_grid.get_active();
     _graph->draw_normals_flag = _draw_normals.get_active();
-
     _graph->use_tex = _use_tex.get_active();
 
+    // set the texture
     if(!_tex_filename.empty())
     {
         try
@@ -576,6 +749,7 @@ void Graph_page::apply()
         }
         catch(Glib::Exception &e)
         {
+            // show error message box
             Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
             error_dialog.set_title("Errror");
             error_dialog.set_secondary_text("");
@@ -586,124 +760,13 @@ void Graph_page::apply()
 
     update_cursor(_graph->cursor_text());
 
+    // register and set active with display
     _gl_window.add_graph(_graph.get());
     _gl_window.set_active_graph(_graph.get());
 
+    // signal a cursor update
     _graph->signal_cursor_moved().connect(sigc::mem_fun(*this, &Graph_page::update_cursor));
     _gl_window.invalidate();
-}
-
-void Graph_page::change_flags()
-{
-    if(_graph.get())
-    {
-        _graph->draw_flag = _draw.get_active();
-        _graph->draw_grid_flag = _draw_grid.get_active();
-        _graph->draw_normals_flag = _draw_normals.get_active();
-        _gl_window.invalidate();
-    }
-}
-
-void Graph_page::change_coloring()
-{
-    if(_graph.get())
-    {
-        _graph->use_tex = _use_tex.get_active();
-        _gl_window.invalidate();
-    }
-
-    if(_use_tex.get_active())
-    {
-        _tex_butt.set_label("Choose Texture");
-        _tex_butt.set_image(_tex_ico);
-        _signal_tex_changed.emit(_tex_ico);
-    }
-    else
-    {
-        _tex_butt.set_label("Choose Color");
-        _tex_butt.set_image(_color_ico);
-        _signal_tex_changed.emit(_color_ico);
-    }
-}
-
-void Graph_page::change_tex()
-{
-    if(_use_tex.get_active())
-    {
-        Gtk::FileChooserDialog tex_chooser("Choose Texture", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_OPEN);
-        Glib::RefPtr<Gtk::FileFilter> tex_types;
-        Glib::RefPtr<Gtk::FileFilter> all_types;
-
-        tex_types = Gtk::FileFilter::create();
-        tex_types->add_pixbuf_formats();
-        tex_types->set_name("Image files");
-        tex_chooser.add_filter(tex_types);
-
-        all_types = Gtk::FileFilter::create();
-        all_types->add_pattern("*");
-        all_types->set_name("All files");
-        tex_chooser.add_filter(all_types);
-
-        tex_chooser.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-        tex_chooser.add_button("Select", Gtk::RESPONSE_OK);
-
-        int response = tex_chooser.run();
-
-        if(response == Gtk::RESPONSE_OK)
-        {
-            _tex_filename = tex_chooser.get_filename();
-
-            try
-            {
-                _tex_ico.set(Gdk::Pixbuf::create_from_file(_tex_filename)->scale_simple(32, 32, Gdk::InterpType::INTERP_BILINEAR));
-                if(_graph.get())
-                {
-                    _graph->set_texture(_tex_filename);
-                    _gl_window.invalidate();
-                }
-            }
-            catch(Glib::Exception &e)
-            {
-                _tex_ico.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR);
-
-                Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-                error_dialog.set_title("Errror");
-                error_dialog.set_secondary_text("");
-                error_dialog.run();
-            }
-            _signal_tex_changed.emit(_tex_ico);
-        }
-    }
-    else
-    {
-        Gtk::ColorChooserDialog color_chooser;
-
-        int response = color_chooser.run();
-
-        if(response == Gtk::RESPONSE_OK)
-        {
-            _color.r = color_chooser.get_rgba().get_red();
-            _color.g = color_chooser.get_rgba().get_green();
-            _color.b = color_chooser.get_rgba().get_blue();
-
-            if(_graph.get())
-            {
-                _graph->color = glm::vec4(_color, 1.0f);
-                _gl_window.invalidate();
-            }
-
-            guint8 r = (guint8)(_color.r * 256.0f);
-            guint8 g = (guint8)(_color.g * 256.0f);
-            guint8 b = (guint8)(_color.b * 256.0f);
-
-            guint32 hex_color = r << 24 | g << 16 | b << 8;
-
-            Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
-            image->fill(hex_color);
-            _color_ico.set(image);
-            _signal_tex_changed.emit(_color_ico);
-        }
-    }
 }
 
 void Graph_page::update_cursor(const std::string & text) const

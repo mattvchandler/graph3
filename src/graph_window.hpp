@@ -45,20 +45,29 @@
 #include "graph_page.hpp"
 #include "tab_label.hpp"
 
+// main application window.
+// contains / owns OpenGL display and a tabbed list of graph property pages
 class Graph_window final: public Gtk::Window
 {
 public:
     Graph_window();
 
 private:
+    // select file to save to or load from
     void save_graph();
     void load_graph();
+    // called when checkbox or radio buttons are pressed
     void change_flags();
+    // update cursor text
     void update_cursor(const std::string & text);
+    // create a new graph page
     void tab_new();
+    // close a graph page and delete the graph
     void tab_close(Graph_page & page);
+    // change active graph
     void tab_change(Widget * page, guint page_no);
 
+    // UI elements
     Glib::RefPtr<Gtk::UIManager> _menu;
     Glib::RefPtr<Gtk::ActionGroup> _menu_act;
 
@@ -73,6 +82,7 @@ private:
 
     sigc::connection _cursor_conn;
 
+    // graph pages
     std::list<std::unique_ptr<Graph_page>> _pages;
     Gtk::Notebook _notebook; // this needs to be last, as several of the above are referenced during its destruction, due to dumbness. (I don't want to switch pages, I want to destroy them *all*)
 };

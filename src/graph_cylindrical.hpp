@@ -25,6 +25,7 @@
 
 #include "graph.hpp"
 
+// Cylindrical graph class - z(r,θ)
 class Graph_cylindrical final: public Graph
 {
 public:
@@ -32,25 +33,31 @@ public:
         const std::string & r_min, const std::string & r_max, size_t r_res,
         const std::string & theta_min, const std::string & theta_max, size_t theta_res);
 
+    // evaluate a point on the graph
     double eval(const double r, const double theta);
+    // calculate & build graph geometry
     void build_graph() override;
 
     // cursor funcs
     void move_cursor(const Cursor_dir dir) override;
     glm::vec3 cursor_pos() const override;
     bool cursor_defined() const override;
+    // return cursor position as a string
     std::string cursor_text() const override;
 
 private:
+    // parser object
     mu::Parser _p;
     std::string _eqn;
 
+    // bounds
     double _r, _theta;
     double _r_min, _r_max;
     size_t _r_res;
     double _theta_min, _theta_max;
     size_t _theta_res;
 
+    // cursor vars
     double _cursor_r, _cursor_theta;
     glm::vec3 _cursor_pos;
     bool _cursor_defined;
