@@ -279,7 +279,7 @@ void Graph_disp::realize()
     if(glewInit() != GLEW_OK)
     {
         std::cerr<<"Error loading glew. Aborting"<<std::endl;
-        dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
         return;
     }
@@ -289,7 +289,7 @@ void Graph_disp::realize()
     {
         std::cerr<<"OpenGL version too low. Version 3.0 required"<<std::endl;
         std::cerr<<"Installed version is: "<<glGetString(GL_VERSION)<<std::endl;
-        dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
         return;
     }
@@ -317,7 +317,7 @@ void Graph_disp::realize()
     if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0 || flat_color_frag == 0)
     {
         // error messages are displayed by the compile_shader function
-        dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
         return;
     }
@@ -330,7 +330,7 @@ void Graph_disp::realize()
     if(_prog_tex == 0 || _prog_color == 0 || _prog_line == 0)
     {
         // error messages are displayed by the link_shader_prog function
-        dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
         return;
     }
@@ -430,7 +430,7 @@ void Graph_disp::realize()
     }
     catch(Glib::Exception &e)
     {
-        dynamic_cast<Gtk::Window *>(get_toplevel())->get_application()->quit();
+        dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
         return;
     }
