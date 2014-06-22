@@ -426,8 +426,6 @@ void Graph_disp::realize()
     glUniform1f(_prog_color_uniforms["dir_light_strength"], _dir_light.strength);
     glUniform3fv(_prog_color_uniforms["cam_forward"], 1, &light_forward[0]);
 
-    glUseProgram(_prog_line);
-
     // create static geometry objects - cursor, axes
     try
     {
