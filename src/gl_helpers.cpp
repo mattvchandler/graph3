@@ -96,14 +96,22 @@ GLuint compile_shader(const std::string & filename, GLenum shader_type)
     return shader;
 }
 
-// link shader objects into shader progra,
-GLuint link_shader_prog(const std::vector<GLuint> & shaders)
+// link shader objects into shader program,
+GLuint link_shader_prog(const std::vector<GLuint> & shaders,
+    const std::vector<std::pair<GLuint, std::string>> & attribs)
 {
     // create program and load shader objects
     GLuint prog = glCreateProgram();
     for(auto &i: shaders)
         glAttachShader(prog, i);
 
+    // bind attributes - must be done before linking
+    for(auto & attr: attribs)
+    {
+        glBindAttribLocation(prog, attr.first, attr.second.c_str());
+    }
+
+    // link program
     glLinkProgram(prog);
 
     // error handling

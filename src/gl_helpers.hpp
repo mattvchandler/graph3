@@ -24,6 +24,7 @@
 #define __TEXTURE_H__
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <GL/glew.h>
@@ -32,10 +33,14 @@
 
 // check for OpenGL error and print message
 void check_error(const std::string & at);
+
 // compile a shader object
 GLuint compile_shader(const std::string & filename, GLenum shader_type);
-// link shader objects into shader progra,
-GLuint link_shader_prog(const std::vector<GLuint> & shaders);
+
+// link shader objects into shader program,
+GLuint link_shader_prog(const std::vector<GLuint> & shaders,
+    const std::vector<std::pair<GLuint, std::string>> & attribs);
+
 // create & load a texture from a filename
 GLuint create_texture_from_file(const std::string & filename);
 

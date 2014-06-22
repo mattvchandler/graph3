@@ -323,9 +323,12 @@ void Graph_disp::realize()
     }
 
     // link shaders
-    _prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag});
-    _prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag});
-    _prog_line = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag});
+    _prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag},
+        {std::make_pair(0, "vert_pos"), std::make_pair(1, "tex"), std::make_pair(2, "normal")});
+    _prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag},
+        {std::make_pair(0, "vert_pos"), std::make_pair(1, "tex"), std::make_pair(2, "normal")});
+    _prog_line = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag},
+        {std::make_pair(0, "vert_pos")});
 
     if(_prog_tex == 0 || _prog_color == 0 || _prog_line == 0)
     {
@@ -400,10 +403,6 @@ void Graph_disp::realize()
     glUniform1f(_prog_tex_uniforms["dir_light_strength"], _dir_light.strength);
     glUniform3fv(_prog_tex_uniforms["cam_forward"], 1, &light_forward[0]);
 
-    glBindAttribLocation(_prog_tex, 0, "vert_pos");
-    glBindAttribLocation(_prog_tex, 1, "tex");
-    glBindAttribLocation(_prog_tex, 2, "normal");
-
     glUseProgram(_prog_color);
     glUniform3fv(_prog_color_uniforms["ambient_color"], 1, &_ambient_light[0]);
     glUniform3fv(_prog_color_uniforms["light_color"], 1, &_light.color[0]);
@@ -416,12 +415,7 @@ void Graph_disp::realize()
     glUniform1f(_prog_color_uniforms["dir_light_strength"], _dir_light.strength);
     glUniform3fv(_prog_color_uniforms["cam_forward"], 1, &light_forward[0]);
 
-    glBindAttribLocation(_prog_color, 0, "vert_pos");
-    glBindAttribLocation(_prog_color, 1, "tex");
-    glBindAttribLocation(_prog_color, 2, "normal");
-
     glUseProgram(_prog_line);
-    glBindAttribLocation(_prog_line, 0, "vert_pos");
 
     // create static geometry objects - cursor, axes
     try
