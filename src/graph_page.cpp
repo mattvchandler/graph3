@@ -167,7 +167,7 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _eqn_par_y.hide();
     _eqn_par_z.hide();
     // TODO: widget spacing/layout, abs paths for images/examples, docs, lighting options, OGL error/version checking
-    // rename shader vars for more consistency, free shader progs, move fatal error msgs to dialog boxes
+    // rename shader vars for more consistency, move fatal error msgs to dialog boxes
 }
 
 Graph_page::~Graph_page()

@@ -124,6 +124,7 @@ class Graph_disp final: public SFMLWidget
 {
 public:
     Graph_disp(const sf::VideoMode & mode, const int size_request = - 1);
+    ~Graph_disp();
 
     // openGL initialization should go here
     // set and get the active graph (the one w/ the cursor on it)

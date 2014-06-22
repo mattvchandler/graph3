@@ -205,6 +205,7 @@ void Axes::build()
 Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request):
     SFMLWidget(mode, size_request),
     draw_cursor_flag(true), draw_axes_flag(true), use_orbit_cam(true),
+    _prog_tex(0), _prog_color(0), _prog_line(0),
     _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
     _orbit_cam({10.0f, 0.0f, (float)M_PI / 2.0f}), _scale(1.0f), _perspective_mat(1.0f),
     _light({glm::vec3(0.0f), glm::vec3(1.0f), 0.2f, 1.0f, 0.5f, 0.0f}),
@@ -227,6 +228,16 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request):
 
     set_can_focus();
     set_can_default();
+}
+
+Graph_disp::~Graph_disp()
+{
+    if(_prog_tex)
+        glDeleteProgram(_prog_tex);
+    if(_prog_color)
+        glDeleteProgram(_prog_color);
+    if(_prog_line)
+        glDeleteProgram(_prog_line);
 }
 
 // set and get the active graph (the one w/ the cursor on it)
