@@ -33,7 +33,7 @@ uniform vec3 specular;
 uniform vec3 ambient_color;
 
 uniform vec3 light_color;
-uniform vec3 light_pos;
+uniform vec3 light_pos_eye;
 uniform float light_strength;
 
 uniform float const_atten;
@@ -46,7 +46,7 @@ uniform float dir_light_strength;
 uniform vec3 dir_half_vec;
 
 // camera facing direction
-uniform vec3 cam_forward;
+uniform vec3 light_forward;
 
 in vec2 tex_coords;
 in vec3 normal_vec;
@@ -55,7 +55,7 @@ in vec3 pos;
 void main()
 {
     // light location
-    vec3 light_dir = light_pos - pos;
+    vec3 light_dir = light_pos_eye - pos;
     float light_dist = length(light_dir);
 
     light_dir = light_dir / light_dist;
@@ -66,7 +66,7 @@ void main()
         + quad_atten * light_dist * light_dist);
 
     // midway between light and camera - for reflection calc
-    vec3 half_vec = normalize(light_dir + cam_forward);
+    vec3 half_vec = normalize(light_dir + light_forward);
 
     // calculate ammt of diffuse and specular shading
     float diffuse_mul, specular_mul;

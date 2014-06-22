@@ -50,9 +50,9 @@ struct Light
     glm::vec3 color;
     float strength;
     // attenuation properties
-    float const_attenuation;
-    float linear_attenuation;
-    float quad_attenuation;
+    float const_atten;
+    float linear_atten;
+    float quad_atten;
 };
 
 // 'orbital' camera
@@ -173,10 +173,10 @@ private:
     float _scale;
 
     // lighting vars
-    glm::mat4 _perspective_mat;
+    glm::mat4 _perspective;
     Light _light;
     Light _dir_light;
-    glm::vec3 _ambient_light;
+    glm::vec3 _ambient_color;
 
     // storage for graphs (we do not own them here)
     Graph * _active_graph;

@@ -23,8 +23,8 @@
 #version 130
 
 in vec3 vert_pos;
-in vec2 tex;
-in vec3 normal;
+in vec2 vert_tex_coords;
+in vec3 vert_normal;
 
 uniform mat4 view_model_perspective;
 uniform mat4 view_model;
@@ -36,9 +36,9 @@ out vec3 pos;
 
 void main()
 {
-    tex_coords = tex;
+    tex_coords = vert_tex_coords;
     // transform the vertex normal into view space coordinates
-    normal_vec = normalize(normal_transform * normal);
+    normal_vec = normalize(normal_transform * vert_normal);
     // same with vertex position
     pos = vec3(view_model * vec4(vert_pos, 1.0));
     gl_Position = view_model_perspective * vec4(vert_pos, 1.0);

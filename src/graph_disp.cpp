@@ -207,10 +207,10 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request):
     draw_cursor_flag(true), draw_axes_flag(true), use_orbit_cam(true),
     _prog_tex(0), _prog_color(0), _prog_line(0),
     _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-    _orbit_cam({10.0f, 0.0f, (float)M_PI / 2.0f}), _scale(1.0f), _perspective_mat(1.0f),
+    _orbit_cam({10.0f, 0.0f, (float)M_PI / 2.0f}), _scale(1.0f), _perspective(1.0f),
     _light({glm::vec3(0.0f), glm::vec3(1.0f), 0.2f, 1.0f, 0.5f, 0.0f}),
     _dir_light({glm::vec3(-1.0f), glm::vec3(0.5f), 0.2f, 1.0f, 1.0f, 1.0f}),
-    _ambient_light(0.4f, 0.4f, 0.4f),
+    _ambient_color(0.4f, 0.4f, 0.4f),
     _active_graph(nullptr)
 
 {
@@ -335,9 +335,9 @@ void Graph_disp::realize()
 
     // link shaders
     _prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag},
-        {std::make_pair(0, "vert_pos"), std::make_pair(1, "tex"), std::make_pair(2, "normal")});
+        {std::make_pair(0, "vert_pos"), std::make_pair(1, "vert_tex_coords"), std::make_pair(2, "vert_normal")});
     _prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag},
-        {std::make_pair(0, "vert_pos"), std::make_pair(1, "tex"), std::make_pair(2, "normal")});
+        {std::make_pair(0, "vert_pos"), std::make_pair(1, "vert_tex_coords"), std::make_pair(2, "vert_normal")});
     _prog_line = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag},
         {std::make_pair(0, "vert_pos")});
 
@@ -364,7 +364,7 @@ void Graph_disp::realize()
     _prog_tex_uniforms["specular"] = glGetUniformLocation(_prog_tex, "specular");
     _prog_tex_uniforms["ambient_color"] = glGetUniformLocation(_prog_tex, "ambient_color");
     _prog_tex_uniforms["light_color"] = glGetUniformLocation(_prog_tex, "light_color");
-    _prog_tex_uniforms["light_pos"] = glGetUniformLocation(_prog_tex, "light_pos");
+    _prog_tex_uniforms["light_pos_eye"] = glGetUniformLocation(_prog_tex, "light_pos_eye");
     _prog_tex_uniforms["light_strength"] = glGetUniformLocation(_prog_tex, "light_strength");
     _prog_tex_uniforms["const_atten"] = glGetUniformLocation(_prog_tex, "const_atten");
     _prog_tex_uniforms["linear_atten"] = glGetUniformLocation(_prog_tex, "linear_atten");
@@ -373,7 +373,7 @@ void Graph_disp::realize()
     _prog_tex_uniforms["dir_light_dir"] = glGetUniformLocation(_prog_tex, "dir_light_dir");
     _prog_tex_uniforms["dir_light_strength"] = glGetUniformLocation(_prog_tex, "dir_light_strength");
     _prog_tex_uniforms["dir_half_vec"] = glGetUniformLocation(_prog_tex, "dir_half_vec");
-    _prog_tex_uniforms["cam_forward"] = glGetUniformLocation(_prog_tex, "cam_forward");
+    _prog_tex_uniforms["light_forward"] = glGetUniformLocation(_prog_tex, "light_forward");
 
     _prog_color_uniforms["view_model_perspective"] = glGetUniformLocation(_prog_color, "view_model_perspective");
     _prog_color_uniforms["view_model"] = glGetUniformLocation(_prog_color, "view_model");
@@ -383,7 +383,7 @@ void Graph_disp::realize()
     _prog_color_uniforms["specular"] = glGetUniformLocation(_prog_color, "specular");
     _prog_color_uniforms["ambient_color"] = glGetUniformLocation(_prog_color, "ambient_color");
     _prog_color_uniforms["light_color"] = glGetUniformLocation(_prog_color, "light_color");
-    _prog_color_uniforms["light_pos"] = glGetUniformLocation(_prog_color, "light_pos");
+    _prog_color_uniforms["light_pos_eye"] = glGetUniformLocation(_prog_color, "light_pos_eye");
     _prog_color_uniforms["light_strength"] = glGetUniformLocation(_prog_color, "light_strength");
     _prog_color_uniforms["const_atten"] = glGetUniformLocation(_prog_color, "const_atten");
     _prog_color_uniforms["linear_atten"] = glGetUniformLocation(_prog_color, "linear_atten");
@@ -392,7 +392,7 @@ void Graph_disp::realize()
     _prog_color_uniforms["dir_light_dir"] = glGetUniformLocation(_prog_color, "dir_light_dir");
     _prog_color_uniforms["dir_light_strength"] = glGetUniformLocation(_prog_color, "dir_light_strength");
     _prog_color_uniforms["dir_half_vec"] = glGetUniformLocation(_prog_color, "dir_half_vec");
-    _prog_color_uniforms["cam_forward"] = glGetUniformLocation(_prog_color, "cam_forward");
+    _prog_color_uniforms["light_forward"] = glGetUniformLocation(_prog_color, "light_forward");
 
     _prog_line_uniforms["perspective"] = glGetUniformLocation(_prog_line, "perspective");
     _prog_line_uniforms["view_model"] = glGetUniformLocation(_prog_line, "view_model");
@@ -403,28 +403,30 @@ void Graph_disp::realize()
     glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
 
     glUseProgram(_prog_tex);
-    glUniform3fv(_prog_tex_uniforms["ambient_color"], 1, &_ambient_light[0]);
+    glUniform3fv(_prog_tex_uniforms["ambient_color"], 1, &_ambient_color[0]);
     glUniform3fv(_prog_tex_uniforms["light_color"], 1, &_light.color[0]);
-    glUniform3fv(_prog_tex_uniforms["light_pos"], 1, &light_pos_eye[0]);
+    glUniform3fv(_prog_tex_uniforms["light_pos_eye"], 1, &light_pos_eye[0]);
     glUniform1f(_prog_tex_uniforms["light_strength"], _light.strength);
-    glUniform1f(_prog_tex_uniforms["const_atten"], _light.const_attenuation);
-    glUniform1f(_prog_tex_uniforms["linear_atten"], _light.linear_attenuation);
-    glUniform1f(_prog_tex_uniforms["quad_atten"], _light.quad_attenuation);
+    glUniform1f(_prog_tex_uniforms["const_atten"], _light.const_atten);
+    glUniform1f(_prog_tex_uniforms["linear_atten"], _light.linear_atten);
+    glUniform1f(_prog_tex_uniforms["quad_atten"], _light.quad_atten);
     glUniform3fv(_prog_tex_uniforms["dir_light_color"], 1, &_dir_light.color[0]);
     glUniform1f(_prog_tex_uniforms["dir_light_strength"], _dir_light.strength);
-    glUniform3fv(_prog_tex_uniforms["cam_forward"], 1, &light_forward[0]);
+    glUniform3fv(_prog_tex_uniforms["light_forward"], 1, &light_forward[0]);
+    check_error("_prog_tex_uniforms static"); // TODO: clean these up
 
     glUseProgram(_prog_color);
-    glUniform3fv(_prog_color_uniforms["ambient_color"], 1, &_ambient_light[0]);
+    glUniform3fv(_prog_color_uniforms["ambient_color"], 1, &_ambient_color[0]);
     glUniform3fv(_prog_color_uniforms["light_color"], 1, &_light.color[0]);
-    glUniform3fv(_prog_color_uniforms["light_pos"], 1, &light_pos_eye[0]);
+    glUniform3fv(_prog_color_uniforms["light_pos_eye"], 1, &light_pos_eye[0]);
     glUniform1f(_prog_color_uniforms["light_strength"], _light.strength);
-    glUniform1f(_prog_color_uniforms["const_atten"], _light.const_attenuation);
-    glUniform1f(_prog_color_uniforms["linear_atten"], _light.linear_attenuation);
-    glUniform1f(_prog_color_uniforms["quad_atten"], _light.quad_attenuation);
+    glUniform1f(_prog_color_uniforms["const_atten"], _light.const_atten);
+    glUniform1f(_prog_color_uniforms["linear_atten"], _light.linear_atten);
+    glUniform1f(_prog_color_uniforms["quad_atten"], _light.quad_atten);
     glUniform3fv(_prog_color_uniforms["dir_light_color"], 1, &_dir_light.color[0]);
     glUniform1f(_prog_color_uniforms["dir_light_strength"], _dir_light.strength);
-    glUniform3fv(_prog_color_uniforms["cam_forward"], 1, &light_forward[0]);
+    glUniform3fv(_prog_color_uniforms["light_forward"], 1, &light_forward[0]);
+    check_error("_prog_color_uniforms static"); // TODO: clean these up
 
     // create static geometry objects - cursor, axes
     try
@@ -451,7 +453,7 @@ void Graph_disp::resize(Gtk::Allocation & allocation)
     {
         // set the GL viewport dimensions and perspective matrix
         glViewport(0, 0, allocation.get_width(), allocation.get_height());
-        _perspective_mat = glm::perspective((float)M_PI / 6.0f,
+        _perspective = glm::perspective((float)M_PI / 6.0f,
             (float)allocation.get_width() / (float)allocation.get_height(),
             0.1f, 1000.0f);
         invalidate(); // redraw
@@ -476,7 +478,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     }
     view_model = glm::scale(view_model, glm::vec3(_scale));
 
-    glm::mat4 view_model_perspective = _perspective_mat * view_model;
+    glm::mat4 view_model_perspective = _perspective * view_model;
     glm::mat3 normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
     glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
@@ -490,7 +492,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     {
         glUseProgram(_prog_line);
 
-        glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective_mat[0][0]);
+        glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
         glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
         glUniform4fv(_prog_line_uniforms["color"], 1, &_axes.color[0]);
 
@@ -546,7 +548,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
         {
             // switch to line shader
             glUseProgram(_prog_line);
-            glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective_mat[0][0]);
+            glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
             glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
             glUniform4fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
 
@@ -558,7 +560,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
         {
             // switch to line shader
             glUseProgram(_prog_line);
-            glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective_mat[0][0]);
+            glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
             glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
             glUniform4fv(_prog_line_uniforms["color"], 1, &graph->normal_color[0]);
 
@@ -574,7 +576,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
         glUseProgram(_prog_tex);
 
         view_model = glm::scale(glm::translate(view_model, _active_graph->cursor_pos()), glm::vec3(0.25f / _scale));
-        view_model_perspective = _perspective_mat * view_model;
+        view_model_perspective = _perspective * view_model;
         normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
 
         glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
