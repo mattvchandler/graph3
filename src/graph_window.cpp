@@ -52,11 +52,14 @@ Graph_window::Graph_window():
 
     // build menu
     _menu_act = Gtk::ActionGroup::create();
-    _menu_act->add(Gtk::Action::create("File", "File"));
 
+    _menu_act->add(Gtk::Action::create("File", "File"));
     _menu_act->add(Gtk::Action::create("File_save", Gtk::Stock::SAVE, "_Save", "Save"), sigc::mem_fun(*this, &Graph_window::save_graph));
     _menu_act->add(Gtk::Action::create("File_open", Gtk::Stock::OPEN, "_Open", "Open"), sigc::mem_fun(*this, &Graph_window::load_graph));
     _menu_act->add(Gtk::Action::create("File_quit", Gtk::Stock::QUIT, "_Quit", "Quit"), sigc::mem_fun(*this, &Graph_window::hide));
+
+    _menu_act->add(Gtk::Action::create("Settings", "Settings"));
+    _menu_act->add(Gtk::Action::create("Settings_lighting", "_Lighting", "Lighting"), sigc::mem_fun(*this, &Graph_window::hide));
 
     _menu_act->add(Gtk::Action::create("Toolbar_add", Gtk::Stock::ADD, "Add Graph", "Add new graph"), sigc::mem_fun(*this, &Graph_window::tab_new));
     _menu_act->get_action("Toolbar_add")->set_is_important(true);
@@ -73,6 +76,9 @@ Graph_window::Graph_window():
     "           <menuitem action='File_open'/>"
     "           <separator/>"
     "           <menuitem action='File_quit'/>"
+    "       </menu>"
+    "       <menu action='Settings'>"
+    "           <menuitem action='Settings_lighting'/>"
     "       </menu>"
     "   </menubar>"
     "</ui>";
