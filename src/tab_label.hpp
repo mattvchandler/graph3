@@ -20,8 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __TAB_LABEL_H__
-#define __TAB_LABEL_H__
+#ifndef TAB_LABEL_H
+#define TAB_LABEL_H
 
 #include <gtkmm/button.h>
 #include <gtkmm/grid.h>
@@ -50,4 +50,4 @@ private:
     sigc::signal<void> _signal_close_tab;
 };
 
-#endif // __TAB_LABEL_H__
+#endif // TAB_LABEL_H

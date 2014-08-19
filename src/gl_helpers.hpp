@@ -20,8 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __TEXTURE_H__
-#define __TEXTURE_H__
+#ifndef TEXTURE_H
+#define TEXTURE_H
 
 #include <string>
 #include <utility>
@@ -44,4 +44,4 @@ GLuint link_shader_prog(const std::vector<GLuint> & shaders,
 // create & load a texture from a filename
 GLuint create_texture_from_file(const std::string & filename);
 
-#endif // __TEXTURE_H__
+#endif // TEXTURE_H

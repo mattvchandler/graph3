@@ -20,8 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __GRAPH_H__
-#define __GRAPH_H__
+#ifndef GRAPH_H
+#define GRAPH_H
 
 #include <string>
 #include <utility>
@@ -146,4 +146,4 @@ private:
     Graph & operator=(const Graph &&) = delete;
 };
 
-#endif // __GRAPH_H__
+#endif // GRAPH_H

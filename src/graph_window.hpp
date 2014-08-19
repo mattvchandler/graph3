@@ -20,8 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __GRAPH_WINDOW_H__
-#define __GRAPH_WINDOW_H__
+#ifndef GRAPH_WINDOW_H
+#define GRAPH_WINDOW_H
 
 #include <memory>
 #include <list>
@@ -87,4 +87,4 @@ private:
     Gtk::Notebook _notebook; // this needs to be last, as several of the above are referenced during its destruction, due to dumbness. (I don't want to switch pages, I want to destroy them *all*)
 };
 
-#endif // __GRAPH_WINDOW_H__
+#endif // GRAPH_WINDOW_H

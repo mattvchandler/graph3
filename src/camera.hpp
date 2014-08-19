@@ -20,8 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __CAMERA_H__
-#define __CAMERA_H__
+#ifndef CAMERA_H
+#define CAMERA_H
 
 #include <cmath>
 
@@ -104,4 +104,4 @@ private:
     glm::vec3 _forward, _up;
 };
 
-#endif // __CAMERA_H__
+#endif // CAMERA_H

@@ -20,8 +20,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __GRAPH_SPHERICAL_H__
-#define __GRAPH_SPHERICAL_H__
+#ifndef GRAPH_SPHERICAL_H
+#define GRAPH_SPHERICAL_H
 
 #include "graph.hpp"
 
@@ -63,4 +63,4 @@ private:
     bool _cursor_defined;
 };
 
-#endif // __GRAPH_SPHERICAL_H__
+#endif // GRAPH_SPHERICAL_H
