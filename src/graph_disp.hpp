@@ -129,7 +129,6 @@ public:
     // openGL initialization should go here
     // set and get the active graph (the one w/ the cursor on it)
     void set_active_graph(Graph * graph);
-    Graph * get_active_graph() const;
 
     // give and take graphs from the display
     void add_graph(const Graph * graph);

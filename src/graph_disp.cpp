@@ -246,12 +246,6 @@ void Graph_disp::set_active_graph(Graph * graph)
     _active_graph = graph;
 }
 
-// return ptr to active graph
-Graph * Graph_disp::get_active_graph() const
-{
-    return _active_graph;
-}
-
 // give and take graphs from the display
 void Graph_disp::add_graph(const Graph * graph)
 {
