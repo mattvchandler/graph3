@@ -41,9 +41,10 @@ private:
     Gtk::SpinButton _x_dir, _y_dir, _z_dir;
     Gtk::ColorButton _dir_color;
     Gtk::Scale _dir_strength;
+
     Gtk::ColorButton _cam_color;
     Gtk::Scale _cam_strength;
-    // TODO: attenuation vars
+    Gtk::Scale _cam_const_atten, _cam_linear_atten, _cam_quad_atten;
 
     Light & _dir_light, _cam_light;
 };

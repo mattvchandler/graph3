@@ -33,7 +33,10 @@ Lighting_window::Lighting_window(Light & dir_light, Light & cam_light):
     _y_dir(Gtk::Adjustment::create(-1.0, -100.0, 100.0, 0.1)),
     _z_dir(Gtk::Adjustment::create(-1.0, -100.0, 100.0, 0.1)),
     _dir_strength(Gtk::Adjustment::create(0.2, 0.0, 10.0, 0.1), Gtk::ORIENTATION_HORIZONTAL),
-    _cam_strength(Gtk::Adjustment::create(0.2, 0.0, 10.0, 0.1)),
+    _cam_strength(Gtk::Adjustment::create(1.0, 0.0, 10.0, 0.1), Gtk::ORIENTATION_HORIZONTAL),
+    _cam_const_atten(Gtk::Adjustment::create(0.5, 0.0, 1.0, 0.01)),
+    _cam_linear_atten(Gtk::Adjustment::create(0.0, 0.0, 1.0, 0.01)),
+    _cam_quad_atten(Gtk::Adjustment::create(0.2, 0.0, 10., 0.01)),
     _dir_light(dir_light),
     _cam_light(cam_light)
 {
@@ -66,6 +69,10 @@ Lighting_window::Lighting_window(Light & dir_light, Light & cam_light):
     grid->attach(_cam_color, 0, 4, 3, 1);
 
     grid->attach(_cam_strength, 0, 5, 3, 1);
+
+    grid->attach(_cam_const_atten, 0, 6, 1, 1);
+    grid->attach(_cam_linear_atten, 1, 6, 1, 1);
+    grid->attach(_cam_quad_atten, 2, 6, 1, 1);
 
     show_all_children();
 }
