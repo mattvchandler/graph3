@@ -22,7 +22,10 @@
 
 #include <glibmm/exception.h>
 
+#include <gtkmm/button.h>
 #include <gtkmm/filechooserdialog.h>
+#include <gtkmm/grid.h>
+#include <gtkmm/image.h>
 #include <gtkmm/separator.h>
 #include <gtkmm/stock.h>
 
@@ -95,7 +98,6 @@ Graph_window::Graph_window():
     }
 
     // widget layout
-    //TODO: gtk::manage _main_grid
     _gl_window.set_hexpand(true);
     _gl_window.set_vexpand(true);
 
@@ -104,42 +106,45 @@ Graph_window::Graph_window():
 
     _cursor_text.set_halign(Gtk::ALIGN_CENTER);
 
-    _main_grid.set_border_width(3);
-    _main_grid.set_row_spacing(3);
-    _main_grid.set_column_spacing(3);
-    _toolbar.set_border_width(3);
-    _toolbar.set_column_spacing(3);
+    Gtk::Grid * main_grid = new Gtk::Grid;
+    Gtk::Grid * toolbar = new Gtk::Grid;
 
-    add(_main_grid);
+    main_grid->set_border_width(3);
+    main_grid->set_row_spacing(3);
+    main_grid->set_column_spacing(3);
+    toolbar->set_border_width(3);
+    toolbar->set_column_spacing(3);
 
-    _main_grid.attach(*_menu->get_widget("/Menubar"), 0, 0, 2, 1);
-    _main_grid.attach(_toolbar, 0, 1, 2, 1);
+    add(*Gtk::manage(main_grid));
+
+    main_grid->attach(*_menu->get_widget("/Menubar"), 0, 0, 2, 1);
+    main_grid->attach(*Gtk::manage(toolbar), 0, 1, 2, 1);
 
     // build toolbar
     Gtk::Button * save_butt = Gtk::manage(new Gtk::Button(Gtk::Stock::SAVE));
     Gtk::Button * load_butt = Gtk::manage(new Gtk::Button(Gtk::Stock::OPEN));
     Gtk::Button * reset_cam_butt = Gtk::manage(new Gtk::Button("Reset Camera"));
 
-    _toolbar.attach(*save_butt, 0, 0, 1, 1);
-    _toolbar.attach(*load_butt, 1, 0, 1, 1);
-    _toolbar.attach(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_VERTICAL)), 2, 0, 1, 1);
-    _toolbar.attach(_draw_axes, 3, 0, 1, 1);
-    _toolbar.attach(_draw_cursor, 4, 0, 1, 1);
-    _toolbar.attach(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_VERTICAL)), 5, 0, 1, 1);
-    _toolbar.attach(_use_orbit_cam, 6, 0, 1, 1);
-    _toolbar.attach(_use_free_cam, 7, 0, 1, 1);
-    _toolbar.attach(*reset_cam_butt, 8, 0, 1, 1);
+    toolbar->attach(*save_butt, 0, 0, 1, 1);
+    toolbar->attach(*load_butt, 1, 0, 1, 1);
+    toolbar->attach(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_VERTICAL)), 2, 0, 1, 1);
+    toolbar->attach(_draw_axes, 3, 0, 1, 1);
+    toolbar->attach(_draw_cursor, 4, 0, 1, 1);
+    toolbar->attach(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_VERTICAL)), 5, 0, 1, 1);
+    toolbar->attach(_use_orbit_cam, 6, 0, 1, 1);
+    toolbar->attach(_use_free_cam, 7, 0, 1, 1);
+    toolbar->attach(*reset_cam_butt, 8, 0, 1, 1);
 
     Gtk::Label * tool_sep = Gtk::manage(new Gtk::Label); // blank label for spacing
     tool_sep->set_hexpand(true);
-    _toolbar.attach(*tool_sep, 9, 0, 1, 1);
+    toolbar->attach(*tool_sep, 9, 0, 1, 1);
 
     Gtk::Button * add_butt = Gtk::manage(new Gtk::Button(Gtk::Stock::ADD));
-    _toolbar.attach(*add_butt, 10, 0, 1, 1);
+    toolbar->attach(*add_butt, 10, 0, 1, 1);
 
-    _main_grid.attach(_gl_window, 0, 2, 1, 1);
-    _main_grid.attach(_notebook, 1, 2, 1, 1);
-    _main_grid.attach(_cursor_text, 0, 3, 2, 1);
+    main_grid->attach(_gl_window, 0, 2, 1, 1);
+    main_grid->attach(_notebook, 1, 2, 1, 1);
+    main_grid->attach(_cursor_text, 0, 3, 2, 1);
 
     save_butt->signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::save_graph));
     load_butt->signal_clicked().connect(sigc::mem_fun(*this, &Graph_window::load_graph));

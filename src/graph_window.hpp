@@ -27,10 +27,7 @@
 #include <list>
 #include <string>
 
-#include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
-#include <gtkmm/grid.h>
-#include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/radiobutton.h>
@@ -73,9 +70,6 @@ private:
     // UI elements
     Glib::RefPtr<Gtk::UIManager> _menu;
     Glib::RefPtr<Gtk::ActionGroup> _menu_act;
-
-    Gtk::Grid _main_grid;
-    Gtk::Grid _toolbar;
 
     // widgets
     Graph_disp _gl_window;
