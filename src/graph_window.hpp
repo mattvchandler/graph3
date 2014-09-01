@@ -43,6 +43,7 @@
 
 #include "graph_disp.hpp"
 #include "graph_page.hpp"
+#include "lighting_window.hpp"
 #include "tab_label.hpp"
 
 // main application window.
@@ -58,6 +59,8 @@ private:
     void load_graph();
     // called when checkbox or radio buttons are pressed
     void change_flags();
+    // display lighting options
+    void lighting();
     // update cursor text
     void update_cursor(const std::string & text);
     // create a new graph page

@@ -59,7 +59,7 @@ Graph_window::Graph_window():
     _menu_act->add(Gtk::Action::create("File_quit", Gtk::Stock::QUIT, "_Quit", "Quit"), sigc::mem_fun(*this, &Graph_window::hide));
 
     _menu_act->add(Gtk::Action::create("Settings", "Settings"));
-    _menu_act->add(Gtk::Action::create("Settings_lighting", "_Lighting", "Lighting"), sigc::mem_fun(*this, &Graph_window::hide));
+    _menu_act->add(Gtk::Action::create("Settings_lighting", "_Lighting", "Lighting"), sigc::mem_fun(*this, &Graph_window::lighting));
 
     _menu_act->add(Gtk::Action::create("Toolbar_add", Gtk::Stock::ADD, "Add Graph", "Add new graph"), sigc::mem_fun(*this, &Graph_window::tab_new));
     _menu_act->get_action("Toolbar_add")->set_is_important(true);
@@ -95,6 +95,7 @@ Graph_window::Graph_window():
     }
 
     // widget layout
+    //TODO: gtk::manage _main_grid
     _gl_window.set_hexpand(true);
     _gl_window.set_vexpand(true);
 
@@ -307,6 +308,14 @@ void Graph_window::change_flags()
     _gl_window.invalidate();
 }
 
+void Graph_window::lighting()
+{
+    Light fixed_light, cam_light;
+    Lighting_window light_win(fixed_light, cam_light);
+    light_win.set_modal(true);
+    light_win.set_transient_for(*this);
+    int response = light_win.run();
+}
 // update cursor text
 void Graph_window::update_cursor(const std::string & text)
 {

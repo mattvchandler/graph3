@@ -34,6 +34,7 @@ add_executable(${PROJECT_NAME}
     src/graph_parametric.cpp
     src/graph_spherical.cpp
     src/graph_window.cpp
+    src/lighting_window.cpp
     src/main.cpp
     src/SFMLWidget/SFMLWidget.cpp
     src/tab_label.cpp)
