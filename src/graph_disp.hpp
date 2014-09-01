@@ -142,6 +142,10 @@ public:
     bool draw_axes_flag;
     bool use_orbit_cam;
 
+    // light vars
+    Light cam_light;
+    Light dir_light;
+
 private:
     // called when OpenGL context is ready and GTK widget is ready
     void realize();
@@ -170,11 +174,9 @@ private:
     Camera _cam;
     Orbit_cam _orbit_cam;
     float _scale;
+    glm::mat4 _perspective;
 
     // lighting vars
-    glm::mat4 _perspective;
-    Light _light;
-    Light _dir_light;
     glm::vec3 _ambient_color;
 
     // storage for graphs (we do not own them here)

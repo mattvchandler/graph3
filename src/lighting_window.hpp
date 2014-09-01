@@ -36,15 +36,16 @@
 class Lighting_window: public Gtk::Dialog
 {
 public:
-    Lighting_window(Light & fixed_light, Light & cam_light);
+    Lighting_window(Light & dir_light, Light & cam_light);
 private:
-    Gtk::SpinButton _x_pos, _y_pos, _z_pos;
-    Gtk::ColorButton _color;
-    Gtk::Scale _strength;
+    Gtk::SpinButton _x_dir, _y_dir, _z_dir;
+    Gtk::ColorButton _dir_color;
+    Gtk::Scale _dir_strength;
     Gtk::ColorButton _cam_color;
     Gtk::Scale _cam_strength;
+    // TODO: attenuation vars
 
-    Light & _fixed_light, _cam_light;
+    Light & _dir_light, _cam_light;
 };
 
 #endif // LIGHTING_WINDOW_H

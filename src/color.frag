@@ -32,9 +32,9 @@ uniform vec3 specular;
 // lighting vars
 uniform vec3 ambient_color;
 
-uniform vec3 light_color;
-uniform vec3 light_pos_eye;
-uniform float light_strength;
+uniform vec3 cam_light_color;
+uniform vec3 cam_light_pos_eye;
+uniform float cam_light_strength;
 
 uniform float const_atten;
 uniform float linear_atten;
@@ -55,7 +55,7 @@ in vec3 pos;
 void main()
 {
     // light location
-    vec3 light_dir = light_pos_eye - pos;
+    vec3 light_dir = cam_light_pos_eye - pos;
     float light_dist = length(light_dir);
 
     light_dir = light_dir / light_dist;
@@ -92,7 +92,7 @@ void main()
     if(diffuse_mul <= 0.0001)
         specular_mul = 0.0;
     else
-        specular_mul = pow(specular_mul, shininess) * light_strength;
+        specular_mul = pow(specular_mul, shininess) * cam_light_strength;
 
     if(dir_diffuse_mul <= 0.0001)
         dir_specular_mul = 0.0;
@@ -100,9 +100,9 @@ void main()
         dir_specular_mul = pow(dir_specular_mul, shininess) * dir_light_strength;
 
     // diffuse light color
-    vec3 scattered = ambient_color + light_color * diffuse_mul * atten + dir_light_color * dir_diffuse_mul;
+    vec3 scattered = ambient_color + cam_light_color * diffuse_mul * atten + dir_light_color * dir_diffuse_mul;
     // specular light color
-    vec3 reflected = light_color * specular_mul * atten * specular + dir_light_color * dir_specular_mul * specular;
+    vec3 reflected = cam_light_color * specular_mul * atten * specular + dir_light_color * dir_specular_mul * specular;
     // add to material color (from material color) to lighting for final color
     vec3 rgb = min(color.rgb * scattered + reflected, vec3(1.0));
     frag_color = vec4(rgb, color.a);
