@@ -166,7 +166,7 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     show_all_children();
     _eqn_par_y.hide();
     _eqn_par_z.hide();
-    // TODO: abs paths for images/examples, docs, OGL error/version checking,
+    // TODO: abs paths for images/examples, docs
 }
 
 Graph_page::~Graph_page()

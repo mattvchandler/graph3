@@ -343,6 +343,8 @@ void Graph_disp::realize()
         return;
     }
 
+    check_error("build shaders");
+
     // free shader objects
     glDeleteShader(graph_vert);
     glDeleteShader(line_vert);
@@ -368,6 +370,7 @@ void Graph_disp::realize()
     _prog_tex_uniforms["dir_light_strength"] = glGetUniformLocation(_prog_tex, "dir_light_strength");
     _prog_tex_uniforms["dir_half_vec"] = glGetUniformLocation(_prog_tex, "dir_half_vec");
     _prog_tex_uniforms["light_forward"] = glGetUniformLocation(_prog_tex, "light_forward");
+    check_error("_prog_tex GetUniformLocation");
 
     _prog_color_uniforms["view_model_perspective"] = glGetUniformLocation(_prog_color, "view_model_perspective");
     _prog_color_uniforms["view_model"] = glGetUniformLocation(_prog_color, "view_model");
@@ -387,10 +390,12 @@ void Graph_disp::realize()
     _prog_color_uniforms["dir_light_strength"] = glGetUniformLocation(_prog_color, "dir_light_strength");
     _prog_color_uniforms["dir_half_vec"] = glGetUniformLocation(_prog_color, "dir_half_vec");
     _prog_color_uniforms["light_forward"] = glGetUniformLocation(_prog_color, "light_forward");
+    check_error("_prog_color GetUniformLocation");
 
     _prog_line_uniforms["perspective"] = glGetUniformLocation(_prog_line, "perspective");
     _prog_line_uniforms["view_model"] = glGetUniformLocation(_prog_line, "view_model");
     _prog_line_uniforms["color"] = glGetUniformLocation(_prog_line, "color");
+    check_error("_prog_line GetUniformLocation");
 
     // set up un-changing lighting values
     glm::vec3 light_pos_eye(0.0f);
@@ -400,18 +405,18 @@ void Graph_disp::realize()
     glUniform3fv(_prog_tex_uniforms["ambient_color"], 1, &_ambient_color[0]);
     glUniform3fv(_prog_tex_uniforms["cam_light_pos_eye"], 1, &light_pos_eye[0]);
     glUniform3fv(_prog_tex_uniforms["light_forward"], 1, &light_forward[0]);
-    check_error("_prog_tex_uniforms static"); // TODO: clean these up
+    check_error("_prog_tex uniforms static");
 
     glUseProgram(_prog_color);
     glUniform3fv(_prog_color_uniforms["ambient_color"], 1, &_ambient_color[0]);
     glUniform3fv(_prog_color_uniforms["cam_light_pos_eye"], 1, &light_pos_eye[0]);
     glUniform3fv(_prog_color_uniforms["light_forward"], 1, &light_forward[0]);
-    check_error("_prog_color_uniforms static"); // TODO: clean these up
+    check_error("_prog_color uniforms static");
 
     // create static geometry objects - cursor, axes
     try
     {
-        _cursor.build("img/cursor.png"); // TODO: global location?
+        _cursor.build("img/cursor.png");
     }
     catch(Glib::Exception &e)
     {
@@ -478,7 +483,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
 
         _axes.draw();
 
-        check_error("axes draw"); // TODO: clean these up
+        check_error("draw axes");
     }
 
     // draw graphs
@@ -536,7 +541,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
                 glUniform3fv(_prog_color_uniforms["dir_light_color"], 1, &dir_light.color[0]);
                 glUniform1f(_prog_color_uniforms["dir_light_strength"], dir_light.strength);
             }
-            check_error("geometry draw"); // TODO: cleanup
+            check_error("draw geometry");
 
             graph->draw();
         }
@@ -551,6 +556,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             glUniform4fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
 
             graph->draw_grid();
+            check_error("draw grid");
         }
 
         // draw normal vectors
@@ -563,9 +569,8 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             glUniform4fv(_prog_line_uniforms["color"], 1, &graph->normal_color[0]);
 
             graph->draw_normals();
+            check_error("draw normals");
         }
-
-        check_error("draw"); // TODO: cleanup
     }
 
     // draw cursor
@@ -588,9 +593,8 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
         glUniform3fv(_prog_tex_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
 
         _cursor.draw();
+        check_error("draw cursor");
     }
-
-    check_error("cursor draw"); // TODO: cleanup
 
     display(); // swap display buffers
     return true;
