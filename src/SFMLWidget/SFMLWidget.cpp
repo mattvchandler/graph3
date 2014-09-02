@@ -10,7 +10,7 @@
 #if defined(SFML_SYSTEM_WINDOWS)
 
 #include <gdk/gdkwin32.h>
-#define GET_WINDOW_HANDLE_FROM_GDK GDK_WINDOW_HANDLE
+#define GET_WINDOW_HANDLE_FROM_GDK GDK_WINDOW_HWND
 
 #elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD)
 
@@ -100,7 +100,7 @@ void SFMLWidget::on_realize()
         //make the widget receive expose events
         m_refGdkWindow->set_user_data(gobj());
 
-        glWindow.create(GET_WINDOW_HANDLE_FROM_GDK(m_refGdkWindow->gobj()), gl_context_settings);
+        glWindow.create(static_cast<sf::WindowHandle>(GET_WINDOW_HANDLE_FROM_GDK(m_refGdkWindow->gobj())));
     }
 }
 
