@@ -398,27 +398,13 @@ void Graph_disp::realize()
 
     glUseProgram(_prog_tex);
     glUniform3fv(_prog_tex_uniforms["ambient_color"], 1, &_ambient_color[0]);
-    glUniform3fv(_prog_tex_uniforms["cam_light_color"], 1, &cam_light.color[0]);
     glUniform3fv(_prog_tex_uniforms["cam_light_pos_eye"], 1, &light_pos_eye[0]);
-    glUniform1f(_prog_tex_uniforms["cam_light_strength"], cam_light.strength);
-    glUniform1f(_prog_tex_uniforms["const_atten"], cam_light.const_atten);
-    glUniform1f(_prog_tex_uniforms["linear_atten"], cam_light.linear_atten);
-    glUniform1f(_prog_tex_uniforms["quad_atten"], cam_light.quad_atten);
-    glUniform3fv(_prog_tex_uniforms["dir_light_color"], 1, &dir_light.color[0]);
-    glUniform1f(_prog_tex_uniforms["dir_light_strength"], dir_light.strength);
     glUniform3fv(_prog_tex_uniforms["light_forward"], 1, &light_forward[0]);
     check_error("_prog_tex_uniforms static"); // TODO: clean these up
 
     glUseProgram(_prog_color);
     glUniform3fv(_prog_color_uniforms["ambient_color"], 1, &_ambient_color[0]);
-    glUniform3fv(_prog_color_uniforms["cam_light_color"], 1, &cam_light.color[0]);
     glUniform3fv(_prog_color_uniforms["cam_light_pos_eye"], 1, &light_pos_eye[0]);
-    glUniform1f(_prog_color_uniforms["cam_light_strength"], cam_light.strength);
-    glUniform1f(_prog_color_uniforms["const_atten"], cam_light.const_atten);
-    glUniform1f(_prog_color_uniforms["linear_atten"], cam_light.linear_atten);
-    glUniform1f(_prog_color_uniforms["quad_atten"], cam_light.quad_atten);
-    glUniform3fv(_prog_color_uniforms["dir_light_color"], 1, &dir_light.color[0]);
-    glUniform1f(_prog_color_uniforms["dir_light_strength"], dir_light.strength);
     glUniform3fv(_prog_color_uniforms["light_forward"], 1, &light_forward[0]);
     check_error("_prog_color_uniforms static"); // TODO: clean these up
 
@@ -515,6 +501,15 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
                 glUniform3fv(_prog_tex_uniforms["specular"], 1, &graph->specular[0]);
                 glUniform3fv(_prog_tex_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
                 glUniform3fv(_prog_tex_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
+
+                // light properties
+                glUniform3fv(_prog_tex_uniforms["cam_light_color"], 1, &cam_light.color[0]);
+                glUniform1f(_prog_tex_uniforms["cam_light_strength"], cam_light.strength);
+                glUniform1f(_prog_tex_uniforms["const_atten"], cam_light.const_atten);
+                glUniform1f(_prog_tex_uniforms["linear_atten"], cam_light.linear_atten);
+                glUniform1f(_prog_tex_uniforms["quad_atten"], cam_light.quad_atten);
+                glUniform3fv(_prog_tex_uniforms["dir_light_color"], 1, &dir_light.color[0]);
+                glUniform1f(_prog_tex_uniforms["dir_light_strength"], dir_light.strength);
             }
             else
             {
@@ -531,6 +526,15 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
                 glUniform3fv(_prog_color_uniforms["specular"], 1, &graph->specular[0]);
                 glUniform3fv(_prog_color_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
                 glUniform3fv(_prog_color_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
+
+                // light properties
+                glUniform3fv(_prog_color_uniforms["cam_light_color"], 1, &cam_light.color[0]);
+                glUniform1f(_prog_color_uniforms["cam_light_strength"], cam_light.strength);
+                glUniform1f(_prog_color_uniforms["const_atten"], cam_light.const_atten);
+                glUniform1f(_prog_color_uniforms["linear_atten"], cam_light.linear_atten);
+                glUniform1f(_prog_color_uniforms["quad_atten"], cam_light.quad_atten);
+                glUniform3fv(_prog_color_uniforms["dir_light_color"], 1, &dir_light.color[0]);
+                glUniform1f(_prog_color_uniforms["dir_light_strength"], dir_light.strength);
             }
             check_error("geometry draw"); // TODO: cleanup
 
