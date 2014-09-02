@@ -167,7 +167,6 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _eqn_par_y.hide();
     _eqn_par_z.hide();
     // TODO: abs paths for images/examples, docs, OGL error/version checking,
-    // move fatal error msgs to dialog boxes
 }
 
 Graph_page::~Graph_page()
@@ -242,7 +241,7 @@ void Graph_page::save_graph(const std::string & filename)
         // create an error message box
         Gtk::MessageDialog error_dialog("Error writing to " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
         error_dialog.set_secondary_text(e.what());
-        error_dialog.set_title("Errror");
+        error_dialog.set_title("Error");
         error_dialog.run();
     }
 }
@@ -268,7 +267,7 @@ bool Graph_page::load_graph(const std::string & filename)
             // show error message box
             Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
             error_dialog.set_secondary_text("Invalid combination of r_car, r_cyl, r_sph, r_par");
-            error_dialog.set_title("Errror");
+            error_dialog.set_title("Error");
             error_dialog.run();
             return false;
         }
@@ -297,7 +296,7 @@ bool Graph_page::load_graph(const std::string & filename)
             // show error message box
             Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
             error_dialog.set_secondary_text("Invalid combination of use_color, use_tex");
-            error_dialog.set_title("Errror");
+            error_dialog.set_title("Error");
             error_dialog.run();
             return false;
         }
@@ -311,7 +310,7 @@ bool Graph_page::load_graph(const std::string & filename)
             std::ostringstream msg;
             msg<<"Invalid number of color elements (expected 3, got "<<color_l.getLength()<<")";
             error_dialog.set_secondary_text(msg.str());
-            error_dialog.set_title("Errror");
+            error_dialog.set_title("Error");
             error_dialog.run();
             return false;
         }
@@ -355,7 +354,7 @@ bool Graph_page::load_graph(const std::string & filename)
         // show error message box
         Gtk::MessageDialog error_dialog("Error reading from " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
         error_dialog.set_secondary_text(e.what());
-        error_dialog.set_title("Errror");
+        error_dialog.set_title("Error");
         error_dialog.run();
         return false;
     }
@@ -366,7 +365,7 @@ bool Graph_page::load_graph(const std::string & filename)
         std::ostringstream msg;
         msg<<e.getError()<<" on line: "<<e.getLine();
         error_dialog.set_secondary_text(msg.str());
-        error_dialog.set_title("Errror");
+        error_dialog.set_title("Error");
         error_dialog.run();
         return false;
     }
@@ -375,7 +374,7 @@ bool Graph_page::load_graph(const std::string & filename)
         // show error message box
         Gtk::MessageDialog error_dialog("Invalid setting type in" + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
         error_dialog.set_secondary_text(e.getPath());
-        error_dialog.set_title("Errror");
+        error_dialog.set_title("Error");
         error_dialog.run();
         return false;
     }
@@ -384,7 +383,7 @@ bool Graph_page::load_graph(const std::string & filename)
         // show error message box
         Gtk::MessageDialog error_dialog("Could not find setting in" + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
         error_dialog.set_secondary_text(e.getPath());
-        error_dialog.set_title("Errror");
+        error_dialog.set_title("Error");
         error_dialog.run();
         return false;
     }
@@ -403,7 +402,7 @@ bool Graph_page::load_graph(const std::string & filename)
 
             // show error message box
             Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-            error_dialog.set_title("Errror");
+            error_dialog.set_title("Error");
             error_dialog.set_secondary_text("");
             error_dialog.run();
         }
@@ -586,7 +585,7 @@ void Graph_page::change_tex()
 
                 // show error message box
                 Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-                error_dialog.set_title("Errror");
+                error_dialog.set_title("Error");
                 error_dialog.set_secondary_text("");
                 error_dialog.run();
             }
@@ -752,7 +751,7 @@ void Graph_page::apply()
         {
             // show error message box
             Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-            error_dialog.set_title("Errror");
+            error_dialog.set_title("Error");
             error_dialog.set_secondary_text("");
             error_dialog.run();
         }
