@@ -36,17 +36,24 @@
 class Lighting_window: public Gtk::Dialog
 {
 public:
+    // ctor takes ref to 2 light types
     Lighting_window(Light & dir_light, Light & cam_light);
+    // store values to referenced light objs before closing
+    void store(int response);
+
 private:
+    // dir light adjustments
     Gtk::SpinButton _x_dir, _y_dir, _z_dir;
     Gtk::ColorButton _dir_color;
     Gtk::Scale _dir_strength;
 
+    // cam light adjustments
     Gtk::ColorButton _cam_color;
     Gtk::Scale _cam_strength;
     Gtk::Scale _cam_const_atten, _cam_linear_atten, _cam_quad_atten;
 
-    Light & _dir_light, _cam_light;
+    // keep ref to lights so we can write to them
+    Light & _dir_light, & _cam_light;
 };
 
 #endif // LIGHTING_WINDOW_H

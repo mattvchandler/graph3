@@ -315,12 +315,19 @@ void Graph_window::change_flags()
 
 void Graph_window::lighting()
 {
-    Light fixed_light, cam_light;
-    Lighting_window light_win(fixed_light, cam_light);
+    Light dir_light = _gl_window.dir_light;
+    Light cam_light = _gl_window.cam_light;
+    Lighting_window light_win(dir_light, cam_light);
     light_win.set_modal(true);
     light_win.set_transient_for(*this);
     int response = light_win.run();
+    if(response == Gtk::RESPONSE_OK)
+    {
+        _gl_window.dir_light = dir_light;
+        _gl_window.cam_light = cam_light;
+    }
 }
+
 // update cursor text
 void Graph_window::update_cursor(const std::string & text)
 {
