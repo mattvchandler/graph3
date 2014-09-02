@@ -26,7 +26,7 @@ protected:
     virtual void on_unrealize();
 
     Glib::RefPtr<Gdk::Window> m_refGdkWindow;
-    
+
     sf::ContextSettings gl_context_settings;
 
 public:

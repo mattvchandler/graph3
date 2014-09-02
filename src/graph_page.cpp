@@ -1,7 +1,7 @@
 // graph_page.cpp
 // widgets for creating graphs
 
-// Copyright 2013 Matthew Chandler
+// Copyright 2014 Matthew Chandler
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files (the "Software"), to deal in
@@ -166,8 +166,8 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     show_all_children();
     _eqn_par_y.hide();
     _eqn_par_z.hide();
-    // TODO: widget spacing/layout, abs paths for images/examples, docs, lighting options, OGL error/version checking
-    // move fatal error msgs to dialog boxes, change copyright to 2014
+    // TODO: abs paths for images/examples, docs, OGL error/version checking,
+    // move fatal error msgs to dialog boxes
 }
 
 Graph_page::~Graph_page()

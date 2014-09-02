@@ -27,7 +27,6 @@
 
 #endif
 
-
 SFMLWidget::SFMLWidget(const sf::VideoMode & mode, int size_request, const sf::ContextSettings & context_settings): gl_context_settings(context_settings)
 {
     if(size_request<=0)
