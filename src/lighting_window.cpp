@@ -43,6 +43,7 @@ Lighting_window::Lighting_window(Light & dir_light, Light & cam_light):
     _dir_light(dir_light),
     _cam_light(cam_light)
 {
+    set_title("Lighting Options");
     Gtk::manage(add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL));
     Gtk::manage(add_button(Gtk::Stock::OK, Gtk::RESPONSE_OK));
 
@@ -53,30 +54,53 @@ Lighting_window::Lighting_window(Light & dir_light, Light & cam_light):
     _cam_color.set_rgba(start_color);
 
     Gtk::Grid * grid = new Gtk::Grid;
-    get_content_area()->pack_start(*Gtk::manage(grid));
+    get_content_area()->add(*Gtk::manage(grid));
 
     grid->set_border_width(3);
     grid->set_row_spacing(3);
     grid->set_column_spacing(3);
+    grid->set_hexpand(true);
+    grid->set_vexpand(true);
 
-    // TODO: labels, cleanup
-    grid->attach(_x_dir, 0, 0, 1, 1);
-    grid->attach(_y_dir, 1, 0, 1, 1);
-    grid->attach(_z_dir, 2, 0, 1, 1);
+    grid->attach(*Gtk::manage(new Gtk::Label("Directional Light")), 0, 0, 7, 1);
+    Gtk::Separator * spacer = new Gtk::Separator(Gtk::ORIENTATION_HORIZONTAL);
+    spacer->set_hexpand(true);
+    grid->attach(*Gtk::manage(spacer), 0, 1, 7, 1);
 
-    grid->attach(_dir_color, 0, 1, 3, 1);
+    grid->attach(*Gtk::manage(new Gtk::Label("Direction (x,y,z) = (")), 0, 2, 1, 1);
+    grid->attach(_x_dir, 1, 2, 1, 1);
+    grid->attach(*Gtk::manage(new Gtk::Label(",")), 2, 2, 1, 1);
+    grid->attach(_y_dir, 3, 2, 1, 1);
+    grid->attach(*Gtk::manage(new Gtk::Label(",")), 4, 2, 1, 1);
+    grid->attach(_z_dir, 5, 2, 1, 1);
+    grid->attach(*Gtk::manage(new Gtk::Label(")")), 6, 2, 1, 1);
 
-    grid->attach(_dir_strength, 0, 2, 3, 1);
+    grid->attach(*Gtk::manage(new Gtk::Label("Color:")), 0, 3, 1, 1);
+    grid->attach(_dir_color, 1, 3, 1, 1);
 
-    grid->attach(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_HORIZONTAL)), 0, 3, 3, 1);
+    grid->attach(*Gtk::manage(new Gtk::Label("Strength:")), 3, 3, 1, 1);
+    grid->attach(_dir_strength, 4, 3, 3, 1);
 
-    grid->attach(_cam_color, 0, 4, 3, 1);
+    grid->attach(*Gtk::manage(new Gtk::Label("Camera Light")), 0, 4, 7, 1);
+    grid->attach(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_HORIZONTAL)), 0, 5, 7, 1);
 
-    grid->attach(_cam_strength, 0, 5, 3, 1);
+    grid->attach(*Gtk::manage(new Gtk::Label("Color:")), 0, 6, 1, 1);
+    grid->attach(_cam_color, 1, 6, 1, 1);
 
-    grid->attach(_cam_const_atten, 0, 6, 1, 1);
-    grid->attach(_cam_linear_atten, 1, 6, 1, 1);
-    grid->attach(_cam_quad_atten, 2, 6, 1, 1);
+    grid->attach(*Gtk::manage(new Gtk::Label("Strength:")), 3, 6, 1, 1);
+    grid->attach(_cam_strength, 4, 6, 3, 1);
+
+    grid->attach(*Gtk::manage(new Gtk::Label("")), 0, 7, 7, 1);
+
+    grid->attach(*Gtk::manage(new Gtk::Label("Attenuation")), 0, 8, 1, 2);
+
+    grid->attach(*Gtk::manage(new Gtk::Label("Constant")), 1, 9, 1, 1);
+    grid->attach(*Gtk::manage(new Gtk::Label("Linear")), 3, 9, 1, 1);
+    grid->attach(*Gtk::manage(new Gtk::Label("Quadratic")), 5, 9, 1, 1);
+
+    grid->attach(_cam_const_atten, 1, 8, 1, 1);
+    grid->attach(_cam_linear_atten, 3, 8, 1, 1);
+    grid->attach(_cam_quad_atten, 5, 8, 1, 1);
 
     show_all_children();
 
