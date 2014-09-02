@@ -20,9 +20,9 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#version 130
+#version 330 core
 
-in vec3 vert_pos;
+layout(location = 0) in vec3 vert_pos;
 
 uniform mat4 perspective;
 uniform mat4 view_model;

@@ -63,6 +63,10 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     glClearColor(bkg_color.r, bkg_color.g, bkg_color.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // set restart marker
+    glEnable(GL_PRIMITIVE_RESTART);
+    glPrimitiveRestartIndex(0xFFFFFFFF);
+
     // set up viewmodel matrices
     glm::mat4 view_model;
     if(use_orbit_cam)

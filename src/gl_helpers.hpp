@@ -25,7 +25,6 @@
 
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include <GL/glew.h>
@@ -39,8 +38,7 @@ void check_error(const std::string & at);
 GLuint compile_shader(const std::string & filename, GLenum shader_type);
 
 // link shader objects into shader program,
-GLuint link_shader_prog(const std::vector<GLuint> & shaders,
-    const std::vector<std::pair<GLuint, std::string>> & attribs);
+GLuint link_shader_prog(const std::vector<GLuint> & shaders);
 
 // create & load a texture from a filename
 GLuint create_texture_from_file(const std::string & filename);

@@ -285,16 +285,16 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     }
 
     // check for required OpenGL version
-    if(!GLEW_VERSION_3_0)
+    if(!GLEW_VERSION_3_3)
     {
         Gtk::MessageDialog error_dialog("OpenGL version too low", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
         error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         error_dialog.set_title("Fatal Error");
-        error_dialog.set_secondary_text("Version 3.0 required\nInstalled version is: " +
+        error_dialog.set_secondary_text("Version 3.3 required\nInstalled version is: " +
             std::string((const char *)glGetString(GL_VERSION)) + "\nAborting...");
         error_dialog.run();
 
-        std::cerr<<"OpenGL version too low. Version 3.0 required"<<std::endl;
+        std::cerr<<"OpenGL version too low. Version 3.3 required"<<std::endl;
         std::cerr<<"Installed version is: "<<glGetString(GL_VERSION)<<std::endl;
         dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
@@ -339,12 +339,9 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     }
 
     // link shaders
-    _prog_tex.prog = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag, common_frag},
-        {std::make_pair(0, "vert_pos"), std::make_pair(1, "vert_tex_coords"), std::make_pair(2, "vert_normal")});
-    _prog_color.prog = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag, common_frag},
-        {std::make_pair(0, "vert_pos"), std::make_pair(1, "vert_tex_coords"), std::make_pair(2, "vert_normal")});
-    _prog_line.prog = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag},
-        {std::make_pair(0, "vert_pos")});
+    _prog_tex.prog = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag, common_frag});
+    _prog_color.prog = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag, common_frag});
+    _prog_line.prog = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag});
 
     if(_prog_tex.prog == 0 || _prog_color.prog == 0 || _prog_line.prog == 0)
     {
