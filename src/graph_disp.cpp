@@ -732,14 +732,14 @@ bool Graph_disp::input()
                 // move forward
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
                 {
-                    _cam.translate(mov_scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
+                    _cam.translate(mov_scale * _cam.forward());
                     invalidate();
                 }
 
                 // move backwards
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
                 {
-                    _cam.translate(-mov_scale * glm::normalize(glm::vec3(_cam.forward().x, _cam.forward().y, 0.0f)));
+                    _cam.translate(-mov_scale * _cam.forward());
                     invalidate();
                 }
 
