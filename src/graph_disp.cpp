@@ -313,11 +313,11 @@ void Graph_disp::realize()
     glEnable(GL_BLEND);
 
     // build shader programs
-    GLuint graph_vert = compile_shader("src/graph.vert", GL_VERTEX_SHADER);
-    GLuint line_vert = compile_shader("src/line.vert", GL_VERTEX_SHADER);
-    GLuint tex_frag = compile_shader("src/tex.frag", GL_FRAGMENT_SHADER);
-    GLuint color_frag = compile_shader("src/color.frag", GL_FRAGMENT_SHADER);
-    GLuint flat_color_frag = compile_shader("src/flat_color.frag", GL_FRAGMENT_SHADER);
+    GLuint graph_vert = compile_shader("shaders/graph.vert", GL_VERTEX_SHADER);
+    GLuint line_vert = compile_shader("shaders/line.vert", GL_VERTEX_SHADER);
+    GLuint tex_frag = compile_shader("shaders/tex.frag", GL_FRAGMENT_SHADER);
+    GLuint color_frag = compile_shader("shaders/color.frag", GL_FRAGMENT_SHADER);
+    GLuint flat_color_frag = compile_shader("shaders/flat_color.frag", GL_FRAGMENT_SHADER);
 
     if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0 || flat_color_frag == 0)
     {
