@@ -166,7 +166,8 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     show_all_children();
     _eqn_par_y.hide();
     _eqn_par_z.hide();
-    // TODO: abs paths for images/examples, docs. Try to fix GTK errors on errors
+    // TODO: abs paths for images/examples, docs. Try to fix GTK errors on
+    // errors, fix segfault on camera change when no graph present
 }
 
 Graph_page::~Graph_page()
@@ -468,7 +469,7 @@ void Graph_page::change_type()
     }
     else if(_r_sph.get_active())
     {
-        _eqn.set_placeholder_text(u8"z(θ,ϕ)");
+        _eqn.set_placeholder_text(u8"r(θ,ϕ)");
         _row_min.set_placeholder_text(u8"θ min");
         _row_max.set_placeholder_text(u8"θ max");
         _col_min.set_placeholder_text(u8"ϕ min");

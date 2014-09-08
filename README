@@ -1,35 +1,44 @@
 graph3 - a 3D graphing program
 
-very much still a work in process
+Features
+--------------------------------------------------------------------------------
+graph3 is an interactive 3D graphing / plotting program.
 
-Watch this space for news as it happens (maybe - no promises)
+It supports the following coordinate systems:
+    Cartesian (z(x, y))
+    Cylindrical (z(r, θ))
+    Spherical (r(θ, ϕ))
+    Parametric (x(u, v), y(u, v), z(u, v))
+Multiple graphs can be displayed simultaneously (including graphs in different
+coordinate systems) and may be differentiated by colors or textures.
 
-TODO:
-    windowing - SFML
-    widgets? - need to research possible to use with gtkmm, or sfgui
-    muParser
-    graph data structs
-        dynamically resizable?
-        support Cartesian, cylindrical, spherical, parametric
-        generate model, then dump? keep only eqn and evolute as needed?
-        look into getting norms from eqn - partial derivatives?
-    texturing
-    model display
-        want to use modern OGL - shaders
-    camera
-        if using shaders, can't use glulookat
-    config / keep most recent
-        libconfig++
+There are 2 camera modes: An 'orbiting' camera, which allows you to rotate and
+zoom on the graph, and a 'free' camera in which the camera can be moved and
+panned. The camera is controlled with the WASD keys and clicking and dragging
+with the mouse. These allow close inspection of any point on the graph.
 
-model generator(string eqn)
-    muparser magic
-    can muparser be run in parallel?
+A cursor is provided that may be moved around the graph using the arrow keys.
+The coordinates at the cursor's location are displayed at the bottom of the
+screen.
 
-    loop over max-min / step size
-        get coords
-        calc texture coords
-        normals
-            either from eqn if possible, or from avg (will need to be a separate loop)
-        
-    build opengl model (how with shaders?)
+Graphs are rendered using a Phong lighting model and smooth shading. The graphs
+are lit by 2 light sources: a point light at the camera's position, and a
+directional light. Setting for both can be changed from the setting menu.
 
+Installation
+--------------------------------------------------------------------------------
+WIP
+$mkdir build; cd build
+$cmake -DCMAKE_INSTALL_PREFIX(TODO:?)..
+$make
+#make install
+
+Dependencies
+--------------------------------------------------------------------------------
+gtkmm 3.0+
+SFML 2+
+libconfig++ ???
+muparser ???
+OpenGL 3.0+
+GLEW
+GLM
