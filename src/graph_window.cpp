@@ -306,7 +306,11 @@ void Graph_window::change_flags()
     if(!_draw_cursor.get_active())
         update_cursor("");
     else
-        dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page())).set_active();
+    {
+        int cur_page = _notebook.get_current_page();
+        if(cur_page >= 0)
+            dynamic_cast<Graph_page &>(*_notebook.get_nth_page(cur_page)).set_active();
+    }
 
     _gl_window.use_orbit_cam = _use_orbit_cam.get_active();
 

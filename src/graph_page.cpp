@@ -166,8 +166,7 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     show_all_children();
     _eqn_par_y.hide();
     _eqn_par_z.hide();
-    // TODO: abs paths for images/examples, docs. Try to fix GTK errors on
-    // errors, fix segfault on camera change when no graph present
+    // TODO: abs paths for images/examples, docs. Try to fix GTK errors on errors
 }
 
 Graph_page::~Graph_page()
