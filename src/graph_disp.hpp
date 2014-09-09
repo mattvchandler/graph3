@@ -148,11 +148,11 @@ public:
 
 private:
     // called when OpenGL context is ready and GTK widget is ready
-    void realize();
+    bool initiaize(const Cairo::RefPtr<Cairo::Context> & unused);
     // called when window is resized
     void resize(Gtk::Allocation & allocation);
     // main drawing code
-    bool draw(const Cairo::RefPtr<Cairo::Context> & cr);
+    bool draw(const Cairo::RefPtr<Cairo::Context> & unused);
     // main input processing
     bool input();
     // GTK key press handler
@@ -182,6 +182,8 @@ private:
     // storage for graphs (we do not own them here)
     Graph * _active_graph;
     std::set<const Graph *> _graphs;
+
+    sigc::connection _draw_connection;
 
     // make non-copyable
     Graph_disp(const Graph_disp &) = delete;

@@ -215,12 +215,12 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request):
 
 {
     // All OpenGL initialization has to wait until the drawing context actually exists
-    // it is in the realize method - hook into that signal now
-    signal_realize().connect(sigc::mem_fun(*this, &Graph_disp::realize));
+    // we do this in the initiaize method
+    // connect it to the draw signal, to be run only on the first drawing request
+    _draw_connection = signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::initiaize));
 
     // connect event signals
     signal_size_allocate().connect(sigc::mem_fun(*this, &Graph_disp::resize));
-    signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::draw));
     signal_key_press_event().connect(sigc::mem_fun(*this, &Graph_disp::key_press));
 
     // input is checked every 10ms
@@ -278,7 +278,7 @@ void Graph_disp::reset_cam()
 }
 
 // called when OpenGL context is ready and GTK widget is ready
-void Graph_disp::realize()
+bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
 {
     // init glew
     if(glewInit() != GLEW_OK)
@@ -286,7 +286,7 @@ void Graph_disp::realize()
         std::cerr<<"Error loading glew. Aborting"<<std::endl;
         dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
-        return;
+        return true;
     }
 
     // check for required OpenGL version
@@ -296,7 +296,7 @@ void Graph_disp::realize()
         std::cerr<<"Installed version is: "<<glGetString(GL_VERSION)<<std::endl;
         dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
-        return;
+        return true;
     }
 
     // init GL state vars
@@ -324,7 +324,7 @@ void Graph_disp::realize()
         // error messages are displayed by the compile_shader function
         dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
-        return;
+        return true;
     }
 
     // link shaders
@@ -340,7 +340,7 @@ void Graph_disp::realize()
         // error messages are displayed by the link_shader_prog function
         dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
-        return;
+        return true;
     }
 
     check_error("build shaders");
@@ -422,13 +422,18 @@ void Graph_disp::realize()
     {
         dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
-        return;
+        return true;
     }
 
     _axes.build();
     _axes.color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     invalidate(); // redraw
+
+    _draw_connection.disconnect();
+    _draw_connection = signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::draw));
+
+    return draw(unused);
 }
 
 // called when window is resized
