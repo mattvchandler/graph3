@@ -30,10 +30,10 @@
 #include <gtkmm/stock.h>
 
 #include "graph_window.hpp"
+#include "paths.hpp"
 
 extern int return_code; // from main.cpp
 
-// TODO: probably change button labels to mouseover text
 Graph_window::Graph_window():
     _gl_window(sf::VideoMode(800, 600), -1),
     _draw_axes("Draw Axes"),
@@ -46,7 +46,7 @@ Graph_window::Graph_window():
 
     try
     {
-        set_default_icon_from_file("img/icon.svg");
+        set_default_icon_from_file(check_in_pwd("icons/icon.svg"));
     }
     catch(Glib::Exception & e)
     {
@@ -260,7 +260,7 @@ void Graph_window::load_graph()
     graph_chooser.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
     graph_chooser.add_button("Select", Gtk::RESPONSE_OK);
 
-    graph_chooser.add_shortcut_folder("./examples");
+    graph_chooser.add_shortcut_folder(check_in_pwd("examples"));
 
     // try to set last selected file & directory
     if(!curr_dir.empty())

@@ -29,6 +29,7 @@
 
 #include "gl_helpers.hpp"
 #include "graph_disp.hpp"
+#include "paths.hpp"
 
 extern int return_code; // from main.cpp
 
@@ -313,11 +314,11 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     glEnable(GL_BLEND);
 
     // build shader programs
-    GLuint graph_vert = compile_shader("shaders/graph.vert", GL_VERTEX_SHADER);
-    GLuint line_vert = compile_shader("shaders/line.vert", GL_VERTEX_SHADER);
-    GLuint tex_frag = compile_shader("shaders/tex.frag", GL_FRAGMENT_SHADER);
-    GLuint color_frag = compile_shader("shaders/color.frag", GL_FRAGMENT_SHADER);
-    GLuint flat_color_frag = compile_shader("shaders/flat_color.frag", GL_FRAGMENT_SHADER);
+    GLuint graph_vert = compile_shader(check_in_pwd("shaders/graph.vert"), GL_VERTEX_SHADER);
+    GLuint line_vert = compile_shader(check_in_pwd("shaders/line.vert"), GL_VERTEX_SHADER);
+    GLuint tex_frag = compile_shader(check_in_pwd("shaders/tex.frag"), GL_FRAGMENT_SHADER);
+    GLuint color_frag = compile_shader(check_in_pwd("shaders/color.frag"), GL_FRAGMENT_SHADER);
+    GLuint flat_color_frag = compile_shader(check_in_pwd("shaders/flat_color.frag"), GL_FRAGMENT_SHADER);
 
     if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0 || flat_color_frag == 0)
     {
@@ -416,7 +417,7 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     // create static geometry objects - cursor, axes
     try
     {
-        _cursor.build("img/cursor.png");
+        _cursor.build(check_in_pwd("img/cursor.png"));
     }
     catch(Glib::Exception &e)
     {

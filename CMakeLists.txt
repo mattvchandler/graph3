@@ -36,6 +36,7 @@ add_executable(${PROJECT_NAME}
     src/graph_window.cpp
     src/lighting_window.cpp
     src/main.cpp
+    src/paths.cpp
     src/SFMLWidget/SFMLWidget.cpp
     src/tab_label.cpp)
 target_link_libraries(${PROJECT_NAME}
