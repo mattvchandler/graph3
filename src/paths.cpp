@@ -29,5 +29,5 @@ std::string check_in_pwd(const std::string & path)
     if(std::ifstream(("./" + path).c_str()))
         return "./" + path;
     else
-        return BASE_DIR + path;
+        return RESOURCE_BASE_DIR + ("/" + path);
 }

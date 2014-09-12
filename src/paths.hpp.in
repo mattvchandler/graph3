@@ -25,7 +25,7 @@
 
 #include <string>
 
-#define BASE_DIR "/usr/local/share/graph3/"
+#define RESOURCE_BASE_DIR @RESOURCE_BASE_DIR@
 
 std::string check_in_pwd(const std::string & path);
 

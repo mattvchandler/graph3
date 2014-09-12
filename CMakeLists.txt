@@ -21,7 +21,10 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLM REQUIRED)
 
-include_directories(${GTKMM_INCLUDE_DIRS} ${LIBCONFIG_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+set(RESOURCE_BASE_DIR "\"${CMAKE_INSTALL_PREFIX}/share/graph3\"")
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/paths.hpp.in ${PROJECT_BINARY_DIR}/src/paths.hpp)
+
+include_directories(${GTKMM_INCLUDE_DIRS} ${LIBCONFIG_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/src/ ${CMAKE_CURRENT_SOURCE_DIR}/src/)
 link_directories(${GTKMM_LINK_DIRS} ${LIBCONFIG_LINK_DIRS})
 
 add_executable(${PROJECT_NAME}
