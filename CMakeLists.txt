@@ -45,3 +45,8 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${MUPARSER_LIBRARIES} ${LIBCONFIG_LIBRARIES})
 
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+install(FILES img/cursor.png DESTINATION share/graph3/img)
+install(DIRECTORY shaders DESTINATION share/graph3)
+install(DIRECTORY examples DESTINATION share/graph3)
+install(DIRECTORY icons DESTINATION share/graph3)
