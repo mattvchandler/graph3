@@ -21,9 +21,10 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLM REQUIRED)
 
-set(RESOURCE_BASE_DIR "\"${CMAKE_INSTALL_PREFIX}/share/graph3\"")
+set(bindir ${CMAKE_INSTALL_PREFIX}/bin)
+set(datadir ${CMAKE_INSTALL_PREFIX}/share/graph3)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/paths.hpp.in ${PROJECT_BINARY_DIR}/src/paths.hpp)
-
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/graph3.desktop.in ${PROJECT_BINARY_DIR}/graph3.desktop)
 include_directories(${GTKMM_INCLUDE_DIRS} ${LIBCONFIG_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/src/ ${CMAKE_CURRENT_SOURCE_DIR}/src/)
 link_directories(${GTKMM_LINK_DIRS} ${LIBCONFIG_LINK_DIRS})
 
@@ -47,6 +48,5 @@ target_link_libraries(${PROJECT_NAME}
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 install(FILES img/cursor.png DESTINATION share/graph3/img)
-install(DIRECTORY shaders DESTINATION share/graph3)
-install(DIRECTORY examples DESTINATION share/graph3)
-install(DIRECTORY icons DESTINATION share/graph3)
+install(FILES ${PROJECT_BINARY_DIR}/graph3.desktop DESTINATION share/applications)
+install(DIRECTORY shaders examples icons DESTINATION share/graph3)

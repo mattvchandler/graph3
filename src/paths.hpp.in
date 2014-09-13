@@ -25,7 +25,7 @@
 
 #include <string>
 
-#define RESOURCE_BASE_DIR @RESOURCE_BASE_DIR@
+#define RESOURCE_BASE_DIR "@datadir@"
 
 std::string check_in_pwd(const std::string & path);
 

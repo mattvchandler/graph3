@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Graph 3
+GenericName=Graph 3
+Exec=@bindir@/graph3
+Terminal=false
+Icon=@datadir@/icons/icon.svg
+Type=Application
+Categories=Education;
+Comment=3D graphing program
