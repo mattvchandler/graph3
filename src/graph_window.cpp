@@ -64,6 +64,9 @@ Graph_window::Graph_window():
     _menu_act->add(Gtk::Action::create("Settings", "Settings"));
     _menu_act->add(Gtk::Action::create("Settings_lighting", "_Lighting", "Lighting"), sigc::mem_fun(*this, &Graph_window::lighting));
 
+    _menu_act->add(Gtk::Action::create("Help", "Help"));
+    _menu_act->add(Gtk::Action::create("Help_about", "About", "About"), sigc::mem_fun(*this, &Graph_window::hide));
+
     _menu_act->add(Gtk::Action::create("Toolbar_add", Gtk::Stock::ADD, "Add Graph", "Add new graph"), sigc::mem_fun(*this, &Graph_window::tab_new));
     _menu_act->get_action("Toolbar_add")->set_is_important(true);
 
@@ -82,6 +85,9 @@ Graph_window::Graph_window():
     "       </menu>"
     "       <menu action='Settings'>"
     "           <menuitem action='Settings_lighting'/>"
+    "       </menu>"
+    "       <menu action='Help'>"
+    "           <menuitem action='Help_about'/>"
     "       </menu>"
     "   </menubar>"
     "</ui>";
