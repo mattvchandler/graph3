@@ -30,7 +30,7 @@
 #include <gtkmm/stock.h>
 
 #include "graph_window.hpp"
-#include "paths.hpp"
+#include "config.hpp"
 
 extern int return_code; // from main.cpp
 
@@ -41,7 +41,7 @@ Graph_window::Graph_window():
     _use_orbit_cam("Use Orbiting Camera"),
     _use_free_cam("Use Free Camera")
 {
-    set_title("Graph 3");
+    set_title(GRAPH_TITLE);
     set_default_size(800, 600);
 
     try

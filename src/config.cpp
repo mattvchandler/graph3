@@ -1,5 +1,5 @@
-// paths.cpp
-// paths to resources
+// config.cpp
+// settings set by CMake
 
 // Copyright 2014 Matthew Chandler
 
@@ -22,7 +22,7 @@
 
 #include <fstream>
 
-#include "paths.hpp"
+#include "config.hpp"
 
 std::string check_in_pwd(const std::string & path)
 {

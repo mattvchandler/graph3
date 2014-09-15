@@ -29,7 +29,7 @@
 
 #include "gl_helpers.hpp"
 #include "graph_disp.hpp"
-#include "paths.hpp"
+#include "config.hpp"
 
 extern int return_code; // from main.cpp
 

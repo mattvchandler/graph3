@@ -33,7 +33,7 @@
 #include "graph_disp.hpp"
 
 // lighting settings window
-class Lighting_window: public Gtk::Dialog
+class Lighting_window final: public Gtk::Dialog
 {
 public:
     // ctor takes ref to 2 light types

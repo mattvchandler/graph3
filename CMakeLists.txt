@@ -3,7 +3,10 @@ project(graph3)
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
-set(CPACK_PACKAGE_CONTACT "Matthew Chandler <tardarsauce@gmail.com>")
+set(GRAPH_TITLE "Graph 3")
+set(GRAPH_AUTHOR "Matthew Chandler <tardarsauce@gmail.com>")
+set(GRAPH_SUMMARY "A 3D graphing tool")
+set(GRAPH_WEBSITE "http://github.com/mattvchandler/graph3")
 
 #flags
 set(CMAKE_CXX_FLAGS "-Wall -std=c++14")
@@ -27,19 +30,25 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLM REQUIRED)
 
-# configure paths in source
+# configure paths, version in source
 set(bindir ${CMAKE_INSTALL_PREFIX}/bin)
 set(datadir ${CMAKE_INSTALL_PREFIX}/share/graph3)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/paths.hpp.in
-    ${PROJECT_BINARY_DIR}/src/paths.hpp)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp.in
+    ${PROJECT_BINARY_DIR}/src/config.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/graph3.desktop.in
     ${PROJECT_BINARY_DIR}/graph3.desktop)
 
-include_directories(${GTKMM_INCLUDE_DIRS} ${LIBCONFIG_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/src/ ${CMAKE_CURRENT_SOURCE_DIR}/src/)
-link_directories(${GTKMM_LINK_DIRS} ${LIBCONFIG_LINK_DIRS})
+# directories
+include_directories(${GTKMM_INCLUDE_DIRS}
+    ${LIBCONFIG_INCLUDE_DIRS}
+    ${PROJECT_BINARY_DIR}/src/
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+link_directories(${GTKMM_LINK_DIRS}
+    ${LIBCONFIG_LINK_DIRS})
 
 # main compilation
 add_executable(${PROJECT_NAME}
+    src/config.cpp
     src/gl_helpers.cpp
     src/graph.cpp
     src/graph_cartesian.cpp
@@ -51,7 +60,6 @@ add_executable(${PROJECT_NAME}
     src/graph_window.cpp
     src/lighting_window.cpp
     src/main.cpp
-    src/paths.cpp
     src/SFMLWidget/SFMLWidget.cpp
     src/tab_label.cpp)
 target_link_libraries(${PROJECT_NAME}
@@ -65,13 +73,14 @@ install(DIRECTORY shaders examples icons DESTINATION share/graph3)
 
 # CPack vars
 set(CPACK_GENERATOR TGZ)
+set(CPACK_PACKAGE_CONTACT "${GRAPH_AUTHOR}")
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY)
 set(CPACK_INSTALL_CMAKE_PROJECTS
     "${CMAKE_BINARY_DIR};${PROJECT_NAME};ALL;/")
 set(CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${VERSION_PATCH}")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A 3D graphing program")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${GRAPH_TITLE}: ${GRAPH_SUMMARY}")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README")
 set(CPACK_PACKAGE_FILE_README "${CMAKE_SOURCE_DIR}/README")
 set(CPACK_PACKAGE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
@@ -79,11 +88,8 @@ set(CPACK_PACKAGE_EXECUTABLES "graph3")
 
 # Debian-specific settings
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    message("Linux!")
     find_program(DPKG "dpkg")
-    message("DPKG: ${DPKG}")
     if(DPKG)
-        message("DPKG found")
         set(CPACK_GENERATOR DEB;TGZ)
         execute_process(COMMAND ${DPKG} --print-architecture
             OUTPUT_STRIP_TRAILING_WHITESPACE

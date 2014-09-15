@@ -1,5 +1,5 @@
-// paths.hpp
-// paths to resources
+// config.hpp
+// settings set by CMake
 
 // Copyright 2014 Matthew Chandler
 
@@ -20,13 +20,24 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef GRAPH_PATHS_H
-#define GRAPH_PATHS_H
+#ifndef GRAPH_CONFIG_H
+#define GRAPH_CONFIG_H
 
 #include <string>
 
+#define VERSION_MAJOR @VERSION_MAJOR@
+#define VERSION_MINOR @VERSION_MINOR@
+
+#define VERSION_MAJOR_STR "@VERSION_MAJOR@"
+#define VERSION_MINOR_STR "@VERSION_MINOR@"
+
 #define RESOURCE_BASE_DIR "@datadir@"
+
+#define GRAPH_TITLE "@GRAPH_TITLE@"
+#define GRAPH_AUTHOR "@GRAPH_AUTHOR@"
+#define GRAPH_SUMMARY "@GRAPH_SUMMARY@"
+#define GRAPH_WEBSITE "@GRAPH_WEBSITE@"
 
 std::string check_in_pwd(const std::string & path);
 
-#endif // GRAPH_PATHS_H
+#endif // GRAPH_CONFIG_H
