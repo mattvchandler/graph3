@@ -21,17 +21,20 @@ A cursor is provided that may be moved around the graph using the arrow keys.
 The coordinates at the cursor's location are displayed at the bottom of the
 screen.
 
-Graphs are rendered using a Phong lighting model and smooth shading. The graphs
+Graphs are rendered using a Phong lighting model and smooth shading. The graph's
 are lit by 2 light sources: a point light at the camera's position, and a
 directional light. Setting for both can be changed from the setting menu.
 
 Installation
 --------------------------------------------------------------------------------
-WIP
-$mkdir build; cd build
-$cmake -DCMAKE_INSTALL_PREFIX(TODO:?)..
-$make
-#make install
+For an out-of-source build:
+    $ mkdir build; cd build
+    $ cmake [-DCMAKE_INSTALL_PREFIX=<installation directory>] ..
+Otherwise:
+    $ cmake [-DCMAKE_INSTALL_PREFIX=<installation directory>] .
+Then:
+    $ make
+    # make install
 
 Dependencies
 --------------------------------------------------------------------------------
@@ -42,3 +45,57 @@ muparser ???
 OpenGL 3.0+
 GLEW
 GLM
+
+Usage:
+--------------------------------------------------------------------------------
+Defining graphs:
+The type of graph can be selected in the right pane.
+Once selected, the equation(s) and independent variable ranges are entered
+below. Most basic mathematic operations are available (exponentiation with ^,
+trig functions, logarithms, ... For a complete list, see
+http://muparser.beltoforion.de/mup_features.html) as well as the e and pi
+constants.
+
+Independent variable resolution (number of points rendered) may be
+adjusted below the equations. Higher resolutions will appear smoother, though
+may impact framerate.
+
+The graph may be colored or textured by selecting the appropriate option, and
+then pressing the Select Color/Texture button. graph3 is able to read most image
+formats for textures.
+
+Finally, rendering of graph geometry, grid lines, and normal vectors may be
+de/activated.
+
+Once all options are selected, press Apply, and (if equations are valid) will
+appear in the left pane.
+
+Viewing Graphs:
+graph3 has 2 camera modes, selectable at the top of the window.
+The orbiting camera mode will rotate the graph as you click and drag the mouse
+across the left pane, or use the WASD keys. Q and E move the camera in and out,
+respectively.
+
+The free camera mode allows the camera to be moved to any point and any
+orientation. The camera is moved with the WASD, Q and E keys, and panned by
+clicking and dragging the mouse.
+
+In both modes, the scene may be zoomed in/out with the Z/X keys. The camera can
+be reset to its starting position with the reset button in the top toolbar.
+An optional cursor may be displayed, which appears as a green octahedron. Its
+coordinates are displayed at the bottom of the window. It is moved around the
+graph with the arrow keys.
+
+The graph is lit by a point light source (fixed to the camera's position), and a
+directional light. The settings for both lights may be changed in the
+Settings>Lighting menu. Color, intensity, and directions may be changed.
+
+Multiple Graphs:
+The Add button in the top toolbar adds another graph to the scene. Each graph
+has a color/texture coded tab at the top of the right pane. The cursor is
+attached to the currently selected graph.
+There is no limit set to the number of graphs, although the limiting factor will
+be how much geometry your system is capable of rendering at once.
+
+The selected graph may be saved to disk, and saved graphs may be opened using
+the Save/Open buttons.

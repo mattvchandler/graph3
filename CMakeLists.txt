@@ -63,8 +63,14 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
     src/SFMLWidget/SFMLWidget.cpp
     src/tab_label.cpp)
+
 target_link_libraries(${PROJECT_NAME}
-    ${GTKMM_LIBRARIES} ${SFML_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${MUPARSER_LIBRARIES} ${LIBCONFIG_LIBRARIES})
+    ${GTKMM_LIBRARIES}
+    ${SFML_LIBRARIES}
+    ${OPENGL_LIBRARIES}
+    ${GLEW_LIBRARIES}
+    ${MUPARSER_LIBRARIES}
+    ${LIBCONFIG_LIBRARIES})
 
 # install targets
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
