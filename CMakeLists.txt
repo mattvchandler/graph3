@@ -123,7 +123,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "graph3")
     set(CPACK_NSIS_CONTACT "${GRAPH_AUTHOR}")
     set(CPACK_NSIS_HELP_LINK "${GRAPH_WEBSITE}")
-    set(CPACK_NSIS_INSTALLED_ICON_NAME "icons\icon_128.ico")
+    set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/icons/icon_128.ico")
 endif()
 
 include(CPack)
