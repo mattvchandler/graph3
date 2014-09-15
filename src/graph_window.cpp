@@ -22,6 +22,7 @@
 
 #include <glibmm/exception.h>
 
+#include <gtkmm/aboutdialog.h>
 #include <gtkmm/button.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/grid.h>
@@ -65,7 +66,7 @@ Graph_window::Graph_window():
     _menu_act->add(Gtk::Action::create("Settings_lighting", "_Lighting", "Lighting"), sigc::mem_fun(*this, &Graph_window::lighting));
 
     _menu_act->add(Gtk::Action::create("Help", "Help"));
-    _menu_act->add(Gtk::Action::create("Help_about", "About", "About"), sigc::mem_fun(*this, &Graph_window::hide));
+    _menu_act->add(Gtk::Action::create("Help_about", "About", "About"), sigc::mem_fun(*this, &Graph_window::about));
 
     _menu_act->add(Gtk::Action::create("Toolbar_add", Gtk::Stock::ADD, "Add Graph", "Add new graph"), sigc::mem_fun(*this, &Graph_window::tab_new));
     _menu_act->get_action("Toolbar_add")->set_is_important(true);
@@ -336,6 +337,25 @@ void Graph_window::lighting()
         _gl_window.dir_light = dir_light;
         _gl_window.cam_light = cam_light;
     }
+}
+
+void Graph_window::about()
+{
+    Gtk::AboutDialog about;
+    about.set_modal(true);
+    about.set_transient_for(*this);
+
+    about.set_program_name(GRAPH_TITLE);
+    about.set_version(VERSION_MAJOR_STR "." VERSION_MINOR_STR);
+    about.set_copyright(u8"© 2014 Matthew Chandler");
+    about.set_comments(GRAPH_SUMMARY);
+    about.set_license_type(Gtk::LICENSE_MIT_X11);
+    about.set_website(GRAPH_WEBSITE);
+    about.set_website_label(GRAPH_TITLE " on Github");
+    about.set_authors({GRAPH_AUTHOR});
+    about.set_artists({GRAPH_AUTHOR});
+    about.set_documenters({GRAPH_AUTHOR});
+    about.run();
 }
 
 // update cursor text

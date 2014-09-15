@@ -58,6 +58,8 @@ private:
     void change_flags();
     // display lighting options
     void lighting();
+    // display about dialog
+    void about();
     // update cursor text
     void update_cursor(const std::string & text);
     // create a new graph page

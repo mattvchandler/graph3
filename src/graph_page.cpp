@@ -166,7 +166,7 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     show_all_children();
     _eqn_par_y.hide();
     _eqn_par_z.hide();
-    // TODO: docs, help menu, change package name to include architecture
+    // TODO: docs
 }
 
 Graph_page::~Graph_page()
