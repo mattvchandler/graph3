@@ -30,9 +30,10 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLM REQUIRED)
 
-# configure paths, version in source
+# configure variables
 set(bindir ${CMAKE_INSTALL_PREFIX}/bin)
 set(datadir ${CMAKE_INSTALL_PREFIX}/share/graph3)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp.in
     ${PROJECT_BINARY_DIR}/src/config.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/graph3.desktop.in
@@ -94,8 +95,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         execute_process(COMMAND ${DPKG} --print-architecture
             OUTPUT_STRIP_TRAILING_WHITESPACE
             OUTPUT_VARIABLE CPACK_DEBIAN_PACKAGE_ARCHITECTURE)
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtkmm-3.0-1 (>=3.0), libsfml-window2(>=2.0), libsfml-system2(>=2.0), libconfig9, libmuparser2")
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS
+            "libgtkmm-3.0-1 (>=3.0), libsfml-window2(>=2.0), libsfml-system2(>=2.0), libconfig9, libmuparser2")
         set(CPACK_DEBIAN_PACKAGE_SECTION "education")
+        string(TOLOWER "${PROJECT_NAME}" PACKAGE_NAME_LOWER)
+        set(CPACK_PACKAGE_FILE_NAME
+            "${PACKAGE_NAME_LOWER}_${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
     endif()
 endif()
 
