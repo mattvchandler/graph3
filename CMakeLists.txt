@@ -76,10 +76,10 @@ target_link_libraries(${PROJECT_NAME}
     ${LIBCONFIG_LIBRARIES})
 
 # install targets
-install(TARGETS ${PROJECT_NAME} DESTINATION bin)
-install(FILES img/cursor.png DESTINATION share/graph3/img)
-install(FILES ${PROJECT_BINARY_DIR}/graph3.desktop DESTINATION share/applications)
-install(DIRECTORY shaders examples icons DESTINATION share/graph3)
+install(TARGETS "${PROJECT_NAME}" DESTINATION "bin")
+install(FILES "img/cursor.png" DESTINATION "share/graph3/img")
+install(FILES "${PROJECT_BINARY_DIR}/graph3.desktop" DESTINATION "share/applications")
+install(DIRECTORY "shaders" "examples" "icons" DESTINATION "share/graph3")
 
 # CPack vars
 set(CPACK_GENERATOR TGZ)
@@ -118,11 +118,12 @@ endif()
 # Windows NSIS specifics:
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(CPACK_GENERATOR NSIS;TGZ)
-    set(CPACK_PACKAGE_EXECUTABLES "graph3;graph3")
+    set(CPACK_PACKAGE_EXECUTABLES "graph3;Graph 3")
     set(CPACK_NSIS_DISPLAY_NAME "Graph 3")
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "graph3")
     set(CPACK_NSIS_CONTACT "${GRAPH_AUTHOR}")
     set(CPACK_NSIS_HELP_LINK "${GRAPH_WEBSITE}")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "icons\icon_128.ico")
 endif()
 
 include(CPack)
