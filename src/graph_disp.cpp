@@ -625,7 +625,7 @@ bool Graph_disp::input()
         sf::Vector2i new_mouse_pos = sf::Mouse::getPosition(glWindow);
 
         if(!has_focus() && new_mouse_pos.x >= 0 && new_mouse_pos.y >= 0 &&
-            new_mouse_pos.x < (int)glWindow.getSize().x && new_mouse_pos.y < (int)glWindow.getSize().y)
+            new_mouse_pos.x < get_allocated_width() && new_mouse_pos.y < get_allocated_height())
         {
             grab_focus();
         }
