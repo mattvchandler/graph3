@@ -15,13 +15,13 @@ coordinate systems) and may be differentiated by colors or textures.
 There are 2 camera modes: An 'orbiting' camera, which allows you to rotate and
 zoom on the graph, and a 'free' camera in which the camera can be moved and
 panned. The camera is controlled with the WASD keys and clicking and dragging
-with the mouse. These allow close inspection of any point on the graph.
+with the mouse. These modes allow close inspection of any point on the graph.
 
 A cursor is provided that may be moved around the graph using the arrow keys.
 The coordinates at the cursor's location are displayed at the bottom of the
 screen.
 
-Graphs are rendered using a Phong lighting model and smooth shading. The graph's
+Graphs are rendered using a Phong lighting model and smooth shading. The graphs
 are lit by 2 light sources: a point light at the camera's position, and a
 directional light. Setting for both can be changed from the setting menu.
 
@@ -81,7 +81,8 @@ orientation. The camera is moved with the WASD, Q and E keys, and panned by
 clicking and dragging the mouse.
 
 In both modes, the scene may be zoomed in/out with the Z/X keys. The camera can
-be reset to its starting position with the reset button in the top toolbar.
+be reset to its starting position with the reset button in the top toolbar or by
+pressing the R key.
 An optional cursor may be displayed, which appears as a green octahedron. Its
 coordinates are displayed at the bottom of the window. It is moved around the
 graph with the arrow keys.
