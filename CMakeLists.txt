@@ -107,7 +107,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
             OUTPUT_STRIP_TRAILING_WHITESPACE
             OUTPUT_VARIABLE CPACK_DEBIAN_PACKAGE_ARCHITECTURE)
         set(CPACK_DEBIAN_PACKAGE_DEPENDS
-            "libgtkmm-3.0-1 (>=3.0), libsfml-window2(>=2.0), libsfml-system2(>=2.0), libconfig9, libmuparser2")
+            "libgtkmm-3.0-1, libsfml-window2, libsfml-system2, libconfig++9, libmuparser2")
         set(CPACK_DEBIAN_PACKAGE_SECTION "education")
         string(TOLOWER "${PROJECT_NAME}" PACKAGE_NAME_LOWER)
         set(CPACK_PACKAGE_FILE_NAME
