@@ -339,7 +339,7 @@ glm::vec3 get_normal (glm::vec3 center,
 Graph::Graph():
     use_tex(false), valid_tex(false), color(1.0f), shininess(50.0f), specular(1.0f),
     grid_color(0.1f, 0.1f, 0.1f, 1.0f), normal_color(0.0f, 1.0f, 1.0f, 1.0f),
-    draw_flag(true), draw_grid_flag(true), draw_normals_flag(false),
+    draw_flag(true), transparent_flag(false), draw_normals_flag(false), draw_grid_flag(true),
     _tex(0), _ebo(0), _vao(0), _vbo(0),
     _grid_ebo(0),
     _normal_vao(0), _normal_vbo(0), _normal_num_indexes(0)

@@ -107,8 +107,9 @@ public:
 
     // toggle drawing on and off
     bool draw_flag;
-    bool draw_grid_flag;
+    bool transparent_flag;
     bool draw_normals_flag;
+    bool draw_grid_flag;
 
 protected:
     // calculate & build graph geometry

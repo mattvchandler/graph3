@@ -87,15 +87,15 @@ private:
     // UI widgets
     Gtk::RadioButton _r_car, _r_cyl, _r_sph, _r_par; // for selecting type
     Gtk::Entry _eqn; // equation entry
-    Gtk::Entry _eqn_par_y, _eqn_par_z; // exra boxes for parametric graphs
+    Gtk::Entry _eqn_par_y, _eqn_par_z; // extra boxes for parametric graphs
     Gtk::Entry _row_min, _row_max; // bounds
     Gtk::Entry _col_min, _col_max;
     Gtk::Label _row_res_l, _col_res_l; // resolution
     Gtk::SpinButton _row_res, _col_res;
     Gtk::RadioButton _use_color, _use_tex; // color/texture selection
     Gtk::Button _tex_butt; // color / texture chooser
-    Gtk::CheckButton _draw, _draw_grid, _draw_normals; // selects what is drawn
-    Gtk::Button _apply_butt; // app;y changes
+    Gtk::CheckButton _draw, _transparent, _draw_normals, _draw_grid; // selects what is drawn
+    Gtk::Button _apply_butt; // apply changes
 
     // UI resources
     Gtk::Image _color_ico;
@@ -103,7 +103,7 @@ private:
     glm::vec3 _color;
     std::string _tex_filename;
 
-    // signal tyes
+    // signal types
     sigc::signal<void, const std::string &> _signal_cursor_moved;
     sigc::signal<void, const Gtk::Image &> _signal_tex_changed;
 

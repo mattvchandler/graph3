@@ -53,8 +53,9 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _use_tex("Use Texture"),
     _tex_butt("Choose Color"),
     _draw("Draw Graph"),
+    _transparent("Transparent Graph"),
+    _draw_normals("Draw Normals"),
     _draw_grid("Draw Gridlines"),
-    _draw_normals("Draw normals"),
     _apply_butt("Apply"),
     _tex_ico(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR),
     _color(start_color)
@@ -86,8 +87,9 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     attach(_tex_butt, 1, 11, 1, 2);
     attach(*Gtk::manage(new Gtk::Separator), 0, 13, 2, 1);
     attach(_draw, 0, 14, 1, 1);
-    attach(_draw_grid, 1, 14, 1, 1);
+    attach(_transparent, 1, 14, 1, 1);
     attach(_draw_normals, 0, 15, 1, 1);
+    attach(_draw_grid, 1, 15, 1, 1);
     attach(*Gtk::manage(new Gtk::Separator), 0, 16, 2, 1);
     attach(_apply_butt, 0, 17, 2, 1);
 
@@ -159,8 +161,9 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _draw.set_active(true);
     _draw_grid.set_active(true);
     _draw.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
-    _draw_grid.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
+    _transparent.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
     _draw_normals.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
+    _draw_grid.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
 
     // set visibility
     show_all_children();
@@ -506,8 +509,9 @@ void Graph_page::change_flags()
     {
         // pass settings to the graph
         _graph->draw_flag = _draw.get_active();
-        _graph->draw_grid_flag = _draw_grid.get_active();
+        _graph->transparent_flag = _transparent.get_active();
         _graph->draw_normals_flag = _draw_normals.get_active();
+        _graph->draw_grid_flag = _draw_grid.get_active();
         // redraw
         _gl_window.invalidate();
     }
