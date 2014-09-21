@@ -52,57 +52,22 @@ in vec2 tex_coords;
 in vec3 normal_vec;
 in vec3 pos;
 
+void calc_lighting(in vec3 pos, in vec3 cam_light_pos_eye, in float const_atten,
+    in float linear_atten, in float quad_atten, in vec3 light_forward, in vec3 normal_vec,
+    in vec3 dir_light_dir, in vec3 dir_half_vec, in float shininess,
+    in float cam_light_strength, in float dir_light_strength, in vec3 specular,
+    in vec3 cam_light_color, in vec3 dir_light_color, in vec3 ambient_color,
+    out vec3 scattered, out vec3 reflected);
+
 void main()
 {
-    // light location
-    vec3 light_dir = cam_light_pos_eye - pos;
-    float light_dist = length(light_dir);
+    vec3 scattered, reflected;
 
-    light_dir = light_dir / light_dist;
+    calc_lighting(pos, cam_light_pos_eye, const_atten, linear_atten, quad_atten,
+        light_forward, normal_vec, dir_light_dir, dir_half_vec, shininess,
+        cam_light_strength, dir_light_strength, specular, cam_light_color,
+        dir_light_color, ambient_color, scattered, reflected);
 
-    // calculate light falloff
-    float atten = 1.0 / (const_atten
-        + linear_atten * light_dist
-        + quad_atten * light_dist * light_dist);
-
-    // midway between light and camera - for reflection calc
-    vec3 half_vec = normalize(light_dir + light_forward);
-
-    // calculate ammt of diffuse and specular shading
-    float diffuse_mul, specular_mul;
-    float dir_diffuse_mul, dir_specular_mul;
-    if(gl_FrontFacing)
-    {
-        diffuse_mul = max(0.0, dot(normal_vec, light_dir));
-        specular_mul = max(0.0, dot(normal_vec, half_vec));
-
-        dir_diffuse_mul = max(0.0, dot(normal_vec, normalize(dir_light_dir)));
-        dir_specular_mul = max(0.0, dot(normal_vec, half_vec));
-    }
-    else
-    {
-        diffuse_mul = max(0.0, dot(-normal_vec, light_dir));
-        specular_mul = max(0.0, dot(-normal_vec, half_vec));
-
-        dir_diffuse_mul = max(0.0, dot(-normal_vec, normalize(dir_light_dir)));
-        dir_specular_mul = max(0.0, dot(-normal_vec, dir_half_vec));
-    }
-
-    // calculate specular shine strength
-    if(diffuse_mul <= 0.0001)
-        specular_mul = 0.0;
-    else
-        specular_mul = pow(specular_mul, shininess) * cam_light_strength;
-
-    if(dir_diffuse_mul <= 0.0001)
-        dir_specular_mul = 0.0;
-    else
-        dir_specular_mul = pow(dir_specular_mul, shininess) * dir_light_strength;
-
-    // diffuse light color
-    vec3 scattered = ambient_color + cam_light_color * diffuse_mul * atten + dir_light_color * dir_diffuse_mul;
-    // specular light color
-    vec3 reflected = cam_light_color * specular_mul * atten * specular + dir_light_color * dir_specular_mul * specular;
     // add to material color (from texture) to lighting for final color
     vec3 rgb = min(texture(tex, tex_coords).rgb * scattered + reflected, vec3(1.0));
     frag_color = vec4(rgb, texture(tex, tex_coords).a);

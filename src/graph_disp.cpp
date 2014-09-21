@@ -216,7 +216,7 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request):
 
 {
     // All OpenGL initialization has to wait until the drawing context actually exists
-    // we do this in the initiaize method
+    // we do this in the initialize method
     // connect it to the draw signal, to be run only on the first drawing request
     _draw_connection = signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::initiaize));
 
@@ -316,6 +316,7 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     // build shader programs
     GLuint graph_vert = compile_shader(check_in_pwd("shaders/graph.vert"), GL_VERTEX_SHADER);
     GLuint line_vert = compile_shader(check_in_pwd("shaders/line.vert"), GL_VERTEX_SHADER);
+    GLuint common_frag = compile_shader(check_in_pwd("shaders/common.frag"), GL_FRAGMENT_SHADER);
     GLuint tex_frag = compile_shader(check_in_pwd("shaders/tex.frag"), GL_FRAGMENT_SHADER);
     GLuint color_frag = compile_shader(check_in_pwd("shaders/color.frag"), GL_FRAGMENT_SHADER);
     GLuint flat_color_frag = compile_shader(check_in_pwd("shaders/flat_color.frag"), GL_FRAGMENT_SHADER);
@@ -329,9 +330,9 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     }
 
     // link shaders
-    _prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag},
+    _prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag, common_frag},
         {std::make_pair(0, "vert_pos"), std::make_pair(1, "vert_tex_coords"), std::make_pair(2, "vert_normal")});
-    _prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag},
+    _prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag, common_frag},
         {std::make_pair(0, "vert_pos"), std::make_pair(1, "vert_tex_coords"), std::make_pair(2, "vert_normal")});
     _prog_line = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag},
         {std::make_pair(0, "vert_pos")});
@@ -349,6 +350,7 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     // free shader objects
     glDeleteShader(graph_vert);
     glDeleteShader(line_vert);
+    glDeleteShader(common_frag);
     glDeleteShader(tex_frag);
     glDeleteShader(color_frag);
     glDeleteShader(flat_color_frag);
