@@ -208,10 +208,10 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request):
     draw_cursor_flag(true), draw_axes_flag(true), use_orbit_cam(true),
     cam_light({glm::vec3(0.0f), glm::vec3(1.0f), 0.2f, 1.0f, 0.5f, 0.0f}),
     dir_light({glm::vec3(-1.0f), glm::vec3(0.5f), 0.2f, 1.0f, 1.0f, 1.0f}),
+    bkg_color(0.25f, 0.25f, 0.25f), ambient_color(0.4f, 0.4f, 0.4f),
     _prog_tex(0), _prog_color(0), _prog_line(0),
     _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
     _orbit_cam({10.0f, 0.0f, (float)M_PI / 2.0f}), _scale(1.0f), _perspective(1.0f),
-    _ambient_color(0.4f, 0.4f, 0.4f),
     _active_graph(nullptr)
 
 {
@@ -301,7 +301,7 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     }
 
     // init GL state vars
-    glClearColor(0.25f, 0.25f, 0.25f, 0.0f);
+    glClearColor(bkg_color.r, bkg_color.g, bkg_color.b, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthRangef(0.0f, 1.0f);
     glLineWidth(5.0f);
@@ -405,13 +405,11 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
 
     glUseProgram(_prog_tex);
-    glUniform3fv(_prog_tex_uniforms["ambient_color"], 1, &_ambient_color[0]);
     glUniform3fv(_prog_tex_uniforms["cam_light_pos_eye"], 1, &light_pos_eye[0]);
     glUniform3fv(_prog_tex_uniforms["light_forward"], 1, &light_forward[0]);
     check_error("_prog_tex uniforms static");
 
     glUseProgram(_prog_color);
-    glUniform3fv(_prog_color_uniforms["ambient_color"], 1, &_ambient_color[0]);
     glUniform3fv(_prog_color_uniforms["cam_light_pos_eye"], 1, &light_pos_eye[0]);
     glUniform3fv(_prog_color_uniforms["light_forward"], 1, &light_forward[0]);
     check_error("_prog_color uniforms static");
@@ -484,7 +482,15 @@ void Graph_disp::graph_draw_setup(std::unordered_map<std::string, GLuint> & unif
 // main drawing code
 bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
 {
+    // set up global lights
+    glClearColor(bkg_color.r, bkg_color.g, bkg_color.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glUseProgram(_prog_tex);
+    glUniform3fv(_prog_tex_uniforms["ambient_color"], 1, &ambient_color[0]);
+
+    glUseProgram(_prog_color);
+    glUniform3fv(_prog_color_uniforms["ambient_color"], 1, &ambient_color[0]);
 
     // set up viewmodel matrices
     glm::mat4 view_model;

@@ -142,9 +142,12 @@ public:
     bool draw_axes_flag;
     bool use_orbit_cam;
 
-    // light vars
+    // lighting vars
     Light cam_light;
     Light dir_light;
+
+    glm::vec3 bkg_color;
+    glm::vec3 ambient_color;
 
 private:
     // called when OpenGL context is ready and GTK widget is ready
@@ -180,9 +183,6 @@ private:
     Orbit_cam _orbit_cam;
     float _scale;
     glm::mat4 _perspective;
-
-    // lighting vars
-    glm::vec3 _ambient_color;
 
     // storage for graphs (we do not own them here)
     Graph * _active_graph;

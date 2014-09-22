@@ -63,7 +63,7 @@ Graph_window::Graph_window():
     _menu_act->add(Gtk::Action::create("File_quit", Gtk::Stock::QUIT, "_Quit", "Quit"), sigc::mem_fun(*this, &Graph_window::hide));
 
     _menu_act->add(Gtk::Action::create("Settings", "Settings"));
-    _menu_act->add(Gtk::Action::create("Settings_lighting", "_Lighting", "Lighting"), sigc::mem_fun(*this, &Graph_window::lighting));
+    _menu_act->add(Gtk::Action::create("Settings_lighting", "_Lighting & Color", "Lighting & Color"), sigc::mem_fun(*this, &Graph_window::lighting));
 
     _menu_act->add(Gtk::Action::create("Help", "Help"));
     _menu_act->add(Gtk::Action::create("Help_about", "About", "About"), sigc::mem_fun(*this, &Graph_window::about));
@@ -328,7 +328,10 @@ void Graph_window::lighting()
 {
     Light dir_light = _gl_window.dir_light;
     Light cam_light = _gl_window.cam_light;
-    Lighting_window light_win(dir_light, cam_light);
+    glm::vec3 bkg_color = _gl_window.bkg_color;
+    glm::vec3 ambient_color = _gl_window.ambient_color;
+
+    Lighting_window light_win(dir_light, cam_light, bkg_color, ambient_color);
     light_win.set_modal(true);
     light_win.set_transient_for(*this);
     int response = light_win.run();
@@ -336,6 +339,8 @@ void Graph_window::lighting()
     {
         _gl_window.dir_light = dir_light;
         _gl_window.cam_light = cam_light;
+        _gl_window.bkg_color = bkg_color;
+        _gl_window.ambient_color = ambient_color;
     }
 }
 

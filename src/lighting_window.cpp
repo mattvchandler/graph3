@@ -30,8 +30,9 @@
 
 #include "lighting_window.hpp"
 
-// ctor takes ref to 2 light types
-Lighting_window::Lighting_window(Light & dir_light, Light & cam_light):
+// ctor takes ref to 2 light types, 2 colors
+Lighting_window::Lighting_window(Light & dir_light, Light & cam_light,
+    glm::vec3 & bkg_color, glm::vec3 & ambient_color):
     _x_dir(Gtk::Adjustment::create(dir_light.pos.x, -100.0, 100.0, 0.1), 0.1, 1),
     _y_dir(Gtk::Adjustment::create(dir_light.pos.y, -100.0, 100.0, 0.1), 0.1, 1),
     _z_dir(Gtk::Adjustment::create(dir_light.pos.z, -100.0, 100.0, 0.1), 0.1, 1),
@@ -40,18 +41,26 @@ Lighting_window::Lighting_window(Light & dir_light, Light & cam_light):
     _cam_const_atten(Gtk::Adjustment::create(cam_light.const_atten, 0.0, 1.0, 0.01)),
     _cam_linear_atten(Gtk::Adjustment::create(cam_light.linear_atten, 0.0, 1.0, 0.01)),
     _cam_quad_atten(Gtk::Adjustment::create(cam_light.quad_atten, 0.0, 10., 0.01)),
-    _dir_light(dir_light),
-    _cam_light(cam_light)
+    _dir_light(dir_light), _cam_light(cam_light),
+    _bkg_color(bkg_color), _ambient_color(ambient_color)
 {
     set_title("Lighting Options");
     Gtk::manage(add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL));
     Gtk::manage(add_button(Gtk::Stock::OK, Gtk::RESPONSE_OK));
 
     Gdk::RGBA start_color;
+
     start_color.set_rgba(dir_light.color.r, dir_light.color.g, dir_light.color.b, 1.0);
     _dir_color.set_rgba(start_color);
+
     start_color.set_rgba(cam_light.color.r, cam_light.color.g, cam_light.color.b, 1.0);
     _cam_color.set_rgba(start_color);
+
+    start_color.set_rgba(bkg_color.r, bkg_color.g, bkg_color.b, 1.0);
+    _bkg_color_butt.set_rgba(start_color);
+
+    start_color.set_rgba(ambient_color.r, ambient_color.g, ambient_color.b, 1.0);
+    _ambient_color_butt.set_rgba(start_color);
 
     Gtk::Grid * grid = new Gtk::Grid;
     get_content_area()->add(*Gtk::manage(grid));
@@ -94,13 +103,21 @@ Lighting_window::Lighting_window(Light & dir_light, Light & cam_light):
 
     grid->attach(*Gtk::manage(new Gtk::Label("Attenuation")), 0, 8, 1, 2);
 
+    grid->attach(_cam_const_atten, 1, 8, 1, 1);
+    grid->attach(_cam_linear_atten, 3, 8, 1, 1);
+    grid->attach(_cam_quad_atten, 5, 8, 1, 1);
+
     grid->attach(*Gtk::manage(new Gtk::Label("Constant")), 1, 9, 1, 1);
     grid->attach(*Gtk::manage(new Gtk::Label("Linear")), 3, 9, 1, 1);
     grid->attach(*Gtk::manage(new Gtk::Label("Quadratic")), 5, 9, 1, 1);
 
-    grid->attach(_cam_const_atten, 1, 8, 1, 1);
-    grid->attach(_cam_linear_atten, 3, 8, 1, 1);
-    grid->attach(_cam_quad_atten, 5, 8, 1, 1);
+    grid->attach(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_HORIZONTAL)), 0, 10, 7, 1);
+
+    grid->attach(*Gtk::manage(new Gtk::Label("Background Color")), 0, 11, 1, 1);
+    grid->attach(_bkg_color_butt, 1, 11, 1, 1);
+
+    grid->attach(*Gtk::manage(new Gtk::Label("Ambient Color")), 3, 11, 1, 1);
+    grid->attach(_ambient_color_butt, 4, 11, 3, 1);
 
     show_all_children();
 
@@ -130,4 +147,12 @@ void Lighting_window::store(int response)
     _cam_light.const_atten = _cam_const_atten.get_value();
     _cam_light.linear_atten = _cam_linear_atten.get_value();
     _cam_light.quad_atten = _cam_quad_atten.get_value();
+
+    _bkg_color.r = _bkg_color_butt.get_rgba().get_red();
+    _bkg_color.g = _bkg_color_butt.get_rgba().get_green();
+    _bkg_color.b = _bkg_color_butt.get_rgba().get_blue();
+
+    _ambient_color.r = _ambient_color_butt.get_rgba().get_red();
+    _ambient_color.g = _ambient_color_butt.get_rgba().get_green();
+    _ambient_color.b = _ambient_color_butt.get_rgba().get_blue();
 }
