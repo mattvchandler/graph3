@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 project(graph3)
 set(VERSION_MAJOR 1)
-set(VERSION_MINOR 0)
-set(VERSION_PATCH 1)
+set(VERSION_MINOR 1)
+set(VERSION_PATCH 0)
 set(GRAPH_TITLE "Graph 3")
 set(GRAPH_AUTHOR "Matthew Chandler <tardarsauce@gmail.com>")
 set(GRAPH_SUMMARY "A 3D graphing tool")
@@ -54,10 +54,12 @@ link_directories(${GTKMM_LINK_DIRS}
 add_executable(${PROJECT_NAME}
     src/config.cpp
     src/gl_helpers.cpp
-    src/graph.cpp
     src/graph_cartesian.cpp
+    src/graph.cpp
     src/graph_cylindrical.cpp
     src/graph_disp.cpp
+    src/graph_disp_draw.cpp
+    src/graph_disp_input.cpp
     src/graph_page.cpp
     src/graph_parametric.cpp
     src/graph_spherical.cpp
