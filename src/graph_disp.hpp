@@ -151,6 +151,11 @@ private:
     bool initiaize(const Cairo::RefPtr<Cairo::Context> & unused);
     // called when window is resized
     void resize(Gtk::Allocation & allocation);
+    // drawing setup code
+    void graph_draw_setup(std::unordered_map<std::string, GLuint> & uniforms,
+        const Graph & graph, const glm::mat4 & view_model_perspective,
+        const glm::mat4 & view_model, const glm::mat3 & normal_transform,
+        const glm::vec3 & dir_light_dir, const glm::vec3 & dir_half_vec);
     // main drawing code
     bool draw(const Cairo::RefPtr<Cairo::Context> & unused);
     // main input processing

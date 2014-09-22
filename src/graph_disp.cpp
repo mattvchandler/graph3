@@ -453,6 +453,34 @@ void Graph_disp::resize(Gtk::Allocation & allocation)
     }
 }
 
+void Graph_disp::graph_draw_setup(std::unordered_map<std::string, GLuint> & uniforms,
+    const Graph & graph, const glm::mat4 & view_model_perspective, const glm::mat4 & view_model,
+    const glm::mat3 & normal_transform, const glm::vec3 & dir_light_dir, const glm::vec3 & dir_half_vec)
+{
+    glUniformMatrix4fv(uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+    glUniformMatrix4fv(uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+    glUniformMatrix3fv(uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+
+    // material properties
+    if(!(graph.use_tex && graph.valid_tex))
+    {
+        glUniform4fv(uniforms["color"], 1, &graph.color[0]);
+    }
+    glUniform1f(uniforms["shininess"], graph.shininess);
+    glUniform3fv(uniforms["specular"], 1, &graph.specular[0]);
+    glUniform3fv(uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
+    glUniform3fv(uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
+
+    // light properties
+    glUniform3fv(uniforms["cam_light_color"], 1, &cam_light.color[0]);
+    glUniform1f(uniforms["cam_light_strength"], cam_light.strength);
+    glUniform1f(uniforms["const_atten"], cam_light.const_atten);
+    glUniform1f(uniforms["linear_atten"], cam_light.linear_atten);
+    glUniform1f(uniforms["quad_atten"], cam_light.quad_atten);
+    glUniform3fv(uniforms["dir_light_color"], 1, &dir_light.color[0]);
+    glUniform1f(uniforms["dir_light_strength"], dir_light.strength);
+}
+
 // main drawing code
 bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
 {
@@ -504,50 +532,17 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             {
                 // draw with texture
                 glUseProgram(_prog_tex);
-
-                glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-                glUniformMatrix4fv(_prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-                glUniformMatrix3fv(_prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
-
-                // material properties
-                glUniform1f(_prog_tex_uniforms["shininess"], graph->shininess);
-                glUniform3fv(_prog_tex_uniforms["specular"], 1, &graph->specular[0]);
-                glUniform3fv(_prog_tex_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
-                glUniform3fv(_prog_tex_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
-
-                // light properties
-                glUniform3fv(_prog_tex_uniforms["cam_light_color"], 1, &cam_light.color[0]);
-                glUniform1f(_prog_tex_uniforms["cam_light_strength"], cam_light.strength);
-                glUniform1f(_prog_tex_uniforms["const_atten"], cam_light.const_atten);
-                glUniform1f(_prog_tex_uniforms["linear_atten"], cam_light.linear_atten);
-                glUniform1f(_prog_tex_uniforms["quad_atten"], cam_light.quad_atten);
-                glUniform3fv(_prog_tex_uniforms["dir_light_color"], 1, &dir_light.color[0]);
-                glUniform1f(_prog_tex_uniforms["dir_light_strength"], dir_light.strength);
+                graph_draw_setup(_prog_tex_uniforms, *graph,
+                    view_model_perspective, view_model, normal_transform,
+                    dir_light_dir, dir_half_vec);
             }
             else
             {
                 // draw with one color
                 glUseProgram(_prog_color);
-
-                glUniformMatrix4fv(_prog_color_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-                glUniformMatrix4fv(_prog_color_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-                glUniformMatrix3fv(_prog_color_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
-
-                // material properties
-                glUniform4fv(_prog_color_uniforms["color"], 1, &graph->color[0]);
-                glUniform1f(_prog_color_uniforms["shininess"], graph->shininess);
-                glUniform3fv(_prog_color_uniforms["specular"], 1, &graph->specular[0]);
-                glUniform3fv(_prog_color_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
-                glUniform3fv(_prog_color_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
-
-                // light properties
-                glUniform3fv(_prog_color_uniforms["cam_light_color"], 1, &cam_light.color[0]);
-                glUniform1f(_prog_color_uniforms["cam_light_strength"], cam_light.strength);
-                glUniform1f(_prog_color_uniforms["const_atten"], cam_light.const_atten);
-                glUniform1f(_prog_color_uniforms["linear_atten"], cam_light.linear_atten);
-                glUniform1f(_prog_color_uniforms["quad_atten"], cam_light.quad_atten);
-                glUniform3fv(_prog_color_uniforms["dir_light_color"], 1, &dir_light.color[0]);
-                glUniform1f(_prog_color_uniforms["dir_light_strength"], dir_light.strength);
+                graph_draw_setup(_prog_color_uniforms, *graph,
+                    view_model_perspective, view_model, normal_transform,
+                    dir_light_dir, dir_half_vec);
             }
             check_error("draw geometry");
 
@@ -616,52 +611,19 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             {
                 // draw with texture
                 glUseProgram(_prog_tex);
-
-                glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-                glUniformMatrix4fv(_prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-                glUniformMatrix3fv(_prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
-
-                // material properties
-                glUniform1f(_prog_tex_uniforms["shininess"], graph->shininess);
-                glUniform3fv(_prog_tex_uniforms["specular"], 1, &graph->specular[0]);
-                glUniform3fv(_prog_tex_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
-                glUniform3fv(_prog_tex_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
-
-                // light properties
-                glUniform3fv(_prog_tex_uniforms["cam_light_color"], 1, &cam_light.color[0]);
-                glUniform1f(_prog_tex_uniforms["cam_light_strength"], cam_light.strength);
-                glUniform1f(_prog_tex_uniforms["const_atten"], cam_light.const_atten);
-                glUniform1f(_prog_tex_uniforms["linear_atten"], cam_light.linear_atten);
-                glUniform1f(_prog_tex_uniforms["quad_atten"], cam_light.quad_atten);
-                glUniform3fv(_prog_tex_uniforms["dir_light_color"], 1, &dir_light.color[0]);
-                glUniform1f(_prog_tex_uniforms["dir_light_strength"], dir_light.strength);
+                graph_draw_setup(_prog_tex_uniforms, *graph,
+                    view_model_perspective, view_model, normal_transform,
+                    dir_light_dir, dir_half_vec);
             }
             else
             {
                 // draw with one color
                 glUseProgram(_prog_color);
-
-                glUniformMatrix4fv(_prog_color_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-                glUniformMatrix4fv(_prog_color_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-                glUniformMatrix3fv(_prog_color_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
-
-                // material properties
-                glUniform4fv(_prog_color_uniforms["color"], 1, &graph->color[0]);
-                glUniform1f(_prog_color_uniforms["shininess"], graph->shininess);
-                glUniform3fv(_prog_color_uniforms["specular"], 1, &graph->specular[0]);
-                glUniform3fv(_prog_color_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
-                glUniform3fv(_prog_color_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
-
-                // light properties
-                glUniform3fv(_prog_color_uniforms["cam_light_color"], 1, &cam_light.color[0]);
-                glUniform1f(_prog_color_uniforms["cam_light_strength"], cam_light.strength);
-                glUniform1f(_prog_color_uniforms["const_atten"], cam_light.const_atten);
-                glUniform1f(_prog_color_uniforms["linear_atten"], cam_light.linear_atten);
-                glUniform1f(_prog_color_uniforms["quad_atten"], cam_light.quad_atten);
-                glUniform3fv(_prog_color_uniforms["dir_light_color"], 1, &dir_light.color[0]);
-                glUniform1f(_prog_color_uniforms["dir_light_strength"], dir_light.strength);
+                graph_draw_setup(_prog_color_uniforms, *graph,
+                    view_model_perspective, view_model, normal_transform,
+                    dir_light_dir, dir_half_vec);
             }
-            check_error("draw geometry");
+            check_error("draw transparent geometry");
 
             graph->draw();
         }
