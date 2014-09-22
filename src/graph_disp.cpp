@@ -494,11 +494,11 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
         check_error("draw axes");
     }
 
-    // draw graphs
+    // draw opaque graphs
     for(auto &graph: _graphs)
     {
         // draw geometry
-        if(graph->draw_flag)
+        if(graph->draw_flag && !graph->transparent_flag)
         {
             if(graph->use_tex && graph->valid_tex)
             {
@@ -555,7 +555,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
         }
 
         // draw grid
-        if(graph->draw_grid_flag)
+        if(graph->draw_grid_flag && !graph->transparent_flag)
         {
             // switch to line shader
             glUseProgram(_prog_line);
@@ -586,13 +586,13 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     {
         glUseProgram(_prog_tex);
 
-        view_model = glm::scale(glm::translate(view_model, _active_graph->cursor_pos()), glm::vec3(0.25f / _scale));
-        view_model_perspective = _perspective * view_model;
-        normal_transform = glm::transpose(glm::inverse(glm::mat3(view_model)));
+        glm::mat4 cursor_view_model = glm::scale(glm::translate(view_model, _active_graph->cursor_pos()), glm::vec3(0.25f / _scale));
+        glm::mat4 cursor_view_model_perspective = _perspective * cursor_view_model;
+        glm::mat3 cursor_normal_transform = glm::transpose(glm::inverse(glm::mat3(cursor_view_model)));
 
-        glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
-        glUniformMatrix4fv(_prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-        glUniformMatrix3fv(_prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+        glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &cursor_view_model_perspective[0][0]);
+        glUniformMatrix4fv(_prog_tex_uniforms["view_model"], 1, GL_FALSE, &cursor_view_model[0][0]);
+        glUniformMatrix3fv(_prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &cursor_normal_transform[0][0]);
 
         // material properties
         glUniform1f(_prog_tex_uniforms["shininess"], _cursor.shininess);
@@ -602,6 +602,84 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
 
         _cursor.draw();
         check_error("draw cursor");
+    }
+
+    // 2nd pass to draw transparent graphs
+    for(auto &graph: _graphs)
+    {
+        glDepthMask(GL_FALSE);
+        glBlendFunc(GL_SRC_COLOR, GL_ONE);
+        // draw geometry
+        if(graph->draw_flag && graph->transparent_flag)
+        {
+            if(graph->use_tex && graph->valid_tex)
+            {
+                // draw with texture
+                glUseProgram(_prog_tex);
+
+                glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+                glUniformMatrix4fv(_prog_tex_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+                glUniformMatrix3fv(_prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+
+                // material properties
+                glUniform1f(_prog_tex_uniforms["shininess"], graph->shininess);
+                glUniform3fv(_prog_tex_uniforms["specular"], 1, &graph->specular[0]);
+                glUniform3fv(_prog_tex_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
+                glUniform3fv(_prog_tex_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
+
+                // light properties
+                glUniform3fv(_prog_tex_uniforms["cam_light_color"], 1, &cam_light.color[0]);
+                glUniform1f(_prog_tex_uniforms["cam_light_strength"], cam_light.strength);
+                glUniform1f(_prog_tex_uniforms["const_atten"], cam_light.const_atten);
+                glUniform1f(_prog_tex_uniforms["linear_atten"], cam_light.linear_atten);
+                glUniform1f(_prog_tex_uniforms["quad_atten"], cam_light.quad_atten);
+                glUniform3fv(_prog_tex_uniforms["dir_light_color"], 1, &dir_light.color[0]);
+                glUniform1f(_prog_tex_uniforms["dir_light_strength"], dir_light.strength);
+            }
+            else
+            {
+                // draw with one color
+                glUseProgram(_prog_color);
+
+                glUniformMatrix4fv(_prog_color_uniforms["view_model_perspective"], 1, GL_FALSE, &view_model_perspective[0][0]);
+                glUniformMatrix4fv(_prog_color_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+                glUniformMatrix3fv(_prog_color_uniforms["normal_transform"], 1, GL_FALSE, &normal_transform[0][0]);
+
+                // material properties
+                glUniform4fv(_prog_color_uniforms["color"], 1, &graph->color[0]);
+                glUniform1f(_prog_color_uniforms["shininess"], graph->shininess);
+                glUniform3fv(_prog_color_uniforms["specular"], 1, &graph->specular[0]);
+                glUniform3fv(_prog_color_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
+                glUniform3fv(_prog_color_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
+
+                // light properties
+                glUniform3fv(_prog_color_uniforms["cam_light_color"], 1, &cam_light.color[0]);
+                glUniform1f(_prog_color_uniforms["cam_light_strength"], cam_light.strength);
+                glUniform1f(_prog_color_uniforms["const_atten"], cam_light.const_atten);
+                glUniform1f(_prog_color_uniforms["linear_atten"], cam_light.linear_atten);
+                glUniform1f(_prog_color_uniforms["quad_atten"], cam_light.quad_atten);
+                glUniform3fv(_prog_color_uniforms["dir_light_color"], 1, &dir_light.color[0]);
+                glUniform1f(_prog_color_uniforms["dir_light_strength"], dir_light.strength);
+            }
+            check_error("draw geometry");
+
+            graph->draw();
+        }
+
+        // draw grid
+        if(graph->draw_grid_flag && graph->transparent_flag)
+        {
+            // switch to line shader
+            glUseProgram(_prog_line);
+            glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
+            glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+            glUniform4fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
+
+            graph->draw_grid();
+            check_error("draw grid");
+        }
+        glDepthMask(GL_TRUE);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     display(); // swap display buffers
