@@ -739,8 +739,9 @@ void Graph_page::apply()
 
     // set graph properties
     _graph->draw_flag = _draw.get_active();
-    _graph->draw_grid_flag = _draw_grid.get_active();
+    _graph->transparent_flag = _transparent.get_active();
     _graph->draw_normals_flag = _draw_normals.get_active();
+    _graph->draw_grid_flag = _draw_grid.get_active();
     _graph->use_tex = _use_tex.get_active();
 
     // set the texture
