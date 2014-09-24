@@ -252,6 +252,8 @@ void Graph_page::save_graph(const std::string & filename)
 // read from a file
 bool Graph_page::load_graph(const std::string & filename)
 {
+    bool complete = true;
+
     libconfig::Config cfg;
     try
     {
@@ -259,7 +261,7 @@ bool Graph_page::load_graph(const std::string & filename)
         cfg.readFile(filename.c_str());
         libconfig::Setting & cfg_root = cfg.getRoot()["graph"];
 
-        // set properties
+        // set properties - reqired settings
         bool r_car = cfg_root["r_car"];
         bool r_cyl = cfg_root["r_cyl"];
         bool r_sph = cfg_root["r_sph"];
@@ -275,22 +277,10 @@ bool Graph_page::load_graph(const std::string & filename)
             return false;
         }
 
-        std::string eqn = cfg_root["eqn"];
-        std::string eqn_par_y = cfg_root["eqn_par_y"];
-        std::string eqn_par_z = cfg_root["eqn_par_z"];
-
-        std::string row_min = cfg_root["row_min"];
-        std::string row_max = cfg_root["row_max"];
-        std::string col_min = cfg_root["col_min"];
-        std::string col_max = cfg_root["col_max"];
-
-        int row_res = cfg_root["row_res"];
-        int col_res = cfg_root["col_res"];
-
-        bool draw = cfg_root["draw"];
-        bool transparent = cfg_root["transparent"];
-        bool draw_normals = cfg_root["draw_normals"];
-        bool draw_grid = cfg_root["draw_grid"];
+        _r_car.set_active(r_car);
+        _r_cyl.set_active(r_cyl);
+        _r_sph.set_active(r_sph);
+        _r_par.set_active(r_par);
 
         bool use_color = cfg_root["use_color"];
         bool use_tex = cfg_root["use_tex"];
@@ -305,54 +295,84 @@ bool Graph_page::load_graph(const std::string & filename)
             return false;
         }
 
-        libconfig::Setting & color_l = cfg_root["color"];
-        // check for valid color (list of 3)
-        if(!color_l.isList() || color_l.getLength() != 3)
-        {
-            // show error message box
-            Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-            std::ostringstream msg;
-            msg<<"Invalid number of color elements (expected 3, got "<<color_l.getLength()<<")";
-            error_dialog.set_secondary_text(msg.str());
-            error_dialog.set_title("Error");
-            error_dialog.run();
-            return false;
-        }
-        glm::vec3 color;
-        color.r = color_l[0];
-        color.g = color_l[1];
-        color.b = color_l[2];
-
-        std::string tex_filename = cfg_root["tex_filename"];
-
-        _r_car.set_active(r_car);
-        _r_cyl.set_active(r_cyl);
-        _r_sph.set_active(r_sph);
-        _r_par.set_active(r_par);
-
-        _eqn.set_text(eqn);
-        _eqn_par_y.set_text(eqn_par_y);
-        _eqn_par_z.set_text(eqn_par_z);
-
-        _row_min.set_text(row_min);
-        _row_max.set_text(row_max);
-        _col_min.set_text(col_min);
-        _col_max.set_text(col_max);
-
-        _row_res.get_adjustment()->set_value((double)row_res);
-        _col_res.get_adjustment()->set_value((double)col_res);
-
-        _draw.set_active(draw);
-        _transparent.set_active(transparent);
-        _draw_normals.set_active(draw_normals);
-        _draw_grid.set_active(draw_grid);
-
         _use_color.set_active(use_color);
         _use_tex.set_active(use_tex);
 
-        _color = color;
 
-        _tex_filename = tex_filename;
+        // non-required settings, but needed to draw graph
+        try { _eqn.set_text(static_cast<const char *>(cfg_root["eqn"])); }
+        catch(const libconfig::SettingNotFoundException) { complete = false; }
+
+        try { _eqn_par_y.set_text(static_cast<const char *>(cfg_root["eqn_par_y"])); }
+        catch(const libconfig::SettingNotFoundException)
+        {
+            if(r_par)
+                complete = false;
+        }
+
+        try { _eqn_par_z.set_text(static_cast<const char *>(cfg_root["eqn_par_z"])); }
+        catch(const libconfig::SettingNotFoundException)
+        {
+            if(r_par)
+                complete = false;
+        }
+
+        try { _row_min.set_text(static_cast<const char *>(cfg_root["row_min"])); }
+        catch(const libconfig::SettingNotFoundException) { complete = false; }
+
+        try { _row_max.set_text(static_cast<const char *>(cfg_root["row_max"])); }
+        catch(const libconfig::SettingNotFoundException) { complete = false; }
+
+        try { _col_min.set_text(static_cast<const char *>(cfg_root["col_min"])); }
+        catch(const libconfig::SettingNotFoundException) { complete = false; }
+
+        try { _col_max.set_text(static_cast<const char *>(cfg_root["col_max"])); }
+        catch(const libconfig::SettingNotFoundException) { complete = false; }
+
+        // non-required settings
+        try { _row_res.get_adjustment()->set_value(static_cast<int>(cfg_root["row_res"])); }
+        catch(const libconfig::SettingNotFoundException) {}
+
+        try { _col_res.get_adjustment()->set_value(static_cast<int>(cfg_root["col_res"])); }
+        catch(const libconfig::SettingNotFoundException) {}
+
+        try { _draw.set_active(static_cast<bool>(cfg_root["draw"])); }
+        catch(const libconfig::SettingNotFoundException) {}
+
+        try { _transparent.set_active(static_cast<bool>(cfg_root["transparent"])); }
+        catch(const libconfig::SettingNotFoundException) {}
+
+        try { _draw_normals.set_active(static_cast<bool>(cfg_root["draw_normals"])); }
+        catch(const libconfig::SettingNotFoundException) {}
+
+        try { _draw_grid.set_active(static_cast<bool>(cfg_root["draw_grid"])); }
+        catch(const libconfig::SettingNotFoundException) {}
+
+        try { _tex_filename = static_cast<const char *>(cfg_root["tex_filename"]); }
+        catch(const libconfig::SettingNotFoundException) {}
+
+        try
+        {
+            libconfig::Setting & color_l = cfg_root["color"];
+
+            // check for valid color (list of 3)
+            if(!color_l.isList() || color_l.getLength() != 3)
+            {
+                // show error message box
+                Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+                std::ostringstream msg;
+                msg<<"Invalid number of color elements (expected 3, got "<<color_l.getLength()<<")";
+                error_dialog.set_secondary_text(msg.str());
+                error_dialog.set_title("Error");
+                error_dialog.run();
+                return false;
+            }
+            _color.r = color_l[0];
+            _color.g = color_l[1];
+            _color.b = color_l[2];
+        }
+        catch(const libconfig::SettingNotFoundException) {}
+
     }
     catch(const libconfig::FileIOException & e)
     {
@@ -428,7 +448,9 @@ bool Graph_page::load_graph(const std::string & filename)
     // set properties from widget values
     change_type();
     change_coloring();
-    apply();
+
+    if(complete)
+        apply();
 
     return true;
 }
