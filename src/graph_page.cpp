@@ -220,8 +220,9 @@ void Graph_page::save_graph(const std::string & filename)
     cfg_root.add("col_res", libconfig::Setting::TypeInt) = _col_res.get_value_as_int();
 
     cfg_root.add("draw", libconfig::Setting::TypeBoolean) = _draw.get_active();
-    cfg_root.add("draw_grid", libconfig::Setting::TypeBoolean) = _draw_grid.get_active();
+    cfg_root.add("transparent", libconfig::Setting::TypeBoolean) = _transparent.get_active();
     cfg_root.add("draw_normals", libconfig::Setting::TypeBoolean) = _draw_normals.get_active();
+    cfg_root.add("draw_grid", libconfig::Setting::TypeBoolean) = _draw_grid.get_active();
 
     cfg_root.add("use_color", libconfig::Setting::TypeBoolean) = _use_color.get_active();
     cfg_root.add("use_tex", libconfig::Setting::TypeBoolean) = _use_tex.get_active();
@@ -287,8 +288,9 @@ bool Graph_page::load_graph(const std::string & filename)
         int col_res = cfg_root["col_res"];
 
         bool draw = cfg_root["draw"];
-        bool draw_grid = cfg_root["draw_grid"];
+        bool transparent = cfg_root["transparent"];
         bool draw_normals = cfg_root["draw_normals"];
+        bool draw_grid = cfg_root["draw_grid"];
 
         bool use_color = cfg_root["use_color"];
         bool use_tex = cfg_root["use_tex"];
@@ -341,8 +343,9 @@ bool Graph_page::load_graph(const std::string & filename)
         _col_res.get_adjustment()->set_value((double)col_res);
 
         _draw.set_active(draw);
-        _draw_grid.set_active(draw_grid);
+        _transparent.set_active(transparent);
         _draw_normals.set_active(draw_normals);
+        _draw_grid.set_active(draw_grid);
 
         _use_color.set_active(use_color);
         _use_tex.set_active(use_tex);

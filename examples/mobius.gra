@@ -14,8 +14,9 @@ graph :
   row_res = 50;
   col_res = 50;
   draw = true;
-  draw_grid = false;
+  transparent = false;
   draw_normals = true;
+  draw_grid = false;
   use_color = true;
   use_tex = false;
   color = ( 0.8000000119, 0.0, 0.0 );

@@ -1,0 +1,24 @@
+graph : 
+{
+  r_car = false;
+  r_cyl = false;
+  r_sph = true;
+  r_par = false;
+  eqn = "1 + 1/5 * sin(6 * theta) * sin(5 * phi)";
+  eqn_par_y = "";
+  eqn_par_z = "";
+  row_min = "0";
+  row_max = "2 * pi";
+  col_min = "0";
+  col_max = "pi";
+  row_res = 500;
+  col_res = 500;
+  draw = true;
+  transparent = true;
+  draw_normals = false;
+  draw_grid = false;
+  use_color = true;
+  use_tex = false;
+  color = ( 0.200000003, 0.5, 0.200000003 );
+  tex_filename = "";
+};
