@@ -291,6 +291,7 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendColor(1.0f, 1.0f, 1.0f, 0.1f);
     glEnable(GL_BLEND);
 
     // build shader programs

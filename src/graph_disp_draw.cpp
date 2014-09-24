@@ -202,7 +202,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     for(auto &graph: _graphs)
     {
         glDepthMask(GL_FALSE);
-        glBlendFunc(GL_SRC_COLOR, GL_ONE);
+        glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE);
         // draw geometry
         if(graph->draw_flag && graph->transparent_flag)
         {
