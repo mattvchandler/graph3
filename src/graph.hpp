@@ -98,12 +98,12 @@ public:
     // material properties
     bool use_tex;
     bool valid_tex;
-    glm::vec4 color;
+    glm::vec3 color;
     float shininess;
     glm::vec3 specular;
 
-    glm::vec4 grid_color;
-    glm::vec4 normal_color;
+    glm::vec3 grid_color;
+    glm::vec3 normal_color;
 
     // toggle drawing on and off
     bool draw_flag;

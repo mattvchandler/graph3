@@ -637,7 +637,7 @@ void Graph_page::change_tex()
             if(_graph.get())
             {
                 // set color in graph properties
-                _graph->color = glm::vec4(_color, 1.0f);
+                _graph->color = _color;
                 _gl_window.invalidate();
             }
 
@@ -785,7 +785,7 @@ void Graph_page::apply()
             error_dialog.run();
         }
     }
-    _graph->color = glm::vec4(_color, 1.0f);
+    _graph->color = _color;
 
     update_cursor(_graph->cursor_text());
 

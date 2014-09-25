@@ -145,7 +145,7 @@ GLuint create_texture_from_file(const std::string & filename)
     int h = image->get_height();
 
     // raw image data
-    std::vector<float> float_data(w * h * 4);
+    std::vector<float> float_data(w * h * 3);
 
     // get data and load into float array
     const guint8 * int_data = image->get_pixels();
@@ -157,22 +157,15 @@ GLuint create_texture_from_file(const std::string & filename)
             switch(image->get_n_channels())
             {
             case 1:
-                float_data[(w * r + c) * 4 + 0] = pix[0] / 255.0f;
-                float_data[(w * r + c) * 4 + 1] = pix[0] / 255.0f;
-                float_data[(w * r + c) * 4 + 2] = pix[0] / 255.0f;
-                float_data[(w * r + c) * 4 + 3] = 1.0f;
+                float_data[(w * r + c) * 3 + 0] = pix[0] / 255.0f;
+                float_data[(w * r + c) * 3 + 1] = pix[0] / 255.0f;
+                float_data[(w * r + c) * 3 + 2] = pix[0] / 255.0f;
                 break;
             case 3:
-                float_data[(w * r + c) * 4 + 0] = pix[0] / 255.0f;
-                float_data[(w * r + c) * 4 + 1] = pix[1] / 255.0f;
-                float_data[(w * r + c) * 4 + 2] = pix[2] / 255.0f;
-                float_data[(w * r + c) * 4 + 3] = 1.0f;
-                break;
             case 4:
-                float_data[(w * r + c) * 4 + 0] = pix[0] / 255.0f;
-                float_data[(w * r + c) * 4 + 1] = pix[1] / 255.0f;
-                float_data[(w * r + c) * 4 + 2] = pix[2] / 255.0f;
-                float_data[(w * r + c) * 4 + 3] = pix[3] / 255.0f;
+                float_data[(w * r + c) * 3 + 0] = pix[0] / 255.0f;
+                float_data[(w * r + c) * 3 + 1] = pix[1] / 255.0f;
+                float_data[(w * r + c) * 3 + 2] = pix[2] / 255.0f;
                 break;
             default:
                 break;
@@ -188,8 +181,8 @@ GLuint create_texture_from_file(const std::string & filename)
     // copy data to OpenGL
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexStorage2D(GL_TEXTURE_2D, (int)(log2(std::min(w, h))) + 1,
-        GL_RGBA8, w, h);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_FLOAT, float_data.data());
+        GL_RGB8, w, h);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGB, GL_FLOAT, float_data.data());
 
     // set texture properties
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

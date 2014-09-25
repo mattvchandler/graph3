@@ -141,7 +141,7 @@ void Cursor::build(const std::string & tex_file_name)
     }
 }
 
-Axes::Axes(): color(0.0f, 0.0f, 0.0f, 1.0f), _vao(0), _vbo(0), _num_indexes(0)
+Axes::Axes(): color(0.0f, 0.0f, 0.0f), _vao(0), _vbo(0), _num_indexes(0)
 {
 }
 
@@ -408,7 +408,6 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     }
 
     _axes.build();
-    _axes.color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     invalidate(); // redraw
 

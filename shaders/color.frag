@@ -25,7 +25,7 @@
 out vec4 frag_color;
 
 // material vars
-uniform vec4 color;
+uniform vec3 color;
 uniform float shininess;
 uniform vec3 specular;
 
@@ -70,5 +70,5 @@ void main()
 
     // add to material color (from material color) to lighting for final color
     vec3 rgb = min(color.rgb * scattered + reflected, vec3(1.0));
-    frag_color = vec4(rgb, color.a);
+    frag_color = vec4(rgb, 1.0);
 }

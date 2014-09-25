@@ -103,7 +103,7 @@ public:
     void draw() const;
     void build();
 
-    glm::vec4 color;
+    glm::vec3 color;
 private:
     // OpenGL stuff
     GLuint _vao;

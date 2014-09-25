@@ -55,7 +55,7 @@ void Graph_disp::graph_draw_setup(std::unordered_map<std::string, GLuint> & unif
     // material properties
     if(!(graph.use_tex && graph.valid_tex))
     {
-        glUniform4fv(uniforms["color"], 1, &graph.color[0]);
+        glUniform3fv(uniforms["color"], 1, &graph.color[0]);
     }
     glUniform1f(uniforms["shininess"], graph.shininess);
     glUniform3fv(uniforms["specular"], 1, &graph.specular[0]);
@@ -114,7 +114,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
 
         glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
         glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-        glUniform4fv(_prog_line_uniforms["color"], 1, &_axes.color[0]);
+        glUniform3fv(_prog_line_uniforms["color"], 1, &_axes.color[0]);
 
         _axes.draw();
 
@@ -155,7 +155,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             glUseProgram(_prog_line);
             glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
             glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-            glUniform4fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
+            glUniform3fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
 
             graph->draw_grid();
             check_error("draw grid");
@@ -168,7 +168,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             glUseProgram(_prog_line);
             glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
             glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-            glUniform4fv(_prog_line_uniforms["color"], 1, &graph->normal_color[0]);
+            glUniform3fv(_prog_line_uniforms["color"], 1, &graph->normal_color[0]);
 
             graph->draw_normals();
             check_error("draw normals");
@@ -244,7 +244,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             glUseProgram(_prog_line);
             glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
             glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-            glUniform4fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
+            glUniform3fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
 
             graph->draw_grid();
             check_error("draw grid");

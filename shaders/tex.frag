@@ -70,5 +70,5 @@ void main()
 
     // add to material color (from texture) to lighting for final color
     vec3 rgb = min(texture(tex, tex_coords).rgb * scattered + reflected, vec3(1.0));
-    frag_color = vec4(rgb, texture(tex, tex_coords).a);
+    frag_color = vec4(rgb, 1.0);
 }
