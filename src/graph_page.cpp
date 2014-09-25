@@ -303,6 +303,8 @@ void Graph_page::change_transparency()
     if(_graph.get())
     {
         _graph->transparency = _transparency.get_value();
+        // redraw
+        _gl_window.invalidate();
     }
 }
 

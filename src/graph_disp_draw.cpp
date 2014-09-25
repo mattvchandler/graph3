@@ -125,40 +125,43 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     for(auto &graph: _graphs)
     {
         // draw geometry
-        if(graph->draw_flag && !graph->transparent_flag)
+        if(!graph->transparent_flag)
         {
-            if(graph->use_tex && graph->valid_tex)
+            if(graph->draw_flag)
             {
-                // draw with texture
-                glUseProgram(_prog_tex);
-                graph_draw_setup(_prog_tex_uniforms, *graph,
-                    view_model_perspective, view_model, normal_transform,
-                    dir_light_dir, dir_half_vec);
+                if(graph->use_tex && graph->valid_tex)
+                {
+                    // draw with texture
+                    glUseProgram(_prog_tex);
+                    graph_draw_setup(_prog_tex_uniforms, *graph,
+                        view_model_perspective, view_model, normal_transform,
+                        dir_light_dir, dir_half_vec);
+                }
+                else
+                {
+                    // draw with one color
+                    glUseProgram(_prog_color);
+                    graph_draw_setup(_prog_color_uniforms, *graph,
+                        view_model_perspective, view_model, normal_transform,
+                        dir_light_dir, dir_half_vec);
+                }
+                check_error("draw geometry");
+
+                graph->draw();
             }
-            else
+
+            // draw grid
+            if(graph->draw_grid_flag)
             {
-                // draw with one color
-                glUseProgram(_prog_color);
-                graph_draw_setup(_prog_color_uniforms, *graph,
-                    view_model_perspective, view_model, normal_transform,
-                    dir_light_dir, dir_half_vec);
+                // switch to line shader
+                glUseProgram(_prog_line);
+                glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
+                glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+                glUniform3fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
+
+                graph->draw_grid();
+                check_error("draw grid");
             }
-            check_error("draw geometry");
-
-            graph->draw();
-        }
-
-        // draw grid
-        if(graph->draw_grid_flag && !graph->transparent_flag)
-        {
-            // switch to line shader
-            glUseProgram(_prog_line);
-            glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
-            glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-            glUniform3fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
-
-            graph->draw_grid();
-            check_error("draw grid");
         }
 
         // draw normal vectors
@@ -207,47 +210,51 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     glGetFloatv(GL_BLEND_COLOR, &old_blend_color[0]);
 
     glDepthMask(GL_FALSE);
-    glBlendColor(1.0f, 1.0f, 1.0f, 0.5f);
     glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE);
 
     // 2nd pass to draw transparent graphs
     for(auto &graph: _graphs)
     {
-        // draw geometry
-        if(graph->draw_flag && graph->transparent_flag)
+        if(graph->transparent_flag)
         {
-            if(graph->use_tex && graph->valid_tex)
+            // draw geometry
+            if(graph->draw_flag)
             {
-                // draw with texture
-                glUseProgram(_prog_tex);
-                graph_draw_setup(_prog_tex_uniforms, *graph,
-                    view_model_perspective, view_model, normal_transform,
-                    dir_light_dir, dir_half_vec);
+                glBlendColor(1.0f, 1.0f, 1.0f, graph->transparency);
+
+                if(graph->use_tex && graph->valid_tex)
+                {
+                    // draw with texture
+                    glUseProgram(_prog_tex);
+                    graph_draw_setup(_prog_tex_uniforms, *graph,
+                        view_model_perspective, view_model, normal_transform,
+                        dir_light_dir, dir_half_vec);
+                }
+                else
+                {
+                    // draw with one color
+                    glUseProgram(_prog_color);
+                    graph_draw_setup(_prog_color_uniforms, *graph,
+                        view_model_perspective, view_model, normal_transform,
+                        dir_light_dir, dir_half_vec);
+                }
+                check_error("draw transparent geometry");
+
+                graph->draw();
             }
-            else
+
+            // draw grid
+            if(graph->draw_grid_flag)
             {
-                // draw with one color
-                glUseProgram(_prog_color);
-                graph_draw_setup(_prog_color_uniforms, *graph,
-                    view_model_perspective, view_model, normal_transform,
-                    dir_light_dir, dir_half_vec);
+                // switch to line shader
+                glUseProgram(_prog_line);
+                glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
+                glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+                glUniform3fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
+
+                graph->draw_grid();
+                check_error("draw grid");
             }
-            check_error("draw transparent geometry");
-
-            graph->draw();
-        }
-
-        // draw grid
-        if(graph->draw_grid_flag && graph->transparent_flag)
-        {
-            // switch to line shader
-            glUseProgram(_prog_line);
-            glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
-            glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-            glUniform3fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
-
-            graph->draw_grid();
-            check_error("draw grid");
         }
     }
     // restore settings
