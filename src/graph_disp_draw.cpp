@@ -198,11 +198,21 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
         check_error("draw cursor");
     }
 
+    // save old values
+    GLint old_depth_mask, old_blend_func_src, old_blend_func_dst;
+    glm::vec4 old_blend_color;
+    glGetIntegerv(GL_DEPTH_WRITEMASK, &old_depth_mask);
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, &old_blend_func_src);
+    glGetIntegerv(GL_BLEND_DST_ALPHA, &old_blend_func_dst);
+    glGetFloatv(GL_BLEND_COLOR, &old_blend_color[0]);
+
+    glDepthMask(GL_FALSE);
+    glBlendColor(1.0f, 1.0f, 1.0f, 0.5f);
+    glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE);
+
     // 2nd pass to draw transparent graphs
     for(auto &graph: _graphs)
     {
-        glDepthMask(GL_FALSE);
-        glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE);
         // draw geometry
         if(graph->draw_flag && graph->transparent_flag)
         {
@@ -239,9 +249,11 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             graph->draw_grid();
             check_error("draw grid");
         }
-        glDepthMask(GL_TRUE);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
+    // restore settings
+    glDepthMask(old_depth_mask);
+    glBlendFunc(old_blend_func_src, old_blend_func_dst);
+    glBlendColor(old_blend_color.r, old_blend_color.g, old_blend_color.b, old_blend_color.a);
 
     display(); // swap display buffers
     return true;
