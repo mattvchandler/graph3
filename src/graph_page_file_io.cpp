@@ -67,6 +67,8 @@ void Graph_page::save_graph(const std::string & filename)
     color.add(libconfig::Setting::TypeFloat) = _color.g;
     color.add(libconfig::Setting::TypeFloat) = _color.b;
 
+    cfg_root.add("transparency", libconfig::Setting::TypeFloat) = _transparency.get_value();
+
     cfg_root.add("tex_filename", libconfig::Setting::TypeString) = _tex_filename;
 
     try
@@ -206,6 +208,9 @@ bool Graph_page::load_graph(const std::string & filename)
             _color.g = color_l[1];
             _color.b = color_l[2];
         }
+        catch(const libconfig::SettingNotFoundException) {}
+
+        try { _transparency.set_value(static_cast<float>(cfg_root["transparency"])); }
         catch(const libconfig::SettingNotFoundException) {}
 
     }

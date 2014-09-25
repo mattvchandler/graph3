@@ -19,6 +19,7 @@ graph :
   draw_grid = false;
   use_color = true;
   use_tex = false;
-  color = ( 0.200000003, 0.5, 0.200000003 );
+  color = ( 0.4588235319, 0.3137255013, 0.4823529422 );
+  transparency = 0.25;
   tex_filename = "";
 };

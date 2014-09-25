@@ -20,5 +20,6 @@ graph :
   use_color = true;
   use_tex = false;
   color = ( 0.4470588267, 0.6235294342, 0.8117647171 );
+  transparency = 0.5;
   tex_filename = "";
 };
