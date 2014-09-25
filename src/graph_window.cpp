@@ -351,7 +351,7 @@ void Graph_window::about()
     about.set_transient_for(*this);
 
     about.set_program_name(GRAPH_TITLE);
-    about.set_version(VERSION_MAJOR_STR "." VERSION_MINOR_STR);
+    about.set_version(VERSION_MAJOR_STR "." VERSION_MINOR_STR "." VERSION_PATCH_STR);
     about.set_copyright(u8"© 2014 Matthew Chandler");
     about.set_comments(GRAPH_SUMMARY);
     about.set_license_type(Gtk::LICENSE_MIT_X11);
