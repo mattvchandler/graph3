@@ -61,6 +61,8 @@ add_executable(${PROJECT_NAME}
     src/graph_disp_draw.cpp
     src/graph_disp_input.cpp
     src/graph_page.cpp
+    src/graph_page_color_tex.cpp
+    src/graph_page_file_io.cpp
     src/graph_parametric.cpp
     src/graph_spherical.cpp
     src/graph_window.cpp
