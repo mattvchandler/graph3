@@ -33,6 +33,7 @@
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/radiobutton.h>
+#include <gtkmm/scale.h>
 #include <gtkmm/spinbutton.h>
 
 #include <sigc++/sigc++.h>
@@ -95,6 +96,8 @@ private:
     Gtk::RadioButton _use_color, _use_tex; // color/texture selection
     Gtk::Button _tex_butt; // color / texture chooser
     Gtk::CheckButton _draw, _transparent, _draw_normals, _draw_grid; // selects what is drawn
+    Gtk::Label _transparency_l;
+    Gtk::Scale _transparency;
     Gtk::Button _apply_butt; // apply changes
 
     // UI resources

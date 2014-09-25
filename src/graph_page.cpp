@@ -50,6 +50,8 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _transparent("Transparent Graph"),
     _draw_normals("Draw Normals"),
     _draw_grid("Draw Gridlines"),
+    _transparency_l("Opacity:"),
+    _transparency(Gtk::Adjustment::create(0.5, 0.0, 1.0, 0.01), Gtk::ORIENTATION_HORIZONTAL),
     _apply_butt("Apply"),
     _tex_ico(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR),
     _color(start_color)
@@ -84,8 +86,10 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     attach(_transparent, 1, 14, 1, 1);
     attach(_draw_normals, 0, 15, 1, 1);
     attach(_draw_grid, 1, 15, 1, 1);
-    attach(*Gtk::manage(new Gtk::Separator), 0, 16, 2, 1);
-    attach(_apply_butt, 0, 17, 2, 1);
+    attach(_transparency_l, 0, 16, 1, 1);
+    attach(_transparency, 1, 16, 1, 1);
+    attach(*Gtk::manage(new Gtk::Separator), 0, 17, 2, 1);
+    attach(_apply_butt, 0, 18, 2, 1);
 
     // set button properties
     _tex_butt.set_valign(Gtk::ALIGN_CENTER);
@@ -101,6 +105,8 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _r_cyl.set_group(type_g);
     _r_sph.set_group(type_g);
     _r_par.set_group(type_g);
+
+    _transparency.set_digits(2);
 
     _r_car.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
     _r_cyl.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
@@ -163,6 +169,8 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     show_all_children();
     _eqn_par_y.hide();
     _eqn_par_z.hide();
+    _transparency_l.hide();
+    _transparency.hide();
 }
 
 Graph_page::~Graph_page()
@@ -273,6 +281,17 @@ void Graph_page::change_flags()
         _graph->draw_grid_flag = _draw_grid.get_active();
         // redraw
         _gl_window.invalidate();
+    }
+
+    if(_transparent.get_active())
+    {
+        _transparency_l.show();
+        _transparency.show();
+    }
+    else
+    {
+        _transparency_l.hide();
+        _transparency.hide();
     }
 }
 
