@@ -106,8 +106,6 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _r_sph.set_group(type_g);
     _r_par.set_group(type_g);
 
-    _transparency.set_digits(2);
-
     _r_car.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
     _r_cyl.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
     _r_sph.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_type));
@@ -164,6 +162,10 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _transparent.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
     _draw_normals.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
     _draw_grid.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_flags));
+
+    // set opacity slider properties & signal
+    _transparency.set_digits(2);
+    _transparency.signal_value_changed().connect(sigc::mem_fun(*this, &Graph_page::change_transparency));
 
     // set visibility
     show_all_children();
@@ -292,6 +294,15 @@ void Graph_page::change_flags()
     {
         _transparency_l.hide();
         _transparency.hide();
+    }
+}
+
+// called when changing transparency
+void Graph_page::change_transparency()
+{
+    if(_graph.get())
+    {
+        _graph->transparency = _transparency.get_value();
     }
 }
 
@@ -425,6 +436,7 @@ void Graph_page::apply()
         }
     }
     _graph->color = _color;
+    _graph->transparency = _transparency.get_value();
 
     update_cursor(_graph->cursor_text());
 

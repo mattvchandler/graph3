@@ -71,6 +71,8 @@ private:
     void change_type();
     // called when checkboxes for displaying grid, normals are pressed
     void change_flags();
+    // called when changing transparency
+    void change_transparency();
     // called when switching between color and texture
     void change_coloring();
     // called when the color or texture is changed
