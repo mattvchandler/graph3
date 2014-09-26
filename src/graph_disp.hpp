@@ -137,6 +137,9 @@ public:
     // reset camera to starting position / orientation
     void reset_cam();
 
+    // emmitted at the end of initialize method: all setup complete
+    sigc::signal<void> signal_initialized() const;
+
     // display settings
     bool draw_cursor_flag;
     bool draw_axes_flag;
@@ -185,7 +188,10 @@ private:
     Graph * _active_graph;
     std::set<const Graph *> _graphs;
 
+    // used for initializing, and then drawing
     sigc::connection _draw_connection;
+
+    sigc::signal<void> _signal_initialized;
 
     // make non-copyable
     Graph_disp(const Graph_disp &) = delete;

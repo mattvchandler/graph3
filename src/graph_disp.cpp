@@ -247,6 +247,12 @@ void Graph_disp::reset_cam()
     invalidate();
 }
 
+// emmitted at the end of initialize method: all setup complete
+sigc::signal<void> Graph_disp::signal_initialized() const
+{
+    return _signal_initialized;
+}
+
 // called when OpenGL context is ready and GTK widget is ready
 bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
 {
@@ -403,6 +409,7 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     _draw_connection.disconnect();
     _draw_connection = signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::draw));
 
+    _signal_initialized.emit();
     return draw(unused);
 }
 
