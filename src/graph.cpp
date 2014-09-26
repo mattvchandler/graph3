@@ -32,8 +32,7 @@ Graph::Graph():
     _tex(0), _ebo(0), _vao(0), _vbo(0),
     _grid_ebo(0),
     _normal_vao(0), _normal_vbo(0), _normal_num_indexes(0)
-{
-}
+{}
 
 Graph::~Graph()
 {

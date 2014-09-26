@@ -28,15 +28,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "config.hpp"
-#include "gl_helpers.hpp"
 #include "graph_disp.hpp"
 
 extern int return_code; // from main.cpp
 
 Cursor::Cursor(): shininess(90.0f), specular(1.0f),
     _tex(0), _vao(0), _vbo(0), _num_indexes(0)
-{
-}
+{}
 
 Cursor::~Cursor()
 {
@@ -142,8 +140,7 @@ void Cursor::build(const std::string & tex_file_name)
 }
 
 Axes::Axes(): color(0.0f, 0.0f, 0.0f), _vao(0), _vbo(0), _num_indexes(0)
-{
-}
+{}
 
 Axes::~Axes()
 {
@@ -189,7 +186,6 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request):
     cam_light({glm::vec3(0.0f), glm::vec3(1.0f), 0.2f, 1.0f, 0.5f, 0.0f}),
     dir_light({glm::vec3(-1.0f), glm::vec3(0.5f), 0.2f, 1.0f, 1.0f, 1.0f}),
     bkg_color(0.25f, 0.25f, 0.25f), ambient_color(0.4f, 0.4f, 0.4f),
-    _prog_tex(0), _prog_color(0), _prog_line(0),
     _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
     _orbit_cam({10.0f, 0.0f, (float)M_PI / 2.0f}), _scale(1.0f), _perspective(1.0f),
     _active_graph(nullptr)
@@ -212,14 +208,7 @@ Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request):
 }
 
 Graph_disp::~Graph_disp()
-{
-    if(_prog_tex)
-        glDeleteProgram(_prog_tex);
-    if(_prog_color)
-        glDeleteProgram(_prog_color);
-    if(_prog_line)
-        glDeleteProgram(_prog_line);
-}
+{}
 
 // set and get the active graph (the one w/ the cursor on it)
 void Graph_disp::set_active_graph(Graph * graph)
@@ -311,14 +300,14 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     }
 
     // link shaders
-    _prog_tex = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag, common_frag},
+    _prog_tex.prog = link_shader_prog(std::vector<GLuint> {graph_vert, tex_frag, common_frag},
         {std::make_pair(0, "vert_pos"), std::make_pair(1, "vert_tex_coords"), std::make_pair(2, "vert_normal")});
-    _prog_color = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag, common_frag},
+    _prog_color.prog = link_shader_prog(std::vector<GLuint> {graph_vert, color_frag, common_frag},
         {std::make_pair(0, "vert_pos"), std::make_pair(1, "vert_tex_coords"), std::make_pair(2, "vert_normal")});
-    _prog_line = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag},
+    _prog_line.prog = link_shader_prog(std::vector<GLuint> {line_vert, flat_color_frag},
         {std::make_pair(0, "vert_pos")});
 
-    if(_prog_tex == 0 || _prog_color == 0 || _prog_line == 0)
+    if(_prog_tex.prog == 0 || _prog_color.prog == 0 || _prog_line.prog == 0)
     {
         // error messages are displayed by the link_shader_prog function
         dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
@@ -337,62 +326,62 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     glDeleteShader(flat_color_frag);
 
     // get uniform locations for each shader
-    _prog_tex_uniforms["view_model_perspective"] = glGetUniformLocation(_prog_tex, "view_model_perspective");
-    _prog_tex_uniforms["view_model"] = glGetUniformLocation(_prog_tex, "view_model");
-    _prog_tex_uniforms["normal_transform"] = glGetUniformLocation(_prog_tex, "normal_transform");
-    _prog_tex_uniforms["shininess"] = glGetUniformLocation(_prog_tex, "shininess");
-    _prog_tex_uniforms["specular"] = glGetUniformLocation(_prog_tex, "specular");
-    _prog_tex_uniforms["ambient_color"] = glGetUniformLocation(_prog_tex, "ambient_color");
-    _prog_tex_uniforms["cam_light_color"] = glGetUniformLocation(_prog_tex, "cam_light_color");
-    _prog_tex_uniforms["cam_light_pos_eye"] = glGetUniformLocation(_prog_tex, "cam_light_pos_eye");
-    _prog_tex_uniforms["cam_light_strength"] = glGetUniformLocation(_prog_tex, "cam_light_strength");
-    _prog_tex_uniforms["const_atten"] = glGetUniformLocation(_prog_tex, "const_atten");
-    _prog_tex_uniforms["linear_atten"] = glGetUniformLocation(_prog_tex, "linear_atten");
-    _prog_tex_uniforms["quad_atten"] = glGetUniformLocation(_prog_tex, "quad_atten");
-    _prog_tex_uniforms["dir_light_color"] = glGetUniformLocation(_prog_tex, "dir_light_color");
-    _prog_tex_uniforms["dir_light_dir"] = glGetUniformLocation(_prog_tex, "dir_light_dir");
-    _prog_tex_uniforms["dir_light_strength"] = glGetUniformLocation(_prog_tex, "dir_light_strength");
-    _prog_tex_uniforms["dir_half_vec"] = glGetUniformLocation(_prog_tex, "dir_half_vec");
-    _prog_tex_uniforms["light_forward"] = glGetUniformLocation(_prog_tex, "light_forward");
+    _prog_tex.add_uniform("view_model_perspective");
+    _prog_tex.add_uniform("view_model");
+    _prog_tex.add_uniform("normal_transform");
+    _prog_tex.add_uniform("shininess");
+    _prog_tex.add_uniform("specular");
+    _prog_tex.add_uniform("ambient_color");
+    _prog_tex.add_uniform("cam_light_color");
+    _prog_tex.add_uniform("cam_light_pos_eye");
+    _prog_tex.add_uniform("cam_light_strength");
+    _prog_tex.add_uniform("const_atten");
+    _prog_tex.add_uniform("linear_atten");
+    _prog_tex.add_uniform("quad_atten");
+    _prog_tex.add_uniform("dir_light_color");
+    _prog_tex.add_uniform("dir_light_dir");
+    _prog_tex.add_uniform("dir_light_strength");
+    _prog_tex.add_uniform("dir_half_vec");
+    _prog_tex.add_uniform("light_forward");
     check_error("_prog_tex GetUniformLocation");
 
-    _prog_color_uniforms["view_model_perspective"] = glGetUniformLocation(_prog_color, "view_model_perspective");
-    _prog_color_uniforms["view_model"] = glGetUniformLocation(_prog_color, "view_model");
-    _prog_color_uniforms["normal_transform"] = glGetUniformLocation(_prog_color, "normal_transform");
-    _prog_color_uniforms["color"] = glGetUniformLocation(_prog_color, "color");
-    _prog_color_uniforms["shininess"] = glGetUniformLocation(_prog_color, "shininess");
-    _prog_color_uniforms["specular"] = glGetUniformLocation(_prog_color, "specular");
-    _prog_color_uniforms["ambient_color"] = glGetUniformLocation(_prog_color, "ambient_color");
-    _prog_color_uniforms["cam_light_color"] = glGetUniformLocation(_prog_color, "cam_light_color");
-    _prog_color_uniforms["cam_light_pos_eye"] = glGetUniformLocation(_prog_color, "cam_light_pos_eye");
-    _prog_color_uniforms["cam_light_strength"] = glGetUniformLocation(_prog_color, "cam_light_strength");
-    _prog_color_uniforms["const_atten"] = glGetUniformLocation(_prog_color, "const_atten");
-    _prog_color_uniforms["linear_atten"] = glGetUniformLocation(_prog_color, "linear_atten");
-    _prog_color_uniforms["quad_atten"] = glGetUniformLocation(_prog_color, "quad_atten");
-    _prog_color_uniforms["dir_light_color"] = glGetUniformLocation(_prog_color, "dir_light_color");
-    _prog_color_uniforms["dir_light_dir"] = glGetUniformLocation(_prog_color, "dir_light_dir");
-    _prog_color_uniforms["dir_light_strength"] = glGetUniformLocation(_prog_color, "dir_light_strength");
-    _prog_color_uniforms["dir_half_vec"] = glGetUniformLocation(_prog_color, "dir_half_vec");
-    _prog_color_uniforms["light_forward"] = glGetUniformLocation(_prog_color, "light_forward");
+    _prog_color.add_uniform("view_model_perspective");
+    _prog_color.add_uniform("view_model");
+    _prog_color.add_uniform("normal_transform");
+    _prog_color.add_uniform("color");
+    _prog_color.add_uniform("shininess");
+    _prog_color.add_uniform("specular");
+    _prog_color.add_uniform("ambient_color");
+    _prog_color.add_uniform("cam_light_color");
+    _prog_color.add_uniform("cam_light_pos_eye");
+    _prog_color.add_uniform("cam_light_strength");
+    _prog_color.add_uniform("const_atten");
+    _prog_color.add_uniform("linear_atten");
+    _prog_color.add_uniform("quad_atten");
+    _prog_color.add_uniform("dir_light_color");
+    _prog_color.add_uniform("dir_light_dir");
+    _prog_color.add_uniform("dir_light_strength");
+    _prog_color.add_uniform("dir_half_vec");
+    _prog_color.add_uniform("light_forward");
     check_error("_prog_color GetUniformLocation");
 
-    _prog_line_uniforms["perspective"] = glGetUniformLocation(_prog_line, "perspective");
-    _prog_line_uniforms["view_model"] = glGetUniformLocation(_prog_line, "view_model");
-    _prog_line_uniforms["color"] = glGetUniformLocation(_prog_line, "color");
+    _prog_line.add_uniform("perspective");
+    _prog_line.add_uniform("view_model");
+    _prog_line.add_uniform("color");
     check_error("_prog_line GetUniformLocation");
 
     // set up un-changing lighting values
     glm::vec3 light_pos_eye(0.0f);
     glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
 
-    glUseProgram(_prog_tex);
-    glUniform3fv(_prog_tex_uniforms["cam_light_pos_eye"], 1, &light_pos_eye[0]);
-    glUniform3fv(_prog_tex_uniforms["light_forward"], 1, &light_forward[0]);
+    glUseProgram(_prog_tex.prog);
+    glUniform3fv(_prog_tex.uniforms["cam_light_pos_eye"], 1, &light_pos_eye[0]);
+    glUniform3fv(_prog_tex.uniforms["light_forward"], 1, &light_forward[0]);
     check_error("_prog_tex uniforms static");
 
-    glUseProgram(_prog_color);
-    glUniform3fv(_prog_color_uniforms["cam_light_pos_eye"], 1, &light_pos_eye[0]);
-    glUniform3fv(_prog_color_uniforms["light_forward"], 1, &light_forward[0]);
+    glUseProgram(_prog_color.prog);
+    glUniform3fv(_prog_color.uniforms["cam_light_pos_eye"], 1, &light_pos_eye[0]);
+    glUniform3fv(_prog_color.uniforms["light_forward"], 1, &light_forward[0]);
     check_error("_prog_color uniforms static");
 
     // create static geometry objects - cursor, axes

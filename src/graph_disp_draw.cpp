@@ -20,7 +20,6 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "gl_helpers.hpp"
 #include "graph_disp.hpp"
 
 void Cursor::draw() const
@@ -79,11 +78,11 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     glClearColor(bkg_color.r, bkg_color.g, bkg_color.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glUseProgram(_prog_tex);
-    glUniform3fv(_prog_tex_uniforms["ambient_color"], 1, &ambient_color[0]);
+    glUseProgram(_prog_tex.prog);
+    glUniform3fv(_prog_tex.uniforms["ambient_color"], 1, &ambient_color[0]);
 
-    glUseProgram(_prog_color);
-    glUniform3fv(_prog_color_uniforms["ambient_color"], 1, &ambient_color[0]);
+    glUseProgram(_prog_color.prog);
+    glUniform3fv(_prog_color.uniforms["ambient_color"], 1, &ambient_color[0]);
 
     // set up viewmodel matrices
     glm::mat4 view_model;
@@ -110,11 +109,11 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     // draw axes
     if(draw_axes_flag)
     {
-        glUseProgram(_prog_line);
+        glUseProgram(_prog_line.prog);
 
-        glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
-        glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-        glUniform3fv(_prog_line_uniforms["color"], 1, &_axes.color[0]);
+        glUniformMatrix4fv(_prog_line.uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
+        glUniformMatrix4fv(_prog_line.uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+        glUniform3fv(_prog_line.uniforms["color"], 1, &_axes.color[0]);
 
         _axes.draw();
 
@@ -132,16 +131,16 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
                 if(graph->use_tex && graph->valid_tex)
                 {
                     // draw with texture
-                    glUseProgram(_prog_tex);
-                    graph_draw_setup(_prog_tex_uniforms, *graph,
+                    glUseProgram(_prog_tex.prog);
+                    graph_draw_setup(_prog_tex.uniforms, *graph,
                         view_model_perspective, view_model, normal_transform,
                         dir_light_dir, dir_half_vec);
                 }
                 else
                 {
                     // draw with one color
-                    glUseProgram(_prog_color);
-                    graph_draw_setup(_prog_color_uniforms, *graph,
+                    glUseProgram(_prog_color.prog);
+                    graph_draw_setup(_prog_color.uniforms, *graph,
                         view_model_perspective, view_model, normal_transform,
                         dir_light_dir, dir_half_vec);
                 }
@@ -154,10 +153,10 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             if(graph->draw_grid_flag)
             {
                 // switch to line shader
-                glUseProgram(_prog_line);
-                glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
-                glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-                glUniform3fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
+                glUseProgram(_prog_line.prog);
+                glUniformMatrix4fv(_prog_line.uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
+                glUniformMatrix4fv(_prog_line.uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+                glUniform3fv(_prog_line.uniforms["color"], 1, &graph->grid_color[0]);
 
                 graph->draw_grid();
                 check_error("draw grid");
@@ -168,10 +167,10 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
         if(graph->draw_normals_flag)
         {
             // switch to line shader
-            glUseProgram(_prog_line);
-            glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
-            glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-            glUniform3fv(_prog_line_uniforms["color"], 1, &graph->normal_color[0]);
+            glUseProgram(_prog_line.prog);
+            glUniformMatrix4fv(_prog_line.uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
+            glUniformMatrix4fv(_prog_line.uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+            glUniform3fv(_prog_line.uniforms["color"], 1, &graph->normal_color[0]);
 
             graph->draw_normals();
             check_error("draw normals");
@@ -181,21 +180,21 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     // draw cursor
     if(draw_cursor_flag && _active_graph && _active_graph->cursor_defined())
     {
-        glUseProgram(_prog_tex);
+        glUseProgram(_prog_tex.prog);
 
         glm::mat4 cursor_view_model = glm::scale(glm::translate(view_model, _active_graph->cursor_pos()), glm::vec3(0.25f / _scale));
         glm::mat4 cursor_view_model_perspective = _perspective * cursor_view_model;
         glm::mat3 cursor_normal_transform = glm::transpose(glm::inverse(glm::mat3(cursor_view_model)));
 
-        glUniformMatrix4fv(_prog_tex_uniforms["view_model_perspective"], 1, GL_FALSE, &cursor_view_model_perspective[0][0]);
-        glUniformMatrix4fv(_prog_tex_uniforms["view_model"], 1, GL_FALSE, &cursor_view_model[0][0]);
-        glUniformMatrix3fv(_prog_tex_uniforms["normal_transform"], 1, GL_FALSE, &cursor_normal_transform[0][0]);
+        glUniformMatrix4fv(_prog_tex.uniforms["view_model_perspective"], 1, GL_FALSE, &cursor_view_model_perspective[0][0]);
+        glUniformMatrix4fv(_prog_tex.uniforms["view_model"], 1, GL_FALSE, &cursor_view_model[0][0]);
+        glUniformMatrix3fv(_prog_tex.uniforms["normal_transform"], 1, GL_FALSE, &cursor_normal_transform[0][0]);
 
         // material properties
-        glUniform1f(_prog_tex_uniforms["shininess"], _cursor.shininess);
-        glUniform3fv(_prog_tex_uniforms["specular"], 1, &_cursor.specular[0]);
-        glUniform3fv(_prog_tex_uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
-        glUniform3fv(_prog_tex_uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
+        glUniform1f(_prog_tex.uniforms["shininess"], _cursor.shininess);
+        glUniform3fv(_prog_tex.uniforms["specular"], 1, &_cursor.specular[0]);
+        glUniform3fv(_prog_tex.uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
+        glUniform3fv(_prog_tex.uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
 
         _cursor.draw();
         check_error("draw cursor");
@@ -225,16 +224,16 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
                 if(graph->use_tex && graph->valid_tex)
                 {
                     // draw with texture
-                    glUseProgram(_prog_tex);
-                    graph_draw_setup(_prog_tex_uniforms, *graph,
+                    glUseProgram(_prog_tex.prog);
+                    graph_draw_setup(_prog_tex.uniforms, *graph,
                         view_model_perspective, view_model, normal_transform,
                         dir_light_dir, dir_half_vec);
                 }
                 else
                 {
                     // draw with one color
-                    glUseProgram(_prog_color);
-                    graph_draw_setup(_prog_color_uniforms, *graph,
+                    glUseProgram(_prog_color.prog);
+                    graph_draw_setup(_prog_color.uniforms, *graph,
                         view_model_perspective, view_model, normal_transform,
                         dir_light_dir, dir_half_vec);
                 }
@@ -247,10 +246,10 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             if(graph->draw_grid_flag)
             {
                 // switch to line shader
-                glUseProgram(_prog_line);
-                glUniformMatrix4fv(_prog_line_uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
-                glUniformMatrix4fv(_prog_line_uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
-                glUniform3fv(_prog_line_uniforms["color"], 1, &graph->grid_color[0]);
+                glUseProgram(_prog_line.prog);
+                glUniformMatrix4fv(_prog_line.uniforms["perspective"], 1, GL_FALSE, &_perspective[0][0]);
+                glUniformMatrix4fv(_prog_line.uniforms["view_model"], 1, GL_FALSE, &view_model[0][0]);
+                glUniform3fv(_prog_line.uniforms["color"], 1, &graph->grid_color[0]);
 
                 graph->draw_grid();
                 check_error("draw grid");

@@ -195,3 +195,18 @@ GLuint create_texture_from_file(const std::string & filename)
 
     return tex;
 }
+
+Shader_prog::Shader_prog(const GLuint program): prog(program)
+{}
+
+Shader_prog::~Shader_prog()
+{
+    if(prog)
+        glDeleteProgram(prog);
+}
+
+void Shader_prog::add_uniform(const std::string & uniform)
+{
+    uniforms[uniform] = glGetUniformLocation(prog, uniform.c_str());
+}
+

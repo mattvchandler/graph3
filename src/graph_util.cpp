@@ -24,8 +24,7 @@
 
 Graph_exception::Graph_exception(const mu::Parser::exception_type & mu_e, const Location l):
     mu::Parser::exception_type(mu_e), _location(l)
-{
-}
+{}
 
 Graph_exception::Location Graph_exception::GetLocation() const
 {

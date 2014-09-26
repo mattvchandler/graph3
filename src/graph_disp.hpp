@@ -26,7 +26,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include <GL/glew.h>
@@ -42,6 +41,7 @@
 #include "SFMLWidget/SFMLWidget.hpp"
 
 #include "camera.hpp"
+#include "gl_helpers.hpp"
 #include "graph.hpp"
 
 struct Light
@@ -167,12 +167,9 @@ private:
     bool key_press(GdkEventKey * e);
 
     // shader vars
-    GLuint _prog_tex;
-    GLuint _prog_color;
-    GLuint _prog_line;
-    std::unordered_map<std::string, GLuint> _prog_tex_uniforms;
-    std::unordered_map<std::string, GLuint> _prog_color_uniforms;
-    std::unordered_map<std::string, GLuint> _prog_line_uniforms;
+    Shader_prog _prog_tex;
+    Shader_prog _prog_color;
+    Shader_prog _prog_line;
 
     // static geometry
     Cursor _cursor;

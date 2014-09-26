@@ -24,6 +24,7 @@
 #define TEXTURE_H
 
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -43,5 +44,16 @@ GLuint link_shader_prog(const std::vector<GLuint> & shaders,
 
 // create & load a texture from a filename
 GLuint create_texture_from_file(const std::string & filename);
+
+// OpenGL Shader Program & associated uniforms
+class Shader_prog
+{
+public:
+    Shader_prog(const GLuint program = 0);
+    ~Shader_prog();
+    void add_uniform(const std::string & uniform);
+    GLuint prog;
+    std::unordered_map<std::string, GLuint> uniforms;
+};
 
 #endif // TEXTURE_H
