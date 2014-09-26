@@ -22,6 +22,7 @@
 
 #include <iostream>
 
+#include <gtkmm/messagedialog.h>
 #include <gtkmm/window.h>
 
 #define GLM_FORCE_RADIANS
@@ -128,15 +129,7 @@ void Cursor::build(const std::string & tex_file_name)
 
     _num_indexes = coords.size();
 
-    try
-    {
-        _tex = create_texture_from_file(tex_file_name);
-    }
-    catch(Glib::Exception &e)
-    {
-        std::cerr<<"Error reading cursor image file:"<<std::endl<<e.what()<<std::endl;
-        throw;
-    }
+    _tex = create_texture_from_file(tex_file_name);
 }
 
 Axes::Axes(): color(0.0f, 0.0f, 0.0f), _vao(0), _vbo(0), _num_indexes(0)
@@ -256,9 +249,19 @@ sigc::signal<void> Graph_disp::signal_initialized() const
 // called when OpenGL context is ready and GTK widget is ready
 bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
 {
+    // clear the screen
+    glClearColor(bkg_color.r, bkg_color.g, bkg_color.b, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    display();
+
     // init glew
     if(glewInit() != GLEW_OK)
     {
+        Gtk::MessageDialog error_dialog("Error loading Glew", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        error_dialog.set_title("Fatal Error");
+        error_dialog.set_secondary_text("Aborting...");
+        error_dialog.run();
+
         std::cerr<<"Error loading glew. Aborting"<<std::endl;
         dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
@@ -268,6 +271,12 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     // check for required OpenGL version
     if(!GLEW_VERSION_3_0)
     {
+        Gtk::MessageDialog error_dialog("OpenGL version too low", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        error_dialog.set_title("Fatal Error");
+        error_dialog.set_secondary_text("Version 3.0 required\nInstalled version is: " +
+            std::string((const char *)glGetString(GL_VERSION)) + "\nAborting...");
+        error_dialog.run();
+
         std::cerr<<"OpenGL version too low. Version 3.0 required"<<std::endl;
         std::cerr<<"Installed version is: "<<glGetString(GL_VERSION)<<std::endl;
         dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
@@ -276,7 +285,6 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     }
 
     // init GL state vars
-    glClearColor(bkg_color.r, bkg_color.g, bkg_color.b, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthRangef(0.0f, 1.0f);
     glLineWidth(5.0f);
@@ -300,6 +308,11 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0 || flat_color_frag == 0)
     {
         // error messages are displayed by the compile_shader function
+        Gtk::MessageDialog error_dialog("Error compiling shaders", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        error_dialog.set_title("Fatal Error");
+        error_dialog.set_secondary_text("See console output for details.\nAborting...");
+        error_dialog.run();
+
         dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
         return true;
@@ -316,6 +329,11 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     if(_prog_tex.prog == 0 || _prog_color.prog == 0 || _prog_line.prog == 0)
     {
         // error messages are displayed by the link_shader_prog function
+        Gtk::MessageDialog error_dialog("Error linking shaders", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        error_dialog.set_title("Fatal Error");
+        error_dialog.set_secondary_text("See console output for details.\nAborting...");
+        error_dialog.run();
+
         dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
         return true;
@@ -397,6 +415,14 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     }
     catch(Glib::Exception &e)
     {
+        std::cerr<<"Error reading cursor image file:"<<std::endl<<e.what()<<std::endl;
+
+        Gtk::MessageDialog error_dialog("Error reading cursor image_file", false,
+            Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        error_dialog.set_title("Fatal Error");
+        error_dialog.set_secondary_text(e.what() + std::string("\nAborting..."));
+        error_dialog.run();
+
         dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
         return_code = EXIT_FAILURE;
         return true;
