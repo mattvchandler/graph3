@@ -177,6 +177,10 @@ Graph_window::Graph_window():
     // signal when page is changed
     _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &Graph_window::tab_change));
 
+    // signal when setup is complete - ready to open files
+    _gl_window.signal_initialized().connect(sigc::mem_fun(*this, &Graph_window::open_startup_files));
+
+
     show_all_children();
 
     // create a starting page
@@ -192,6 +196,12 @@ Graph_window::Graph_window():
     _pages.back()->show();
 
     _gl_window.invalidate();
+}
+
+// give a list of files to open at startup
+void Graph_window::open_at_startup(const std::vector<std::string> & filenames)
+{
+    _startup_files = filenames;
 }
 
 // global vars to track last selected file
@@ -290,7 +300,7 @@ void Graph_window::load_graph()
 
     int current_tab = _notebook.get_current_page();
 
-    // create a new Grap_page and graph from file
+    // create a new Graph_page and graph from file
     tab_new();
     _notebook.set_current_page(_notebook.get_n_pages() - 1);
     Graph_page & new_tab = dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page()));
@@ -414,4 +424,26 @@ void Graph_window::tab_change(Gtk::Widget * page, guint page_no)
 
     // tell the page that it is now active
     dynamic_cast<Graph_page &>(*page).set_active();
+}
+
+// open files passed as program parameters
+void Graph_window::open_startup_files()
+{
+    for(auto & filename: _startup_files)
+    {
+        int current_tab = _notebook.get_current_page();
+
+        // create a new Graph_page and graph from file
+        tab_new();
+        _notebook.set_current_page(_notebook.get_n_pages() - 1);
+        Graph_page & new_tab = dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page()));
+
+        if(!new_tab.load_graph(filename))
+        {
+            // revert
+            tab_close(new_tab);
+            _notebook.set_current_page(current_tab);
+        }
+    }
+    _startup_files.clear();
 }

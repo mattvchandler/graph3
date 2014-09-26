@@ -26,6 +26,7 @@
 #include <memory>
 #include <list>
 #include <string>
+#include <vector>
 
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/label.h>
@@ -50,6 +51,9 @@ class Graph_window final: public Gtk::Window
 public:
     Graph_window();
 
+    // give a list of files to open at startup
+    void open_at_startup(const std::vector<std::string> & filenames);
+
 private:
     // select file to save to or load from
     void save_graph();
@@ -68,6 +72,8 @@ private:
     void tab_close(Graph_page & page);
     // change active graph
     void tab_change(Widget * page, guint page_no);
+    // open files passed as program parameters
+    void open_startup_files();
 
     // UI elements
     Glib::RefPtr<Gtk::UIManager> _menu;
@@ -80,6 +86,8 @@ private:
     Gtk::RadioButton _use_orbit_cam, _use_free_cam;
 
     sigc::connection _cursor_conn;
+
+    std::vector<std::string> _startup_files;
 
     // graph pages
     std::list<std::unique_ptr<Graph_page>> _pages;
