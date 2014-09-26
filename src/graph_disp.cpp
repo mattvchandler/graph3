@@ -416,7 +416,7 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
 // called when window is resized
 void Graph_disp::resize(Gtk::Allocation & allocation)
 {
-    if(m_refGdkWindow)
+    if(_gdk_window)
     {
         // set the GL viewport dimensions and perspective matrix
         glViewport(0, 0, allocation.get_width(), allocation.get_height());

@@ -180,7 +180,6 @@ Graph_window::Graph_window():
     // signal when setup is complete - ready to open files
     _gl_window.signal_initialized().connect(sigc::mem_fun(*this, &Graph_window::open_startup_files));
 
-
     show_all_children();
 
     // create a starting page
