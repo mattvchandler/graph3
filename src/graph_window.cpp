@@ -51,7 +51,8 @@ Graph_window::Graph_window():
     }
     catch(Glib::Exception & e)
     {
-        // do nothing on errors. use default "broken image" ico if we can't load any icons
+        // try to get icon from theme
+        set_default_icon_name("graph3");
     }
 
     // build menu
@@ -358,6 +359,16 @@ void Graph_window::about()
     Gtk::AboutDialog about;
     about.set_modal(true);
     about.set_transient_for(*this);
+
+    try
+    {
+        about.set_icon_from_file(check_in_pwd("icons/icon.svg"));
+    }
+    catch(Glib::Exception & e)
+    {
+        // try to get logo from theme
+        about.set_logo_icon_name("graph3");
+    }
 
     about.set_program_name(GRAPH_TITLE);
     about.set_version(VERSION_MAJOR_STR "." VERSION_MINOR_STR "." VERSION_PATCH_STR);

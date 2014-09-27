@@ -1,9 +1,10 @@
 [Desktop Entry]
 Name=Graph 3
 GenericName=Graph 3
-Exec=@bindir@/graph3
+Exec=@bindir@/graph3 %F
 Terminal=false
-Icon=@datadir@/icons/icon.svg
+Icon=graph3
 Type=Application
+MimeType=application/x-graph3
 Categories=Education;
 Comment=3D graphing program

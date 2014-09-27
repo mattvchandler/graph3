@@ -86,8 +86,18 @@ target_link_libraries(${PROJECT_NAME}
 # install targets
 install(TARGETS "${PROJECT_NAME}" DESTINATION "bin")
 install(FILES "img/cursor.png" DESTINATION "share/graph3/img")
-install(FILES "${PROJECT_BINARY_DIR}/graph3.desktop" DESTINATION "share/applications")
-install(DIRECTORY "shaders" "examples" "icons" DESTINATION "share/graph3")
+install(DIRECTORY "shaders" "examples" DESTINATION "share/graph3")
+
+install(FILES "icons/icon.svg" DESTINATION "share/graph3/icons")
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    install(FILES "icons/icon.svg" DESTINATION "share/icons/hicolor/scalable/apps" RENAME "graph3.svg")
+    install(FILES "icons/icon.svg" DESTINATION "share/icons/hicolor/scalable/mimetpyes" RENAME "application-x-graph3.svg")
+    install(FILES "icons/icon_128.png" DESTINATION "share/icons/hicolor/128x128/apps" RENAME "graph3.png")
+    install(FILES "icons/icon_128.png" DESTINATION "share/icons/hicolor/128x128/mimetpyes" RENAME "application-x-graph3.png")
+    install(FILES "${PROJECT_BINARY_DIR}/graph3.desktop" DESTINATION "share/applications")
+    install(FILES "x-graph3.xml" DESTINATION "share/mime/packages")
+endif()
 
 # CPack vars
 set(CPACK_GENERATOR TGZ)
