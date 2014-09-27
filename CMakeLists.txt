@@ -41,6 +41,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp.in
     ${PROJECT_BINARY_DIR}/src/config.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/graph3.desktop.in
     ${PROJECT_BINARY_DIR}/graph3.desktop)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/graph3.rc.in
+    ${PROJECT_BINARY_DIR}/graph3.rc)
 
 # directories
 include_directories(${GTKMM_INCLUDE_DIRS}
@@ -52,6 +54,7 @@ link_directories(${GTKMM_LINK_DIRS}
 
 # main compilation
 add_executable(${PROJECT_NAME}
+    graph3.rc
     src/config.cpp
     src/gl_helpers.cpp
     src/graph_cartesian.cpp
