@@ -439,6 +439,8 @@ void Graph_window::tab_change(Gtk::Widget * page, guint page_no)
 // open files passed as program parameters
 void Graph_window::open_startup_files()
 {
+    bool success = false;
+    int first_tab = _notebook.get_current_page();
     for(auto & filename: _startup_files)
     {
         int current_tab = _notebook.get_current_page();
@@ -454,6 +456,10 @@ void Graph_window::open_startup_files()
             tab_close(new_tab);
             _notebook.set_current_page(current_tab);
         }
+        else
+            success = true;
     }
+    if(success)
+        tab_close(dynamic_cast<Graph_page &>(*_notebook.get_nth_page(first_tab)));
     _startup_files.clear();
 }
