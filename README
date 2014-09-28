@@ -35,6 +35,8 @@ Otherwise:
 Then:
     $ make
     # make install
+To use the supplied mimetype,
+    # update-mime-database <installation directory>/share/mime
 
 Dependencies
 --------------------------------------------------------------------------------
