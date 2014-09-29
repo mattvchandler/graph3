@@ -87,7 +87,6 @@ target_link_libraries(${PROJECT_NAME}
 install(TARGETS "${PROJECT_NAME}" DESTINATION "bin")
 install(FILES "img/cursor.png" DESTINATION "share/graph3/img")
 install(DIRECTORY "shaders" "examples" DESTINATION "share/graph3")
-
 install(FILES "icons/icon.svg" DESTINATION "share/graph3/icons")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

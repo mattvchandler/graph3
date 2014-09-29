@@ -1,0 +1,25 @@
+graph : 
+{
+  r_car = false;
+  r_cyl = false;
+  r_sph = false;
+  r_par = true;
+  eqn = "v * cos(2 * u)";
+  eqn_par_y = "v * sin(2 * u)";
+  eqn_par_z = "v * cos(u)";
+  row_min = "0";
+  row_max = "2 * pi";
+  col_min = "0";
+  col_max = "1";
+  row_res = 50;
+  col_res = 50;
+  draw = true;
+  transparent = false;
+  draw_normals = false;
+  draw_grid = true;
+  use_color = true;
+  use_tex = false;
+  color = ( 0.9607843161, 0.4745098054, 0.0 );
+  transparency = 0.5;
+  tex_filename = "";
+};

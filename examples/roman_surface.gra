@@ -1,0 +1,25 @@
+graph : 
+{
+  r_car = false;
+  r_cyl = false;
+  r_sph = false;
+  r_par = true;
+  eqn = "cos(u) * cos(v) * sin(v)";
+  eqn_par_y = "sin(u) * cos(v) * sin(v)";
+  eqn_par_z = "cos(u) * sin(u) * cos(v)^2";
+  row_min = "0";
+  row_max = "pi";
+  col_min = "0";
+  col_max = "pi";
+  row_res = 200;
+  col_res = 200;
+  draw = true;
+  transparent = false;
+  draw_normals = false;
+  draw_grid = false;
+  use_color = true;
+  use_tex = false;
+  color = ( 0.7294117808, 0.741176486, 0.7137255073 );
+  transparency = 0.5;
+  tex_filename = "";
+};
