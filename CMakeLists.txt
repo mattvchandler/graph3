@@ -54,7 +54,7 @@ link_directories(${GTKMM_LINK_DIRS}
 
 # main compilation
 add_executable(${PROJECT_NAME}
-    graph3.rc
+    ${PROJECT_BINARY_DIR}/graph3.rc
     src/config.cpp
     src/gl_helpers.cpp
     src/graph_cartesian.cpp
