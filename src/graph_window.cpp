@@ -261,6 +261,8 @@ void Graph_window::load_graph()
 {
     // create file chooser
     Gtk::FileChooserDialog graph_chooser("Open Graph", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_OPEN);
+    graph_chooser.set_select_multiple(true);
+
     Glib::RefPtr<Gtk::FileFilter> graph_types;
     Glib::RefPtr<Gtk::FileFilter> all_types;
 
@@ -294,22 +296,24 @@ void Graph_window::load_graph()
         return;
 
     // save selected filename & directory
-    std::string filename = graph_chooser.get_filename();
+    std::vector<std::string> filenames = graph_chooser.get_filenames();
     curr_dir = graph_chooser.get_current_folder();
-    curr_file = filename.substr(curr_dir.size() + 1);
-
-    int current_tab = _notebook.get_current_page();
-
-    // create a new Graph_page and graph from file
-    tab_new();
-    _notebook.set_current_page(_notebook.get_n_pages() - 1);
-    Graph_page & new_tab = dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page()));
-
-    if(!new_tab.load_graph(filename))
+    curr_file = filenames[0].substr(curr_dir.size() + 1);
+    for(auto & filename: filenames)
     {
-        // revert
-        tab_close(new_tab);
-        _notebook.set_current_page(current_tab);
+        int current_tab = _notebook.get_current_page();
+
+        // create a new Graph_page and graph from file
+        tab_new();
+        _notebook.set_current_page(_notebook.get_n_pages() - 1);
+        Graph_page & new_tab = dynamic_cast<Graph_page &>(*_notebook.get_nth_page(_notebook.get_current_page()));
+
+        if(!new_tab.load_graph(filename))
+        {
+            // revert
+            tab_close(new_tab);
+            _notebook.set_current_page(current_tab);
+        }
     }
 }
 
