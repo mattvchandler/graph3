@@ -32,7 +32,6 @@
 #include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/radiobutton.h>
-#include <gtkmm/uimanager.h>
 #include <gtkmm/window.h>
 
 #include <sigc++/sigc++.h>
@@ -74,10 +73,6 @@ private:
     void tab_change(Widget * page, guint page_no);
     // open files passed as program parameters
     void open_startup_files();
-
-    // UI elements
-    Glib::RefPtr<Gtk::UIManager> _menu;
-    Glib::RefPtr<Gtk::ActionGroup> _menu_act;
 
     // widgets
     Graph_disp _gl_window;

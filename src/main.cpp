@@ -43,7 +43,7 @@ void gather_filenames(const Gio::Application::type_vec_files & files, const Glib
 
     win.open_at_startup(filenames);
 
-    // for some stupid reasoon the window won't open  when given files if this isn't here
+    // for some stupid reason the window won't open  when given files if this isn't here
     app->activate();
 }
 

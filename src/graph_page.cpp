@@ -22,7 +22,6 @@
 
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/separator.h>
-#include <gtkmm/stock.h>
 
 #include "graph_page.hpp"
 
@@ -45,21 +44,20 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _col_res(Gtk::Adjustment::create(50.0, 1.0, 1000.0)),
     _use_color("Use Color"),
     _use_tex("Use Texture"),
-    _tex_butt("Choose Color"),
     _draw("Draw Graph"),
     _transparent("Transparent Graph"),
     _draw_normals("Draw Normals"),
     _draw_grid("Draw Gridlines"),
     _transparency_l("Opacity:"),
     _transparency(Gtk::Adjustment::create(0.5, 0.0, 1.0, 0.01), Gtk::ORIENTATION_HORIZONTAL),
-    _apply_butt("Apply"),
-    _tex_ico(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR),
     _color(start_color)
 {
     // set page properties
     set_border_width(3);
     set_row_spacing(3);
     set_column_spacing(3);
+
+    Gtk::Button * apply_butt = Gtk::manage(new Gtk::Button);
 
     // add and position widgets to page
     attach(_r_car, 0, 1, 1, 1);
@@ -89,7 +87,7 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     attach(_transparency_l, 0, 16, 1, 1);
     attach(_transparency, 1, 16, 1, 1);
     attach(*Gtk::manage(new Gtk::Separator), 0, 17, 2, 1);
-    attach(_apply_butt, 0, 18, 2, 1);
+    attach(*apply_butt, 0, 18, 2, 1);
 
     // set button properties
     _tex_butt.set_valign(Gtk::ALIGN_CENTER);
@@ -97,8 +95,20 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _tex_butt.set_vexpand(false);
     _tex_butt.set_hexpand(false);
 
-    _apply_butt.set_halign(Gtk::ALIGN_CENTER);
-    _apply_butt.set_hexpand(false);
+    _tex_butt.add(*Gtk::manage(new Gtk::Grid));
+    dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->set_column_spacing(5);
+    dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->attach(*Gtk::manage(new Gtk::Image), 0, 0, 1, 1);
+    dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->attach(*Gtk::manage(new Gtk::Label("Choose Color")), 1, 0, 1, 1);
+
+    apply_butt->set_halign(Gtk::ALIGN_CENTER);
+    apply_butt->set_hexpand(false);
+    apply_butt->add(*Gtk::manage(new Gtk::Grid));
+    dynamic_cast<Gtk::Grid *>(apply_butt->get_child())->set_column_spacing(5);
+    dynamic_cast<Gtk::Grid *>(apply_butt->get_child())->attach(*Gtk::manage(new Gtk::Image), 0, 0, 1, 1);
+    dynamic_cast<Gtk::Grid *>(apply_butt->get_child())->attach(*Gtk::manage(new Gtk::Label("Apply")), 1, 0, 1, 1);
+    dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(apply_butt->get_child())->get_child_at(0, 0))->
+        set_from_icon_name("emblem-default", Gtk::ICON_SIZE_SMALL_TOOLBAR);
+
 
     // set up graph type radio buttons
     Gtk::RadioButton::Group type_g = _r_car.get_group();
@@ -146,14 +156,16 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     guint32 hex_color = r << 24 | g << 16 | b << 8;
     image->fill(hex_color);
     _color_ico.set(image);
-    _tex_butt.set_image(_color_ico);
+
+    _tex_ico.set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
+
+    dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->get_child_at(0, 0))->set(_color_ico.get_pixbuf());
 
     // connect color / texture change signal
     _tex_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::change_tex));
 
     // setup apply button
-    _apply_butt.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::APPLY, Gtk::ICON_SIZE_SMALL_TOOLBAR)));
-    _apply_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
+    apply_butt->signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::apply));
 
     // set checkbox properties
     _draw.set_active(true);

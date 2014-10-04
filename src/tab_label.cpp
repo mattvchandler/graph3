@@ -20,8 +20,6 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <gtkmm/stock.h>
-
 #include "graph_page.hpp"
 #include "tab_label.hpp"
 
@@ -41,8 +39,9 @@ Tab_label::Tab_label()
 
     // set widget params
     Gtk::Button * close_butt = Gtk::manage(new Gtk::Button);
-    close_butt->set_always_show_image(true);
-    close_butt->set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::CLOSE, Gtk::ICON_SIZE_MENU)));
+    Gtk::Image * close_x = Gtk::manage(new Gtk::Image);
+    close_x->set_from_icon_name("window-close", Gtk::ICON_SIZE_SMALL_TOOLBAR);
+    close_butt->add(*close_x);
 
     // attach widgets
     attach(_tab_pic, 0, 0, 1, 1);
@@ -58,10 +57,14 @@ Tab_label::Tab_label()
 void Tab_label::set_img(const Gtk::Image & img)
 {
     if(img.get_pixbuf())
+    {
         _tab_pic.set(img.get_pixbuf()->scale_simple(16, 16, Gdk::InterpType::INTERP_BILINEAR));
+    }
     else
+    {
         // use fallback
-        _tab_pic.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_SMALL_TOOLBAR);
+        _tab_pic.set_from_icon_name("image-missing", Gtk::ICON_SIZE_SMALL_TOOLBAR);
+    }
 }
 
     // called when close button is pressed

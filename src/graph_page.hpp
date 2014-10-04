@@ -100,7 +100,6 @@ private:
     Gtk::CheckButton _draw, _transparent, _draw_normals, _draw_grid; // selects what is drawn
     Gtk::Label _transparency_l;
     Gtk::Scale _transparency;
-    Gtk::Button _apply_butt; // apply changes
 
     // UI resources
     Gtk::Image _color_ico;

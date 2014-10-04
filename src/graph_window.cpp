@@ -27,8 +27,10 @@
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/image.h>
+#include <gtkmm/menubar.h>
+#include <gtkmm/menu.h>
+#include <gtkmm/menuitem.h>
 #include <gtkmm/separator.h>
-#include <gtkmm/stock.h>
 
 #include "graph_window.hpp"
 #include "config.hpp"
@@ -56,54 +58,50 @@ Graph_window::Graph_window():
     }
 
     // build menu
-    _menu_act = Gtk::ActionGroup::create();
+    Glib::RefPtr<Gtk::AccelGroup> accel_group = get_accel_group();
 
-    _menu_act->add(Gtk::Action::create("File", "File"));
-    _menu_act->add(Gtk::Action::create("File_save", Gtk::Stock::SAVE, "_Save", "Save"), sigc::mem_fun(*this, &Graph_window::save_graph));
-    _menu_act->add(Gtk::Action::create("File_open", Gtk::Stock::OPEN, "_Open", "Open"), sigc::mem_fun(*this, &Graph_window::load_graph));
-    _menu_act->add(Gtk::Action::create("File_quit", Gtk::Stock::QUIT, "_Quit", "Quit"), sigc::mem_fun(*this, &Graph_window::hide));
+    Gtk::MenuBar * main_menu = Gtk::manage(new Gtk::MenuBar);
 
-    _menu_act->add(Gtk::Action::create("Settings", "Settings"));
-    _menu_act->add(Gtk::Action::create("Settings_lighting", "_Lighting & Color", "Lighting & Color"), sigc::mem_fun(*this, &Graph_window::lighting));
+    // create menu items
+    Gtk::MenuItem * file_menu_item = Gtk::manage(new Gtk::MenuItem("_File", true));
+    Gtk::MenuItem * settings_menu_item = Gtk::manage(new Gtk::MenuItem("_Settings", true));
+    Gtk::MenuItem * help_menu_item = Gtk::manage(new Gtk::MenuItem("_Help", true));
+    main_menu->append(*file_menu_item);
+    main_menu->append(*settings_menu_item);
+    main_menu->append(*help_menu_item);
 
-    _menu_act->add(Gtk::Action::create("Help", "Help"));
-    _menu_act->add(Gtk::Action::create("Help_about", "About", "About"), sigc::mem_fun(*this, &Graph_window::about));
+    Gtk::Menu * file_menu = Gtk::manage(new Gtk::Menu);
+    Gtk::Menu * settings_menu = Gtk::manage(new Gtk::Menu);
+    Gtk::Menu * help_menu = Gtk::manage(new Gtk::Menu);
+    file_menu_item->set_submenu(*file_menu);
+    settings_menu_item->set_submenu(*settings_menu);
+    help_menu_item->set_submenu(*help_menu);
 
-    _menu_act->add(Gtk::Action::create("Toolbar_add", Gtk::Stock::ADD, "Add Graph", "Add new graph"), sigc::mem_fun(*this, &Graph_window::tab_new));
-    _menu_act->get_action("Toolbar_add")->set_is_important(true);
+    // File Menu
+    Gtk::MenuItem * file_save = Gtk::manage(new Gtk::MenuItem("_Save", true));
+    file_menu->append(*file_save);
+    file_save->signal_activate().connect(sigc::mem_fun(*this, &Graph_window::save_graph));
+    file_save->add_accelerator("activate", accel_group, GDK_KEY_s, Gdk::CONTROL_MASK, Gtk::ACCEL_VISIBLE);
 
-    _menu = Gtk::UIManager::create();
-    _menu->insert_action_group(_menu_act);
-    add_accel_group(_menu->get_accel_group());
+    Gtk::MenuItem * file_load = Gtk::manage(new Gtk::MenuItem("_Open", true));
+    file_menu->append(*file_load);
+    file_load->signal_activate().connect(sigc::mem_fun(*this, &Graph_window::load_graph));
+    file_load->add_accelerator("activate", accel_group, GDK_KEY_o, Gdk::CONTROL_MASK, Gtk::ACCEL_VISIBLE);
 
-    Glib::ustring menu_str =
-    "<ui>"
-    "   <menubar name='Menubar'>"
-    "       <menu action='File'>"
-    "           <menuitem action='File_save'/>"
-    "           <menuitem action='File_open'/>"
-    "           <separator/>"
-    "           <menuitem action='File_quit'/>"
-    "       </menu>"
-    "       <menu action='Settings'>"
-    "           <menuitem action='Settings_lighting'/>"
-    "       </menu>"
-    "       <menu action='Help'>"
-    "           <menuitem action='Help_about'/>"
-    "       </menu>"
-    "   </menubar>"
-    "</ui>";
+    Gtk::MenuItem * file_quit = Gtk::manage(new Gtk::MenuItem("_Quit", true));
+    file_menu->append(*file_quit);
+    file_quit->signal_activate().connect(sigc::mem_fun(*this, &Graph_window::hide));
+    file_quit->add_accelerator("activate", accel_group, GDK_KEY_q, Gdk::CONTROL_MASK, Gtk::ACCEL_VISIBLE);
 
-    try
-    {
-        _menu->add_ui_from_string(menu_str);
-    }
-    catch(const Glib::Error & e)
-    {
-        std::cerr<<"Error building menu: "<<e.what()<<std::endl;
-        return_code = EXIT_FAILURE;
-        throw;
-    }
+    // Settings menu
+    Gtk::MenuItem * settings_lights = Gtk::manage(new Gtk::MenuItem("_Lighting & Color", true));
+    settings_menu->append(*settings_lights);
+    settings_lights->signal_activate().connect(sigc::mem_fun(*this, &Graph_window::lighting));
+
+    // Help Menu
+    Gtk::MenuItem * help_about = Gtk::manage(new Gtk::MenuItem("_About", true));
+    help_menu->append(*help_about);
+    help_about->signal_activate().connect(sigc::mem_fun(*this, &Graph_window::about));
 
     // widget layout
     _gl_window.set_hexpand(true);
@@ -125,13 +123,45 @@ Graph_window::Graph_window():
 
     add(*Gtk::manage(main_grid));
 
-    main_grid->attach(*_menu->get_widget("/Menubar"), 0, 0, 2, 1);
+    main_grid->attach(*main_menu, 0, 0, 2, 1);
     main_grid->attach(*Gtk::manage(toolbar), 0, 1, 2, 1);
 
     // build toolbar
-    Gtk::Button * save_butt = Gtk::manage(new Gtk::Button(Gtk::Stock::SAVE));
-    Gtk::Button * load_butt = Gtk::manage(new Gtk::Button(Gtk::Stock::OPEN));
-    Gtk::Button * reset_cam_butt = Gtk::manage(new Gtk::Button("Reset Camera"));
+    Gtk::Button * save_butt = Gtk::manage(new Gtk::Button);
+    save_butt->add(*Gtk::manage(new Gtk::Grid));
+    dynamic_cast<Gtk::Grid *>(save_butt->get_child())->set_column_spacing(5);
+    dynamic_cast<Gtk::Grid *>(save_butt->get_child())->attach(*Gtk::manage(new Gtk::Image), 0, 0, 1, 1);
+    dynamic_cast<Gtk::Grid *>(save_butt->get_child())->attach(*Gtk::manage(new Gtk::Label("Save")), 1, 0, 1, 1);
+    dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(save_butt->get_child())->get_child_at(0, 0))->
+        set_from_icon_name("document-save", Gtk::ICON_SIZE_SMALL_TOOLBAR);
+
+    Gtk::Button * load_butt = Gtk::manage(new Gtk::Button);
+    load_butt->add(*Gtk::manage(new Gtk::Grid));
+    dynamic_cast<Gtk::Grid *>(load_butt->get_child())->set_column_spacing(5);
+    dynamic_cast<Gtk::Grid *>(load_butt->get_child())->attach(*Gtk::manage(new Gtk::Image), 0, 0, 1, 1);
+    dynamic_cast<Gtk::Grid *>(load_butt->get_child())->attach(*Gtk::manage(new Gtk::Label("Open")), 1, 0, 1, 1);
+    dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(load_butt->get_child())->get_child_at(0, 0))->
+        set_from_icon_name("document-open", Gtk::ICON_SIZE_SMALL_TOOLBAR);
+
+    Gtk::Button * reset_cam_butt = Gtk::manage(new Gtk::Button);
+    reset_cam_butt->add(*Gtk::manage(new Gtk::Grid));
+    dynamic_cast<Gtk::Grid *>(reset_cam_butt->get_child())->set_column_spacing(5);
+    dynamic_cast<Gtk::Grid *>(reset_cam_butt->get_child())->attach(*Gtk::manage(new Gtk::Image), 0, 0, 1, 1);
+    dynamic_cast<Gtk::Grid *>(reset_cam_butt->get_child())->attach(*Gtk::manage(new Gtk::Label("Reset Camera")), 1, 0, 1, 1);
+    dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(reset_cam_butt->get_child())->get_child_at(0, 0))->
+        set_from_icon_name("view-refresh", Gtk::ICON_SIZE_SMALL_TOOLBAR);
+
+    Gtk::Label * tool_sep = Gtk::manage(new Gtk::Label); // blank label for spacing
+    tool_sep->set_hexpand(true);
+
+    Gtk::Button * add_butt = Gtk::manage(new Gtk::Button);
+    add_butt->add(*Gtk::manage(new Gtk::Grid));
+    dynamic_cast<Gtk::Grid *>(add_butt->get_child())->set_column_spacing(5);
+    dynamic_cast<Gtk::Grid *>(add_butt->get_child())->attach(*Gtk::manage(new Gtk::Image), 0, 0, 1, 1);
+    dynamic_cast<Gtk::Grid *>(add_butt->get_child())->attach(*Gtk::manage(new Gtk::Label("Add")), 1, 0, 1, 1);
+    dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(add_butt->get_child())->get_child_at(0, 0))->
+        set_from_icon_name("list-add", Gtk::ICON_SIZE_SMALL_TOOLBAR);
+
 
     toolbar->attach(*save_butt, 0, 0, 1, 1);
     toolbar->attach(*load_butt, 1, 0, 1, 1);
@@ -142,12 +172,7 @@ Graph_window::Graph_window():
     toolbar->attach(_use_orbit_cam, 6, 0, 1, 1);
     toolbar->attach(_use_free_cam, 7, 0, 1, 1);
     toolbar->attach(*reset_cam_butt, 8, 0, 1, 1);
-
-    Gtk::Label * tool_sep = Gtk::manage(new Gtk::Label); // blank label for spacing
-    tool_sep->set_hexpand(true);
     toolbar->attach(*tool_sep, 9, 0, 1, 1);
-
-    Gtk::Button * add_butt = Gtk::manage(new Gtk::Button(Gtk::Stock::ADD));
     toolbar->attach(*add_butt, 10, 0, 1, 1);
 
     main_grid->attach(_gl_window, 0, 2, 1, 1);
@@ -169,7 +194,6 @@ Graph_window::Graph_window():
     _use_free_cam.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
     _use_orbit_cam.signal_toggled().connect(sigc::mem_fun(*this, &Graph_window::change_flags));
 
-    reset_cam_butt->set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::REFRESH, Gtk::ICON_SIZE_SMALL_TOOLBAR)));
     reset_cam_butt->signal_clicked().connect(sigc::mem_fun(_gl_window, &Graph_disp::reset_cam));
 
     // signal when new page is requested
@@ -239,7 +263,7 @@ void Graph_window::save_graph()
 
     graph_chooser.set_create_folders(true);
 
-    graph_chooser.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+    graph_chooser.add_button("Cancel", Gtk::RESPONSE_CANCEL);
     graph_chooser.add_button("Save", Gtk::RESPONSE_OK);
 
     graph_chooser.set_do_overwrite_confirmation(true);
@@ -276,7 +300,7 @@ void Graph_window::load_graph()
     all_types->set_name("All files");
     graph_chooser.add_filter(all_types);
 
-    graph_chooser.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+    graph_chooser.add_button("Cancel", Gtk::RESPONSE_CANCEL);
     graph_chooser.add_button("Select", Gtk::RESPONSE_OK);
 
     graph_chooser.add_shortcut_folder(check_in_pwd("examples"));

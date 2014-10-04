@@ -23,7 +23,6 @@
 #include <sstream>
 
 #include <gtkmm/messagedialog.h>
-#include <gtkmm/stock.h>
 
 #include <libconfig.h++>
 
@@ -263,7 +262,7 @@ bool Graph_page::load_graph(const std::string & filename)
         catch(Glib::Exception &e)
         {
             // set image thumbnail to fallback
-            _tex_ico.set(Gtk::Stock::MISSING_IMAGE, Gtk::ICON_SIZE_LARGE_TOOLBAR);
+            _tex_ico.set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
 
             // show error message box
             Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);

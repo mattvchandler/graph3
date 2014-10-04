@@ -26,7 +26,6 @@
 #include <gtkmm/adjustment.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/separator.h>
-#include <gtkmm/stock.h>
 
 #include "lighting_window.hpp"
 
@@ -45,8 +44,8 @@ Lighting_window::Lighting_window(Light & dir_light, Light & cam_light,
     _bkg_color(bkg_color), _ambient_color(ambient_color)
 {
     set_title("Lighting Options");
-    Gtk::manage(add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL));
-    Gtk::manage(add_button(Gtk::Stock::OK, Gtk::RESPONSE_OK));
+    Gtk::manage(add_button("Cancel", Gtk::RESPONSE_CANCEL));
+    Gtk::manage(add_button("OK", Gtk::RESPONSE_OK));
 
     Gdk::RGBA start_color;
 
