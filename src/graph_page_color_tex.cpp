@@ -42,25 +42,17 @@ void Graph_page::change_coloring()
     if(_use_tex.get_active())
     {
         if(_tex_ico.get_pixbuf())
-        {
-            dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->get_child_at(0, 0))->
-                set(_tex_ico.get_pixbuf()->copy());
-        }
+            _tex_butt.img.set(_tex_ico.get_pixbuf()->copy());
         else
-        {
-            dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->get_child_at(0, 0))->
-                set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
-        }
+            _tex_butt.img.set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
 
-        dynamic_cast<Gtk::Label *>(dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->get_child_at(1, 0))->set_text("Choose Texture");
+        _tex_butt.lbl.set_text_with_mnemonic("_Choose Texture");
         _signal_tex_changed.emit(_tex_ico);
     }
     else
     {
-        dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->get_child_at(0, 0))->
-            set(_color_ico.get_pixbuf()->copy());
-
-        dynamic_cast<Gtk::Label *>(dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->get_child_at(1, 0))->set_text("Choose Color");
+        _tex_butt.img.set(_color_ico.get_pixbuf()->copy());
+        _tex_butt.lbl.set_text_with_mnemonic("_Choose Color");
         _signal_tex_changed.emit(_color_ico);
     }
 }
@@ -98,8 +90,7 @@ void Graph_page::change_tex()
             {
                 // try to read chosen file
                 _tex_ico.set(Gdk::Pixbuf::create_from_file(_tex_filename)->scale_simple(32, 32, Gdk::InterpType::INTERP_BILINEAR));
-                dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->get_child_at(0, 0))->
-                    set(_tex_ico.get_pixbuf()->copy());
+                _tex_butt.img.set(_tex_ico.get_pixbuf()->copy());
 
                 if(_graph.get())
                 {
@@ -111,9 +102,7 @@ void Graph_page::change_tex()
             catch(Glib::Exception &e)
             {
                 _tex_ico.set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
-
-                dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->get_child_at(0, 0))->
-                    set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
+                _tex_butt.img.set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
 
                 // show error message box
                 Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
@@ -153,9 +142,7 @@ void Graph_page::change_tex()
             Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
             image->fill(hex_color);
             _color_ico.set(image);
-
-            dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->get_child_at(0, 0))->
-                set(image);
+            _tex_butt.img.set(image);
 
             // signal that the texture has changed
             _signal_tex_changed.emit(_color_ico);

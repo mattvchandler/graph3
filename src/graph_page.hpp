@@ -26,7 +26,6 @@
 #include <memory>
 #include <string>
 
-#include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/grid.h>
@@ -42,6 +41,7 @@
 #include <glm/glm.hpp>
 
 #include "graph_disp.hpp"
+#include "image_button.hpp"
 
 // Graph parameters and properties page
 // allows user to set equations, bounds, color/textures
@@ -96,7 +96,7 @@ private:
     Gtk::Label _row_res_l, _col_res_l; // resolution
     Gtk::SpinButton _row_res, _col_res;
     Gtk::RadioButton _use_color, _use_tex; // color/texture selection
-    Gtk::Button _tex_butt; // color / texture chooser
+    Image_button _tex_butt; // color / texture chooser
     Gtk::CheckButton _draw, _transparent, _draw_normals, _draw_grid; // selects what is drawn
     Gtk::Label _transparency_l;
     Gtk::Scale _transparency;

@@ -23,7 +23,6 @@
 #include <glibmm/exception.h>
 
 #include <gtkmm/aboutdialog.h>
-#include <gtkmm/button.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/image.h>
@@ -32,8 +31,9 @@
 #include <gtkmm/menuitem.h>
 #include <gtkmm/separator.h>
 
-#include "graph_window.hpp"
 #include "config.hpp"
+#include "graph_window.hpp"
+#include "image_button.hpp"
 
 extern int return_code; // from main.cpp
 
@@ -64,7 +64,7 @@ Graph_window::Graph_window():
 
     // create menu items
     Gtk::MenuItem * file_menu_item = Gtk::manage(new Gtk::MenuItem("_File", true));
-    Gtk::MenuItem * settings_menu_item = Gtk::manage(new Gtk::MenuItem("_Settings", true));
+    Gtk::MenuItem * settings_menu_item = Gtk::manage(new Gtk::MenuItem("Se_ttings", true));
     Gtk::MenuItem * help_menu_item = Gtk::manage(new Gtk::MenuItem("_Help", true));
     main_menu->append(*file_menu_item);
     main_menu->append(*settings_menu_item);
@@ -127,41 +127,24 @@ Graph_window::Graph_window():
     main_grid->attach(*Gtk::manage(toolbar), 0, 1, 2, 1);
 
     // build toolbar
-    Gtk::Button * save_butt = Gtk::manage(new Gtk::Button);
-    save_butt->add(*Gtk::manage(new Gtk::Grid));
-    dynamic_cast<Gtk::Grid *>(save_butt->get_child())->set_column_spacing(5);
-    dynamic_cast<Gtk::Grid *>(save_butt->get_child())->attach(*Gtk::manage(new Gtk::Image), 0, 0, 1, 1);
-    dynamic_cast<Gtk::Grid *>(save_butt->get_child())->attach(*Gtk::manage(new Gtk::Label("Save")), 1, 0, 1, 1);
-    dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(save_butt->get_child())->get_child_at(0, 0))->
-        set_from_icon_name("document-save", Gtk::ICON_SIZE_SMALL_TOOLBAR);
+    Image_button * save_butt = Gtk::manage(new Image_button);
+    save_butt->lbl.set_text_with_mnemonic("Sa_ve");
+    save_butt->img.set_from_icon_name("document-save", Gtk::ICON_SIZE_SMALL_TOOLBAR);
 
-    Gtk::Button * load_butt = Gtk::manage(new Gtk::Button);
-    load_butt->add(*Gtk::manage(new Gtk::Grid));
-    dynamic_cast<Gtk::Grid *>(load_butt->get_child())->set_column_spacing(5);
-    dynamic_cast<Gtk::Grid *>(load_butt->get_child())->attach(*Gtk::manage(new Gtk::Image), 0, 0, 1, 1);
-    dynamic_cast<Gtk::Grid *>(load_butt->get_child())->attach(*Gtk::manage(new Gtk::Label("Open")), 1, 0, 1, 1);
-    dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(load_butt->get_child())->get_child_at(0, 0))->
-        set_from_icon_name("document-open", Gtk::ICON_SIZE_SMALL_TOOLBAR);
+    Image_button * load_butt = Gtk::manage(new Image_button);
+    load_butt->lbl.set_text_with_mnemonic("_Open");
+    load_butt->img.set_from_icon_name("document-open", Gtk::ICON_SIZE_SMALL_TOOLBAR);
 
-    Gtk::Button * reset_cam_butt = Gtk::manage(new Gtk::Button);
-    reset_cam_butt->add(*Gtk::manage(new Gtk::Grid));
-    dynamic_cast<Gtk::Grid *>(reset_cam_butt->get_child())->set_column_spacing(5);
-    dynamic_cast<Gtk::Grid *>(reset_cam_butt->get_child())->attach(*Gtk::manage(new Gtk::Image), 0, 0, 1, 1);
-    dynamic_cast<Gtk::Grid *>(reset_cam_butt->get_child())->attach(*Gtk::manage(new Gtk::Label("Reset Camera")), 1, 0, 1, 1);
-    dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(reset_cam_butt->get_child())->get_child_at(0, 0))->
-        set_from_icon_name("view-refresh", Gtk::ICON_SIZE_SMALL_TOOLBAR);
+    Image_button * reset_cam_butt = Gtk::manage(new Image_button);
+    reset_cam_butt->lbl.set_text_with_mnemonic("_Reset Camera");
+    reset_cam_butt->img.set_from_icon_name("view-refresh", Gtk::ICON_SIZE_SMALL_TOOLBAR);
 
     Gtk::Label * tool_sep = Gtk::manage(new Gtk::Label); // blank label for spacing
     tool_sep->set_hexpand(true);
 
-    Gtk::Button * add_butt = Gtk::manage(new Gtk::Button);
-    add_butt->add(*Gtk::manage(new Gtk::Grid));
-    dynamic_cast<Gtk::Grid *>(add_butt->get_child())->set_column_spacing(5);
-    dynamic_cast<Gtk::Grid *>(add_butt->get_child())->attach(*Gtk::manage(new Gtk::Image), 0, 0, 1, 1);
-    dynamic_cast<Gtk::Grid *>(add_butt->get_child())->attach(*Gtk::manage(new Gtk::Label("Add")), 1, 0, 1, 1);
-    dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(add_butt->get_child())->get_child_at(0, 0))->
-        set_from_icon_name("list-add", Gtk::ICON_SIZE_SMALL_TOOLBAR);
-
+    Image_button * add_butt = Gtk::manage(new Image_button);
+    add_butt->lbl.set_text_with_mnemonic("Add _Graph");
+    add_butt->img.set_from_icon_name("list-add", Gtk::ICON_SIZE_SMALL_TOOLBAR);
 
     toolbar->attach(*save_butt, 0, 0, 1, 1);
     toolbar->attach(*load_butt, 1, 0, 1, 1);

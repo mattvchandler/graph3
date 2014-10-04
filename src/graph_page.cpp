@@ -57,7 +57,7 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     set_row_spacing(3);
     set_column_spacing(3);
 
-    Gtk::Button * apply_butt = Gtk::manage(new Gtk::Button);
+    Image_button * apply_butt = Gtk::manage(new Image_button);
 
     // add and position widgets to page
     attach(_r_car, 0, 1, 1, 1);
@@ -94,21 +94,12 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _tex_butt.set_halign(Gtk::ALIGN_CENTER);
     _tex_butt.set_vexpand(false);
     _tex_butt.set_hexpand(false);
-
-    _tex_butt.add(*Gtk::manage(new Gtk::Grid));
-    dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->set_column_spacing(5);
-    dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->attach(*Gtk::manage(new Gtk::Image), 0, 0, 1, 1);
-    dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->attach(*Gtk::manage(new Gtk::Label("Choose Color")), 1, 0, 1, 1);
+    _tex_butt.lbl.set_text_with_mnemonic("_Choose Color");
 
     apply_butt->set_halign(Gtk::ALIGN_CENTER);
     apply_butt->set_hexpand(false);
-    apply_butt->add(*Gtk::manage(new Gtk::Grid));
-    dynamic_cast<Gtk::Grid *>(apply_butt->get_child())->set_column_spacing(5);
-    dynamic_cast<Gtk::Grid *>(apply_butt->get_child())->attach(*Gtk::manage(new Gtk::Image), 0, 0, 1, 1);
-    dynamic_cast<Gtk::Grid *>(apply_butt->get_child())->attach(*Gtk::manage(new Gtk::Label("Apply")), 1, 0, 1, 1);
-    dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(apply_butt->get_child())->get_child_at(0, 0))->
-        set_from_icon_name("emblem-default", Gtk::ICON_SIZE_SMALL_TOOLBAR);
-
+    apply_butt->lbl.set_text_with_mnemonic("A_pply");
+    apply_butt->img.set_from_icon_name("emblem-default", Gtk::ICON_SIZE_SMALL_TOOLBAR);
 
     // set up graph type radio buttons
     Gtk::RadioButton::Group type_g = _r_car.get_group();
@@ -155,11 +146,10 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     guint8 b = (guint8)(_color.b * 256.0f);
     guint32 hex_color = r << 24 | g << 16 | b << 8;
     image->fill(hex_color);
+
     _color_ico.set(image);
-
     _tex_ico.set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
-
-    dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Grid *>(_tex_butt.get_child())->get_child_at(0, 0))->set(_color_ico.get_pixbuf());
+    _tex_butt.img.set(image);
 
     // connect color / texture change signal
     _tex_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::change_tex));

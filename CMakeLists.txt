@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project(graph3)
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 3)
-set(VERSION_PATCH 4)
+set(VERSION_PATCH 5)
 set(GRAPH_TITLE "Graph 3")
 set(GRAPH_AUTHOR "Matthew Chandler <tardarsauce@gmail.com>")
 set(GRAPH_SUMMARY "A 3D graphing tool")
@@ -71,6 +71,7 @@ add_executable(${PROJECT_NAME}
     src/graph_spherical.cpp
     src/graph_util.cpp
     src/graph_window.cpp
+    src/image_button.cpp
     src/lighting_window.cpp
     src/main.cpp
     src/SFMLWidget/SFMLWidget.cpp
