@@ -284,6 +284,8 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
         return true;
     }
 
+    std::cerr<<"OpenGL version is: "<<glGetString(GL_VERSION)<<std::endl;
+
     // init GL state vars
     glEnable(GL_DEPTH_TEST);
     glDepthRangef(0.0f, 1.0f);

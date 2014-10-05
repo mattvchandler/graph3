@@ -62,7 +62,7 @@ public:
     sigc::signal<void, const std::string &> signal_cursor_moved() const;
 
     // signaled when the user selects a new texture
-    sigc::signal<void, const Gtk::Image &> signal_tex_changed() const;
+    sigc::signal<void, const Glib::RefPtr<Gdk::Pixbuf> &> signal_tex_changed() const;
 
     static const glm::vec3 start_color;
 
@@ -102,14 +102,14 @@ private:
     Gtk::Scale _transparency;
 
     // UI resources
-    Gtk::Image _color_ico;
-    Gtk::Image _tex_ico;
+    Glib::RefPtr<Gdk::Pixbuf> _color_ico;
+    Glib::RefPtr<Gdk::Pixbuf> _tex_ico;
     glm::vec3 _color;
     std::string _tex_filename;
 
     // signal types
     sigc::signal<void, const std::string &> _signal_cursor_moved;
-    sigc::signal<void, const Gtk::Image &> _signal_tex_changed;
+    sigc::signal<void, const Glib::RefPtr<Gdk::Pixbuf> &> _signal_tex_changed;
 
     // make non-copyable
     Graph_page(const Graph_page &) = delete;

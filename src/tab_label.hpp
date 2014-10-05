@@ -39,7 +39,7 @@ public:
     // signals the lose button has been pressed
     sigc::signal<void> signal_close_tab();
     // set the thumbnail
-    void set_img(const Gtk::Image & filename);
+    void set_img(const Glib::RefPtr<Gdk::Pixbuf> & img);
 
 private:
 

@@ -140,16 +140,15 @@ Graph_page::Graph_page(Graph_disp & gl_window): _gl_window(gl_window), _graph(nu
     _use_tex.signal_toggled().connect(sigc::mem_fun(*this, &Graph_page::change_coloring));
 
     // set up color thumbnail
-    Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
     guint8 r = (guint8)(_color.r * 256.0f);
     guint8 g = (guint8)(_color.g * 256.0f);
     guint8 b = (guint8)(_color.b * 256.0f);
     guint32 hex_color = r << 24 | g << 16 | b << 8;
-    image->fill(hex_color);
 
-    _color_ico.set(image);
-    _tex_ico.set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
-    _tex_butt.img.set(image);
+    _color_ico = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
+    _color_ico->fill(hex_color);
+    _tex_ico.reset();
+    _tex_butt.img.set(_color_ico);
 
     // connect color / texture change signal
     _tex_butt.signal_clicked().connect(sigc::mem_fun(*this, &Graph_page::change_tex));
@@ -208,7 +207,7 @@ sigc::signal<void, const std::string &> Graph_page::signal_cursor_moved() const
 }
 
 // signaled when the user selects a new texture
-sigc::signal<void, const Gtk::Image &> Graph_page::signal_tex_changed() const
+sigc::signal<void, const Glib::RefPtr<Gdk::Pixbuf> &> Graph_page::signal_tex_changed() const
 {
     return _signal_tex_changed;
 }

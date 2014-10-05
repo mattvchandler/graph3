@@ -24,9 +24,8 @@
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/messagedialog.h>
 
-#include "graph_page.hpp"
-
 #include "graph.hpp"
+#include "graph_page.hpp"
 
 // called when switching between color and texture
 void Graph_page::change_coloring()
@@ -41,17 +40,17 @@ void Graph_page::change_coloring()
     // swap text and thumbnail
     if(_use_tex.get_active())
     {
-        if(_tex_ico.get_pixbuf())
-            _tex_butt.img.set(_tex_ico.get_pixbuf()->copy());
+        if(_tex_ico)
+            _tex_butt.img.set(_tex_ico);
         else
-            _tex_butt.img.set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
+            _tex_butt.img.set_from_icon_name("image-missing", Gtk::ICON_SIZE_DND);
 
         _tex_butt.lbl.set_text_with_mnemonic("_Choose Texture");
         _signal_tex_changed.emit(_tex_ico);
     }
     else
     {
-        _tex_butt.img.set(_color_ico.get_pixbuf()->copy());
+        _tex_butt.img.set(_color_ico);
         _tex_butt.lbl.set_text_with_mnemonic("_Choose Color");
         _signal_tex_changed.emit(_color_ico);
     }
@@ -89,8 +88,8 @@ void Graph_page::change_tex()
             try
             {
                 // try to read chosen file
-                _tex_ico.set(Gdk::Pixbuf::create_from_file(_tex_filename)->scale_simple(32, 32, Gdk::InterpType::INTERP_BILINEAR));
-                _tex_butt.img.set(_tex_ico.get_pixbuf()->copy());
+                _tex_ico = Gdk::Pixbuf::create_from_file(_tex_filename)->scale_simple(32, 32, Gdk::InterpType::INTERP_BILINEAR);
+                _tex_butt.img.set(_tex_ico);
 
                 if(_graph.get())
                 {
@@ -101,8 +100,8 @@ void Graph_page::change_tex()
             }
             catch(Glib::Exception &e)
             {
-                _tex_ico.set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
-                _tex_butt.img.set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
+                _tex_ico.reset();
+                _tex_butt.img.set_from_icon_name("image-missing", Gtk::ICON_SIZE_DND);
 
                 // show error message box
                 Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
@@ -139,10 +138,8 @@ void Graph_page::change_tex()
             guint8 g = (guint8)(_color.g * 256.0f);
             guint8 b = (guint8)(_color.b * 256.0f);
             guint32 hex_color = r << 24 | g << 16 | b << 8;
-            Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
-            image->fill(hex_color);
-            _color_ico.set(image);
-            _tex_butt.img.set(image);
+            _color_ico->fill(hex_color);
+            _tex_butt.img.set(_color_ico);
 
             // signal that the texture has changed
             _signal_tex_changed.emit(_color_ico);

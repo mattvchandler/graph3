@@ -54,11 +54,11 @@ Tab_label::Tab_label()
 }
 
 // set the thumbnail
-void Tab_label::set_img(const Gtk::Image & img)
+void Tab_label::set_img(const Glib::RefPtr<Gdk::Pixbuf> & img)
 {
-    if(img.get_pixbuf())
+    if(img)
     {
-        _tab_pic.set(img.get_pixbuf()->scale_simple(16, 16, Gdk::InterpType::INTERP_BILINEAR));
+        _tab_pic.set(img->scale_simple(16, 16, Gdk::InterpType::INTERP_BILINEAR));
     }
     else
     {

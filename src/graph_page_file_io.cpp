@@ -257,12 +257,11 @@ bool Graph_page::load_graph(const std::string & filename)
     {
         try
         {
-            _tex_ico.set(Gdk::Pixbuf::create_from_file(_tex_filename)->scale_simple(32, 32, Gdk::InterpType::INTERP_BILINEAR));
+            _tex_ico = Gdk::Pixbuf::create_from_file(_tex_filename)->scale_simple(32, 32, Gdk::InterpType::INTERP_BILINEAR);
         }
         catch(Glib::Exception &e)
         {
-            // set image thumbnail to fallback
-            _tex_ico.set_from_icon_name("image-missing", Gtk::ICON_SIZE_LARGE_TOOLBAR);
+            _tex_ico.reset();
 
             // show error message box
             Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
@@ -277,12 +276,7 @@ bool Graph_page::load_graph(const std::string & filename)
     guint8 g = (guint8)(_color.g * 256.0f);
     guint8 b = (guint8)(_color.b * 256.0f);
     guint32 hex_color = r << 24 | g << 16 | b << 8;
-    Glib::RefPtr<Gdk::Pixbuf> image = Gdk::Pixbuf::create(Gdk::Colorspace::COLORSPACE_RGB, false, 8, 32, 32);
-    image->fill(hex_color);
-    _color_ico.set(image);
-
-    // signal a texture change
-    _signal_tex_changed.emit(_tex_ico);
+    _color_ico->fill(hex_color);
 
     // set properties from widget values
     change_type();
