@@ -123,7 +123,7 @@ private:
 class Graph_disp final: public SFMLWidget
 {
 public:
-    Graph_disp(const sf::VideoMode & mode, const int size_request = - 1);
+    Graph_disp(const sf::VideoMode & mode, const int size_request = - 1, const sf::ContextSettings & context_settings = sf::ContextSettings());
     ~Graph_disp();
 
     // openGL initialization should go here
