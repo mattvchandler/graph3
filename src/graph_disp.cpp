@@ -432,10 +432,12 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
 
     _axes.build();
 
-    invalidate(); // redraw
-
     _draw_connection.disconnect();
     _draw_connection = signal_draw().connect(sigc::mem_fun(*this, &Graph_disp::draw));
+
+    // explicitly setup the window size (since resize is automatically called before initialization
+    Gtk::Allocation allocation(0, 0, get_allocated_width(), get_allocated_height());
+    resize(allocation);
 
     _signal_initialized.emit();
     return draw(unused);
