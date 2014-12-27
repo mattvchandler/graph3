@@ -29,8 +29,8 @@ Graph::Graph():
     use_tex(false), valid_tex(false), color(1.0f, 1.0f, 1.0f), transparency(0.5),
     shininess(50.0f), specular(1.0f), grid_color(0.1f, 0.1f, 0.1f), normal_color(0.0f, 1.0f, 1.0f),
     draw_flag(true), transparent_flag(false), draw_normals_flag(false), draw_grid_flag(true),
-    _tex(0), _ebo(0), _vao(0), _vbo(0),
-    _grid_ebo(0),
+    _tex(0), _vao(0), _vbo(0), _ebo(0),
+    _grid_vao(0), _grid_ebo(0),
     _normal_vao(0), _normal_vbo(0), _normal_num_indexes(0)
 {}
 
@@ -40,13 +40,15 @@ Graph::~Graph()
     if(_tex)
         glDeleteTextures(1, &_tex);
 
-    if(_ebo)
-        glDeleteBuffers(1, &_ebo);
     if(_vao)
         glDeleteVertexArrays(1, &_vao);
     if(_vbo)
         glDeleteBuffers(1, &_vbo);
+    if(_ebo)
+        glDeleteBuffers(1, &_ebo);
 
+    if(_grid_vao)
+        glDeleteVertexArrays(1, &_grid_vao);
     if(_grid_ebo)
         glDeleteBuffers(1, &_grid_ebo);
 
@@ -60,32 +62,33 @@ Graph::~Graph()
 void Graph::draw() const
 {
     glBindVertexArray(_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     glBindTexture(GL_TEXTURE_2D, _tex);
 
     for(auto &i: _segs)
         glDrawElements(GL_TRIANGLE_STRIP, i.second, GL_UNSIGNED_INT, (GLvoid *)(sizeof(GLuint) * i.first));
+
+    glBindVertexArray(0);
 }
 
 // draw gridlines
 void Graph::draw_grid() const
 {
-    glBindVertexArray(_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _grid_ebo);
+    glBindVertexArray(_grid_vao);
 
     for(auto &i: _grid_segs)
         glDrawElements(GL_LINE_STRIP, i.second, GL_UNSIGNED_INT, (GLvoid *)(sizeof(GLuint) * i.first));
+
+    glBindVertexArray(0);
 }
 
 // draw normals
 void Graph::draw_normals() const
 {
     glBindVertexArray(_normal_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, _normal_vbo);
 
     glDrawArrays(GL_LINES, 0, _normal_num_indexes);
+
+    glBindVertexArray(0);
 }
 
 // change texture given a filename
@@ -185,6 +188,7 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
                 break_flag = true;
             }
         }
+
         // finish row
         int ul = row * num_columns + num_columns - 1;
         int ll = (row + 1) * num_columns + num_columns - 1;
@@ -217,10 +221,6 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
         _segs.push_back(std::make_pair(start, (GLuint)(index.size() - start)));
 
     // generate required OpenGL structures
-    glGenBuffers(1, &_ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * index.size(), index.data(), GL_STATIC_DRAW);
-
     glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
 
@@ -234,6 +234,10 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
     glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size(), sizeof(glm::vec2) * tex_coords.size(), tex_coords.data());
     glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size(),
         sizeof(glm::vec3) * normals.size(), normals.data());
+
+    glGenBuffers(1, &_ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * index.size(), index.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(0);
@@ -292,9 +296,23 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
         _grid_segs.push_back(std::make_pair(start, (GLuint)(grid_index.size() - start)));
 
     // generate & load required OpenGL structures
+    glGenVertexArrays(1, &_grid_vao);
+    glBindVertexArray(_grid_vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+
     glGenBuffers(1, &_grid_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _grid_ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * grid_index.size(), grid_index.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *)(sizeof(glm::vec3) * coords.size()));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid *)(sizeof(glm::vec3) * coords.size() + sizeof(glm::vec2) * tex_coords.size()));
+    glEnableVertexAttribArray(2);
 
     // lines for normal vectors
     std::vector<glm::vec3> normal_coords;
@@ -320,4 +338,6 @@ void Graph::build_graph_geometry(size_t num_rows, size_t num_columns,
     glEnableVertexAttribArray(0);
 
     _normal_num_indexes = normal_coords.size();
+
+    glBindVertexArray(0);
 }

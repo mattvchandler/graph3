@@ -126,11 +126,13 @@ protected:
 
     // OpenGL objects
     GLuint _tex;
-    GLuint _ebo;
     GLuint _vao;
     GLuint _vbo;
+    GLuint _ebo;
+
     std::vector<std::pair<GLuint, GLuint>> _segs;
 
+    GLuint _grid_vao;
     GLuint _grid_ebo;
     std::vector<std::pair<GLuint, GLuint>> _grid_segs;
 

@@ -26,21 +26,23 @@ void Cursor::draw() const
 {
     // load the vertexes and texture
     glBindVertexArray(_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBindTexture(GL_TEXTURE_2D, _tex);
 
     // draw the geometry
     glDrawArrays(GL_TRIANGLES, 0, _num_indexes);
+
+    glBindVertexArray(0);
 }
 
 void Axes::draw() const
 {
     // load the vertices and texture
     glBindVertexArray(_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 
     // draw the geometry
     glDrawArrays(GL_LINES, 0, _num_indexes);
+
+    glBindVertexArray(0);
 }
 
 void Graph_disp::graph_draw_setup(std::unordered_map<std::string, GLuint> & uniforms,
@@ -256,6 +258,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
             }
         }
     }
+
     // restore settings
     glDepthMask(old_depth_mask);
     glBlendFunc(old_blend_func_src, old_blend_func_dst);

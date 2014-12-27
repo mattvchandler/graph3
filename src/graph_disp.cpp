@@ -130,6 +130,8 @@ void Cursor::build(const std::string & tex_file_name)
     _num_indexes = coords.size();
 
     _tex = create_texture_from_file(tex_file_name);
+
+    glBindVertexArray(0);
 }
 
 Axes::Axes(): color(0.0f, 0.0f, 0.0f), _vao(0), _vbo(0), _num_indexes(0)
@@ -171,6 +173,8 @@ void Axes::build()
     glEnableVertexAttribArray(0);
 
     _num_indexes = coords.size();
+
+    glBindVertexArray(0);
 }
 
 Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request, const sf::ContextSettings & context_settings):
