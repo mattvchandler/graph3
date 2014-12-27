@@ -220,6 +220,8 @@ void Graph_window::save_graph()
 {
     // create file chooser
     Gtk::FileChooserDialog graph_chooser("Save Graph", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_SAVE);
+    graph_chooser.set_transient_for(*this);
+
     Glib::RefPtr<Gtk::FileFilter> graph_types;
     Glib::RefPtr<Gtk::FileFilter> all_types;
 
@@ -268,6 +270,8 @@ void Graph_window::load_graph()
 {
     // create file chooser
     Gtk::FileChooserDialog graph_chooser("Open Graph", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_OPEN);
+    graph_chooser.set_transient_for(*this);
+
     graph_chooser.set_select_multiple(true);
 
     Glib::RefPtr<Gtk::FileFilter> graph_types;
