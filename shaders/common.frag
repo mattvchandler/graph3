@@ -53,57 +53,65 @@ struct Dir_light
     vec3 half_vec;
 };
 
-void calc_lighting(in vec3 pos, in vec3 light_forward, in vec3 normal_vec, in vec3 ambient_color,
-    in Material material, in Point_light cam_light, in Dir_light dir_light,
-    out vec3 scattered, out vec3 reflected)
+void calc_common_lighting(in vec3 normal_vec, in vec3 dir, in vec3 half_vec,
+    in Material material, in Base_light base,
+    out float diffuse_mul, out float specular_mul)
 {
-    // point light location
-    vec3 cam_light_dir = cam_light.pos_eye - pos;
-    float cam_light_dist = length(cam_light_dir);
-
-    cam_light_dir = cam_light_dir / cam_light_dist; // normalize, but reuse length instead of calling normalize
-
-    // calculate point light falloff
-    float cam_atten = 1.0 / (cam_light.const_atten
-        + cam_light.linear_atten * cam_light_dist
-        + cam_light.quad_atten * cam_light_dist * cam_light_dist);
-
-    // midway between light and camera - for reflection calc
-    vec3 cam_half_vec = normalize(cam_light_dir + light_forward);
-
     // calculate ammt of diffuse and specular shading
-    float cam_diffuse_mul, cam_specular_mul;
-    float dir_diffuse_mul, dir_specular_mul;
     if(gl_FrontFacing)
     {
-        cam_diffuse_mul = max(0.0, dot(normal_vec, cam_light_dir));
-        cam_specular_mul = max(0.0, dot(normal_vec, cam_half_vec));
-
-        dir_diffuse_mul = max(0.0, dot(normal_vec, normalize(dir_light.dir)));
-        dir_specular_mul = max(0.0, dot(normal_vec, dir_light.half_vec));
+        diffuse_mul = max(0.0, dot(normal_vec, normalize(dir)));
+        specular_mul = max(0.0, dot(normal_vec, half_vec));
     }
     else
     {
-        cam_diffuse_mul = max(0.0, dot(-normal_vec, cam_light_dir));
-        cam_specular_mul = max(0.0, dot(-normal_vec, cam_half_vec));
-
-        dir_diffuse_mul = max(0.0, dot(-normal_vec, normalize(dir_light.dir)));
-        dir_specular_mul = max(0.0, dot(-normal_vec, dir_light.half_vec));
+        diffuse_mul = max(0.0, dot(-normal_vec, normalize(dir)));
+        specular_mul = max(0.0, dot(-normal_vec, half_vec));
     }
 
     // calculate specular shine strength
-    if(cam_diffuse_mul <= 0.0001)
-        cam_specular_mul = 0.0;
+    if(diffuse_mul <= 0.0001)
+        specular_mul = 0.0;
     else
-        cam_specular_mul = pow(cam_specular_mul, material.shininess) * cam_light.base.strength;
+        specular_mul = pow(specular_mul, material.shininess) * base.strength;
+}
 
-    if(dir_diffuse_mul <= 0.0001)
-        dir_specular_mul = 0.0;
-    else
-        dir_specular_mul = pow(dir_specular_mul, material.shininess) * dir_light.base.strength;
+void calc_point_lighting(in vec3 pos, in vec3 forward, in vec3 normal_vec,
+    in Material material, in Point_light point_light, out vec3 scattered, out vec3 reflected)
+{
+    // point light location
+    vec3 dir = point_light.pos_eye - pos;
+    float dist = length(dir);
+
+    dir = dir / dist; // normalize, but reuse length instead of calling normalize
+
+    // calculate point light falloff
+    float atten = 1.0 / (point_light.const_atten
+        + point_light.linear_atten * dist
+        + point_light.quad_atten * dist * dist);
+
+    // midway between light and camera - for reflection calc
+    vec3 half_vec = normalize(dir + forward);
+
+    float diffuse_mul, specular_mul;
+    calc_common_lighting(normal_vec, dir, half_vec, material, point_light.base,
+        diffuse_mul, specular_mul);
 
     // diffuse light color
-    scattered = ambient_color + cam_light.base.color * cam_diffuse_mul * cam_atten + dir_light.base.color * dir_diffuse_mul;
+    scattered = point_light.base.color * diffuse_mul * atten;
     // specular light color
-    reflected = cam_light.base.color * cam_specular_mul * cam_atten * material.specular + dir_light.base.color * dir_specular_mul * material.specular;
+    reflected = point_light.base.color * specular_mul * atten * material.specular;
+}
+
+void calc_dir_lighting(in vec3 normal_vec, in Material material, in Dir_light dir_light,
+    out vec3 scattered, out vec3 reflected)
+{
+    float diffuse_mul, specular_mul;
+    calc_common_lighting(normal_vec, dir_light.dir, dir_light.half_vec, material, dir_light.base,
+        diffuse_mul, specular_mul);
+
+    // diffuse light color
+    scattered = dir_light.base.color * diffuse_mul;
+    // specular light color
+    reflected = dir_light.base.color * specular_mul * material.specular;
 }
