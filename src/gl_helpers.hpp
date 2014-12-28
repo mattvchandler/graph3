@@ -51,9 +51,9 @@ class Shader_prog
 public:
     Shader_prog(const GLuint program = 0);
     ~Shader_prog();
-    void add_uniform(const std::string & uniform);
+    bool add_uniform(const std::string & uniform);
     GLuint prog;
-    std::unordered_map<std::string, GLuint> uniforms;
+    std::unordered_map<std::string, GLint> uniforms;
 };
 
 #endif // TEXTURE_H

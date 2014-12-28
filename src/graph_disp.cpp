@@ -360,49 +360,130 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     glDeleteShader(flat_color_frag);
 
     // get uniform locations for each shader
-    _prog_tex.add_uniform("view_model_perspective");
-    _prog_tex.add_uniform("view_model");
-    _prog_tex.add_uniform("normal_transform");
-    _prog_tex.add_uniform("material.shininess");
-    _prog_tex.add_uniform("material.specular");
-    _prog_tex.add_uniform("ambient_color");
-    _prog_tex.add_uniform("cam_light.base.color");
-    _prog_tex.add_uniform("cam_light.base.strength");
-    _prog_tex.add_uniform("cam_light.pos_eye");
-    _prog_tex.add_uniform("cam_light.const_atten");
-    _prog_tex.add_uniform("cam_light.linear_atten");
-    _prog_tex.add_uniform("cam_light.quad_atten");
-    _prog_tex.add_uniform("dir_light.base.color");
-    _prog_tex.add_uniform("dir_light.base.strength");
-    _prog_tex.add_uniform("dir_light.dir");
-    _prog_tex.add_uniform("dir_light.half_vec");
-    _prog_tex.add_uniform("light_forward");
+    bool uniform_success = true;
+    uniform_success &= _prog_tex.add_uniform("view_model_perspective");
+    uniform_success &= _prog_tex.add_uniform("view_model");
+    uniform_success &= _prog_tex.add_uniform("normal_transform");
+    uniform_success &= _prog_tex.add_uniform("material.shininess");
+    uniform_success &= _prog_tex.add_uniform("material.specular");
+    uniform_success &= _prog_tex.add_uniform("ambient_color");
+    uniform_success &= _prog_tex.add_uniform("cam_light.base.color");
+    uniform_success &= _prog_tex.add_uniform("cam_light.base.strength");
+    uniform_success &= _prog_tex.add_uniform("cam_light.pos_eye");
+    uniform_success &= _prog_tex.add_uniform("cam_light.const_atten");
+    uniform_success &= _prog_tex.add_uniform("cam_light.linear_atten");
+    uniform_success &= _prog_tex.add_uniform("cam_light.quad_atten");
+    uniform_success &= _prog_tex.add_uniform("dir_light.base.color");
+    uniform_success &= _prog_tex.add_uniform("dir_light.base.strength");
+    uniform_success &= _prog_tex.add_uniform("dir_light.dir");
+    uniform_success &= _prog_tex.add_uniform("dir_light.half_vec");
+    uniform_success &= _prog_tex.add_uniform("light_forward");
     check_error("_prog_tex GetUniformLocation");
 
-    _prog_color.add_uniform("view_model_perspective");
-    _prog_color.add_uniform("view_model");
-    _prog_color.add_uniform("normal_transform");
-    _prog_color.add_uniform("material.shininess");
-    _prog_color.add_uniform("material.specular");
-    _prog_color.add_uniform("color");
-    _prog_color.add_uniform("ambient_color");
-    _prog_color.add_uniform("cam_light.base.color");
-    _prog_color.add_uniform("cam_light.base.strength");
-    _prog_color.add_uniform("cam_light.pos_eye");
-    _prog_color.add_uniform("cam_light.const_atten");
-    _prog_color.add_uniform("cam_light.linear_atten");
-    _prog_color.add_uniform("cam_light.quad_atten");
-    _prog_color.add_uniform("dir_light.base.color");
-    _prog_color.add_uniform("dir_light.base.strength");
-    _prog_color.add_uniform("dir_light.dir");
-    _prog_color.add_uniform("dir_light.half_vec");
-    _prog_color.add_uniform("light_forward");
+    if(!uniform_success)
+    {
+        std::string missing_uniforms;
+
+        for(auto const & uniform: _prog_tex.uniforms)
+        {
+            if(uniform.second == -1)
+            {
+                missing_uniforms += uniform.first + "\n";
+            }
+        }
+
+        std::cerr<<"Error finding texture shader uniforms:\n"<<missing_uniforms<<std::endl;
+
+        Gtk::MessageDialog error_dialog("Error finding texture shader uniforms", false,
+            Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
+        error_dialog.set_title("Fatal Error");
+        error_dialog.set_secondary_text(missing_uniforms + "Aborting...");
+        error_dialog.run();
+
+        dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
+        return_code = EXIT_FAILURE;
+        return true;
+    }
+
+    uniform_success = true;
+    uniform_success &= _prog_color.add_uniform("view_model_perspective");
+    uniform_success &= _prog_color.add_uniform("view_model");
+    uniform_success &= _prog_color.add_uniform("normal_transform");
+    uniform_success &= _prog_color.add_uniform("material.shininess");
+    uniform_success &= _prog_color.add_uniform("material.specular");
+    uniform_success &= _prog_color.add_uniform("color");
+    uniform_success &= _prog_color.add_uniform("ambient_color");
+    uniform_success &= _prog_color.add_uniform("cam_light.base.color");
+    uniform_success &= _prog_color.add_uniform("cam_light.base.strength");
+    uniform_success &= _prog_color.add_uniform("cam_light.pos_eye");
+    uniform_success &= _prog_color.add_uniform("cam_light.const_atten");
+    uniform_success &= _prog_color.add_uniform("cam_light.linear_atten");
+    uniform_success &= _prog_color.add_uniform("cam_light.quad_atten");
+    uniform_success &= _prog_color.add_uniform("dir_light.base.color");
+    uniform_success &= _prog_color.add_uniform("dir_light.base.strength");
+    uniform_success &= _prog_color.add_uniform("dir_light.dir");
+    uniform_success &= _prog_color.add_uniform("dir_light.half_vec");
+    uniform_success &= _prog_color.add_uniform("light_forward");
     check_error("_prog_color GetUniformLocation");
 
-    _prog_line.add_uniform("perspective");
-    _prog_line.add_uniform("view_model");
-    _prog_line.add_uniform("color");
+    if(!uniform_success)
+    {
+        std::string missing_uniforms;
+
+        for(auto const & uniform: _prog_color.uniforms)
+        {
+            if(uniform.second == -1)
+            {
+                missing_uniforms += uniform.first + "\n";
+            }
+        }
+
+        std::cerr<<"Error finding color shader uniforms:\n"<<missing_uniforms<<std::endl;
+
+        Gtk::MessageDialog error_dialog("Error finding color shader uniforms", false,
+            Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
+        error_dialog.set_title("Fatal Error");
+        error_dialog.set_secondary_text(missing_uniforms + "Aborting...");
+        error_dialog.run();
+
+        dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
+        return_code = EXIT_FAILURE;
+        return true;
+    }
+
+    uniform_success = true;
+    uniform_success &= _prog_line.add_uniform("perspective");
+    uniform_success &= _prog_line.add_uniform("view_model");
+    uniform_success &= _prog_line.add_uniform("color");
     check_error("_prog_line GetUniformLocation");
+
+    if(!uniform_success)
+    {
+        std::string missing_uniforms;
+
+        for(auto const & uniform: _prog_line.uniforms)
+        {
+            if(uniform.second == -1)
+            {
+                missing_uniforms += uniform.first + "\n";
+            }
+        }
+
+        std::cerr<<"Error finding line shader uniforms:\n"<<missing_uniforms<<std::endl;
+
+        Gtk::MessageDialog error_dialog("Error finding line shader uniforms", false,
+            Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
+        error_dialog.set_title("Fatal Error");
+        error_dialog.set_secondary_text(missing_uniforms + "Aborting...");
+        error_dialog.run();
+
+        dynamic_cast<Gtk::Window *>(get_toplevel())->hide();
+        return_code = EXIT_FAILURE;
+        return true;
+    }
 
     // set up un-changing lighting values (in eye space)
     glm::vec3 cam_light_pos_eye(0.0f);

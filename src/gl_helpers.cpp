@@ -205,8 +205,10 @@ Shader_prog::~Shader_prog()
         glDeleteProgram(prog);
 }
 
-void Shader_prog::add_uniform(const std::string & uniform)
+bool Shader_prog::add_uniform(const std::string & uniform)
 {
-    uniforms[uniform] = glGetUniformLocation(prog, uniform.c_str());
+    GLint loc = glGetUniformLocation(prog, uniform.c_str());
+    uniforms[uniform] = loc;
+    return loc != -1;
 }
 
