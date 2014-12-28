@@ -78,7 +78,8 @@ void Graph_page::save_graph(const std::string & filename)
     catch(const libconfig::FileIOException & e)
     {
         // create an error message box
-        Gtk::MessageDialog error_dialog("Error writing to " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        Gtk::MessageDialog error_dialog("Error writing to " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         error_dialog.set_secondary_text(e.what());
         error_dialog.set_title("Error");
         error_dialog.run();
@@ -106,7 +107,8 @@ bool Graph_page::load_graph(const std::string & filename)
         if((int)r_car + (int)r_cyl + (int)r_sph + (int)r_par != 1)
         {
             // show error message box
-            Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+            error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
             error_dialog.set_secondary_text("Invalid combination of r_car, r_cyl, r_sph, r_par");
             error_dialog.set_title("Error");
             error_dialog.run();
@@ -124,7 +126,8 @@ bool Graph_page::load_graph(const std::string & filename)
         if((int)use_color + (int)use_tex != 1)
         {
             // show error message box
-            Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+            error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
             error_dialog.set_secondary_text("Invalid combination of use_color, use_tex");
             error_dialog.set_title("Error");
             error_dialog.run();
@@ -195,7 +198,8 @@ bool Graph_page::load_graph(const std::string & filename)
             if(!color_l.isList() || color_l.getLength() != 3)
             {
                 // show error message box
-                Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+                Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+                error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
                 std::ostringstream msg;
                 msg<<"Invalid number of color elements (expected 3, got "<<color_l.getLength()<<")";
                 error_dialog.set_secondary_text(msg.str());
@@ -216,7 +220,8 @@ bool Graph_page::load_graph(const std::string & filename)
     catch(const libconfig::FileIOException & e)
     {
         // show error message box
-        Gtk::MessageDialog error_dialog("Error reading from " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        Gtk::MessageDialog error_dialog("Error reading from " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         error_dialog.set_secondary_text(e.what());
         error_dialog.set_title("Error");
         error_dialog.run();
@@ -225,7 +230,8 @@ bool Graph_page::load_graph(const std::string & filename)
     catch(const libconfig::ParseException & e)
     {
         // show error message box
-        Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        Gtk::MessageDialog error_dialog("Error parsing " + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         std::ostringstream msg;
         msg<<e.getError()<<" on line: "<<e.getLine();
         error_dialog.set_secondary_text(msg.str());
@@ -236,7 +242,8 @@ bool Graph_page::load_graph(const std::string & filename)
     catch(const libconfig::SettingTypeException & e)
     {
         // show error message box
-        Gtk::MessageDialog error_dialog("Invalid setting type in" + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        Gtk::MessageDialog error_dialog("Invalid setting type in" + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         error_dialog.set_secondary_text(e.getPath());
         error_dialog.set_title("Error");
         error_dialog.run();
@@ -245,7 +252,8 @@ bool Graph_page::load_graph(const std::string & filename)
     catch(const libconfig::SettingNotFoundException & e)
     {
         // show error message box
-        Gtk::MessageDialog error_dialog("Could not find setting in" + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        Gtk::MessageDialog error_dialog("Could not find setting in" + filename, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         error_dialog.set_secondary_text(e.getPath());
         error_dialog.set_title("Error");
         error_dialog.run();
@@ -264,7 +272,8 @@ bool Graph_page::load_graph(const std::string & filename)
             _tex_ico.reset();
 
             // show error message box
-            Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+            error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
             error_dialog.set_title("Error");
             error_dialog.set_secondary_text("");
             error_dialog.run();

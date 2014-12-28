@@ -261,7 +261,8 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     // init glew
     if(glewInit() != GLEW_OK)
     {
-        Gtk::MessageDialog error_dialog("Error loading Glew", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        Gtk::MessageDialog error_dialog("Error loading Glew", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         error_dialog.set_title("Fatal Error");
         error_dialog.set_secondary_text("Aborting...");
         error_dialog.run();
@@ -275,7 +276,8 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     // check for required OpenGL version
     if(!GLEW_VERSION_3_0)
     {
-        Gtk::MessageDialog error_dialog("OpenGL version too low", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        Gtk::MessageDialog error_dialog("OpenGL version too low", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         error_dialog.set_title("Fatal Error");
         error_dialog.set_secondary_text("Version 3.0 required\nInstalled version is: " +
             std::string((const char *)glGetString(GL_VERSION)) + "\nAborting...");
@@ -314,7 +316,8 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     if(graph_vert == 0 || line_vert == 0 || tex_frag == 0 || color_frag == 0 || flat_color_frag == 0)
     {
         // error messages are displayed by the compile_shader function
-        Gtk::MessageDialog error_dialog("Error compiling shaders", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        Gtk::MessageDialog error_dialog("Error compiling shaders", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         error_dialog.set_title("Fatal Error");
         error_dialog.set_secondary_text("See console output for details.\nAborting...");
         error_dialog.run();
@@ -335,7 +338,8 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     if(_prog_tex.prog == 0 || _prog_color.prog == 0 || _prog_line.prog == 0)
     {
         // error messages are displayed by the link_shader_prog function
-        Gtk::MessageDialog error_dialog("Error linking shaders", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        Gtk::MessageDialog error_dialog("Error linking shaders", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         error_dialog.set_title("Fatal Error");
         error_dialog.set_secondary_text("See console output for details.\nAborting...");
         error_dialog.run();
@@ -424,7 +428,8 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
         std::cerr<<"Error reading cursor image file:"<<std::endl<<e.what()<<std::endl;
 
         Gtk::MessageDialog error_dialog("Error reading cursor image_file", false,
-            Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         error_dialog.set_title("Fatal Error");
         error_dialog.set_secondary_text(e.what() + std::string("\nAborting..."));
         error_dialog.run();

@@ -347,7 +347,8 @@ void Graph_page::apply()
     catch(const Graph_exception &e)
     {
         // show parsing error message
-        Gtk::MessageDialog error_dialog(e.GetMsg(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+        Gtk::MessageDialog error_dialog(e.GetMsg(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+        error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         error_dialog.set_title("Error");
         error_dialog.set_secondary_text("In Expression: " + e.GetExpr());
         error_dialog.run();
@@ -432,7 +433,8 @@ void Graph_page::apply()
         catch(Glib::Exception &e)
         {
             // show error message box
-            Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+            Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+            error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
             error_dialog.set_title("Error");
             error_dialog.set_secondary_text("");
             error_dialog.run();

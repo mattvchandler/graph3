@@ -63,6 +63,7 @@ void Graph_page::change_tex()
     {
         // create file chooser
         Gtk::FileChooserDialog tex_chooser("Choose Texture", Gtk::FileChooserAction::FILE_CHOOSER_ACTION_OPEN);
+        tex_chooser.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
         Glib::RefPtr<Gtk::FileFilter> tex_types;
         Glib::RefPtr<Gtk::FileFilter> all_types;
 
@@ -104,7 +105,8 @@ void Graph_page::change_tex()
                 _tex_butt.img.set_from_icon_name("image-missing", Gtk::ICON_SIZE_DND);
 
                 // show error message box
-                Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+                Gtk::MessageDialog error_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+                error_dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
                 error_dialog.set_title("Error");
                 error_dialog.set_secondary_text("");
                 error_dialog.run();
@@ -117,6 +119,7 @@ void Graph_page::change_tex()
     {
         // create and launch color chooser
         Gtk::ColorChooserDialog color_chooser;
+        color_chooser.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
 
         int response = color_chooser.run();
 
