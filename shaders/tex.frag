@@ -25,25 +25,40 @@
 out vec4 frag_color;
 
 // material vars
+struct Material
+{
+    vec3 specular;
+    float shininess;
+};
+uniform Material material;
 uniform sampler2D tex;
-uniform float shininess;
-uniform vec3 specular;
 
 // lighting vars
 uniform vec3 ambient_color;
 
-uniform vec3 cam_light_color;
-uniform vec3 cam_light_pos_eye;
-uniform float cam_light_strength;
+struct Base_light
+{
+    vec3 color;
+    float strength;
+};
 
-uniform float const_atten;
-uniform float linear_atten;
-uniform float quad_atten;
+struct Point_light
+{
+    Base_light base;
+    vec3 pos_eye;
+    float const_atten;
+    float linear_atten;
+    float quad_atten;
+};
+uniform Point_light cam_light;
 
-uniform vec3 dir_light_color;
-uniform vec3 dir_light_dir;
-uniform float dir_light_strength;
-uniform vec3 dir_half_vec;
+struct Dir_light
+{
+    Base_light base;
+    vec3 dir;
+    vec3 half_vec;
+};
+uniform Dir_light dir_light;
 
 // camera facing direction
 uniform vec3 light_forward;
@@ -52,21 +67,16 @@ in vec2 tex_coords;
 in vec3 normal_vec;
 in vec3 pos;
 
-void calc_lighting(in vec3 pos, in vec3 cam_light_pos_eye, in float const_atten,
-    in float linear_atten, in float quad_atten, in vec3 light_forward, in vec3 normal_vec,
-    in vec3 dir_light_dir, in vec3 dir_half_vec, in float shininess,
-    in float cam_light_strength, in float dir_light_strength, in vec3 specular,
-    in vec3 cam_light_color, in vec3 dir_light_color, in vec3 ambient_color,
+void calc_lighting(in vec3 pos, in vec3 light_forward, in vec3 normal_vec, in vec3 ambient_color,
+    in Material material, in Point_light cam_light, in Dir_light dir_light,
     out vec3 scattered, out vec3 reflected);
 
 void main()
 {
     vec3 scattered, reflected;
 
-    calc_lighting(pos, cam_light_pos_eye, const_atten, linear_atten, quad_atten,
-        light_forward, normal_vec, dir_light_dir, dir_half_vec, shininess,
-        cam_light_strength, dir_light_strength, specular, cam_light_color,
-        dir_light_color, ambient_color, scattered, reflected);
+    calc_lighting(pos, light_forward, normal_vec, ambient_color,
+            material, cam_light, dir_light, scattered, reflected);
 
     // add to material color (from texture) to lighting for final color
     vec3 rgb = min(texture(tex, tex_coords).rgb * scattered + reflected, vec3(1.0));

@@ -58,19 +58,21 @@ void Graph_disp::graph_draw_setup(std::unordered_map<std::string, GLuint> & unif
     {
         glUniform3fv(uniforms["color"], 1, &graph.color[0]);
     }
-    glUniform1f(uniforms["shininess"], graph.shininess);
-    glUniform3fv(uniforms["specular"], 1, &graph.specular[0]);
-    glUniform3fv(uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
-    glUniform3fv(uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
+    glUniform1f(uniforms["material.shininess"], graph.shininess);
+    glUniform3fv(uniforms["material.specular"], 1, &graph.specular[0]);
 
     // light properties
-    glUniform3fv(uniforms["cam_light_color"], 1, &cam_light.color[0]);
-    glUniform1f(uniforms["cam_light_strength"], cam_light.strength);
-    glUniform1f(uniforms["const_atten"], cam_light.const_atten);
-    glUniform1f(uniforms["linear_atten"], cam_light.linear_atten);
-    glUniform1f(uniforms["quad_atten"], cam_light.quad_atten);
-    glUniform3fv(uniforms["dir_light_color"], 1, &dir_light.color[0]);
-    glUniform1f(uniforms["dir_light_strength"], dir_light.strength);
+    glUniform3fv(uniforms["cam_light.base.color"], 1, &cam_light.color[0]);
+    glUniform1f(uniforms["cam_light.base.strength"], cam_light.strength);
+    glUniform1f(uniforms["cam_light.const_atten"], cam_light.const_atten);
+    glUniform1f(uniforms["cam_light.linear_atten"], cam_light.linear_atten);
+    glUniform1f(uniforms["cam_light.quad_atten"], cam_light.quad_atten);
+
+    glUniform3fv(uniforms["dir_light.base.color"], 1, &dir_light.color[0]);
+    glUniform1f(uniforms["dir_light.base.strength"], dir_light.strength);
+    glUniform3fv(uniforms["dir_light.dir"], 1, &dir_light_dir[0]);
+    glUniform3fv(uniforms["dir_light.half_vec"], 1, &dir_half_vec[0]);
+
 }
 
 // main drawing code
@@ -193,10 +195,10 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
         glUniformMatrix3fv(_prog_tex.uniforms["normal_transform"], 1, GL_FALSE, &cursor_normal_transform[0][0]);
 
         // material properties
-        glUniform1f(_prog_tex.uniforms["shininess"], _cursor.shininess);
-        glUniform3fv(_prog_tex.uniforms["specular"], 1, &_cursor.specular[0]);
-        glUniform3fv(_prog_tex.uniforms["dir_light_dir"], 1, &dir_light_dir[0]);
-        glUniform3fv(_prog_tex.uniforms["dir_half_vec"], 1, &dir_half_vec[0]);
+        glUniform1f(_prog_tex.uniforms["material.shininess"], _cursor.shininess);
+        glUniform3fv(_prog_tex.uniforms["material.specular"], 1, &_cursor.specular[0]);
+        glUniform3fv(_prog_tex.uniforms["dir_light.dir"], 1, &dir_light_dir[0]);
+        glUniform3fv(_prog_tex.uniforms["dir_light.half_vec"], 1, &dir_half_vec[0]);
 
         _cursor.draw();
         check_error("draw cursor");

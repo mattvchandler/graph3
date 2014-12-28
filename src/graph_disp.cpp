@@ -363,39 +363,39 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     _prog_tex.add_uniform("view_model_perspective");
     _prog_tex.add_uniform("view_model");
     _prog_tex.add_uniform("normal_transform");
-    _prog_tex.add_uniform("shininess");
-    _prog_tex.add_uniform("specular");
+    _prog_tex.add_uniform("material.shininess");
+    _prog_tex.add_uniform("material.specular");
     _prog_tex.add_uniform("ambient_color");
-    _prog_tex.add_uniform("cam_light_color");
-    _prog_tex.add_uniform("cam_light_pos_eye");
-    _prog_tex.add_uniform("cam_light_strength");
-    _prog_tex.add_uniform("const_atten");
-    _prog_tex.add_uniform("linear_atten");
-    _prog_tex.add_uniform("quad_atten");
-    _prog_tex.add_uniform("dir_light_color");
-    _prog_tex.add_uniform("dir_light_dir");
-    _prog_tex.add_uniform("dir_light_strength");
-    _prog_tex.add_uniform("dir_half_vec");
+    _prog_tex.add_uniform("cam_light.base.color");
+    _prog_tex.add_uniform("cam_light.base.strength");
+    _prog_tex.add_uniform("cam_light.pos_eye");
+    _prog_tex.add_uniform("cam_light.const_atten");
+    _prog_tex.add_uniform("cam_light.linear_atten");
+    _prog_tex.add_uniform("cam_light.quad_atten");
+    _prog_tex.add_uniform("dir_light.base.color");
+    _prog_tex.add_uniform("dir_light.base.strength");
+    _prog_tex.add_uniform("dir_light.dir");
+    _prog_tex.add_uniform("dir_light.half_vec");
     _prog_tex.add_uniform("light_forward");
     check_error("_prog_tex GetUniformLocation");
 
     _prog_color.add_uniform("view_model_perspective");
     _prog_color.add_uniform("view_model");
     _prog_color.add_uniform("normal_transform");
+    _prog_color.add_uniform("material.shininess");
+    _prog_color.add_uniform("material.specular");
     _prog_color.add_uniform("color");
-    _prog_color.add_uniform("shininess");
-    _prog_color.add_uniform("specular");
     _prog_color.add_uniform("ambient_color");
-    _prog_color.add_uniform("cam_light_color");
-    _prog_color.add_uniform("cam_light_pos_eye");
-    _prog_color.add_uniform("cam_light_strength");
-    _prog_color.add_uniform("const_atten");
-    _prog_color.add_uniform("linear_atten");
-    _prog_color.add_uniform("quad_atten");
-    _prog_color.add_uniform("dir_light_color");
-    _prog_color.add_uniform("dir_light_dir");
-    _prog_color.add_uniform("dir_light_strength");
-    _prog_color.add_uniform("dir_half_vec");
+    _prog_color.add_uniform("cam_light.base.color");
+    _prog_color.add_uniform("cam_light.base.strength");
+    _prog_color.add_uniform("cam_light.pos_eye");
+    _prog_color.add_uniform("cam_light.const_atten");
+    _prog_color.add_uniform("cam_light.linear_atten");
+    _prog_color.add_uniform("cam_light.quad_atten");
+    _prog_color.add_uniform("dir_light.base.color");
+    _prog_color.add_uniform("dir_light.base.strength");
+    _prog_color.add_uniform("dir_light.dir");
+    _prog_color.add_uniform("dir_light.half_vec");
     _prog_color.add_uniform("light_forward");
     check_error("_prog_color GetUniformLocation");
 
@@ -404,17 +404,17 @@ bool Graph_disp::initiaize(const Cairo::RefPtr<Cairo::Context> & unused)
     _prog_line.add_uniform("color");
     check_error("_prog_line GetUniformLocation");
 
-    // set up un-changing lighting values
-    glm::vec3 light_pos_eye(0.0f);
-    glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
+    // set up un-changing lighting values (in eye space)
+    glm::vec3 cam_light_pos_eye(0.0f);
+    glm::vec3 light_forward(0.0f, 0.0f, 1.0f);
 
     glUseProgram(_prog_tex.prog);
-    glUniform3fv(_prog_tex.uniforms["cam_light_pos_eye"], 1, &light_pos_eye[0]);
+    glUniform3fv(_prog_tex.uniforms["cam_light.pos_eye"], 1, &cam_light_pos_eye[0]);
     glUniform3fv(_prog_tex.uniforms["light_forward"], 1, &light_forward[0]);
     check_error("_prog_tex uniforms static");
 
     glUseProgram(_prog_color.prog);
-    glUniform3fv(_prog_color.uniforms["cam_light_pos_eye"], 1, &light_pos_eye[0]);
+    glUniform3fv(_prog_color.uniforms["cam_light.pos_eye"], 1, &cam_light_pos_eye[0]);
     glUniform3fv(_prog_color.uniforms["light_forward"], 1, &light_forward[0]);
     check_error("_prog_color uniforms static");
 
