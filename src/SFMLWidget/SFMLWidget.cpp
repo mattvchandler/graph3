@@ -27,6 +27,8 @@
 
 #endif
 
+#include <iostream>
+
 SFMLWidget::SFMLWidget(const sf::VideoMode & mode, int size_request, const sf::ContextSettings & context_settings): _gl_context_settings(context_settings)
 {
     if(size_request<=0)
@@ -111,7 +113,7 @@ void SFMLWidget::on_realize()
         //make the widget receive expose events
         _gdk_window->set_user_data(gobj());
 
-        glWindow.create(static_cast<sf::WindowHandle>(GET_WINDOW_HANDLE_FROM_GDK(_gdk_window->gobj())));
+        glWindow.create(static_cast<sf::WindowHandle>(GET_WINDOW_HANDLE_FROM_GDK(_gdk_window->gobj())), _gl_context_settings);
     }
 }
 
