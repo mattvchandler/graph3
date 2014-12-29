@@ -37,7 +37,7 @@ class Lighting_window final: public Gtk::Dialog
 {
 public:
     // ctor takes ref to 2 light types, 2 colors
-    Lighting_window(Light & dir_light, Light & cam_light,
+    Lighting_window(Dir_light & dir_light, Point_light & cam_light,
         glm::vec3 & bkg_color, glm::vec3 & ambient_color);
 
     // store values to referenced light objs before closing
@@ -61,7 +61,8 @@ private:
     Gtk::ColorButton _bkg_color_butt;
 
     // keep ref to lights so we can write to them
-    Light & _dir_light, & _cam_light;
+    Dir_light & _dir_light;
+    Point_light & _cam_light;
     glm::vec3 & _bkg_color;
     glm::vec3 & _ambient_color;
 };

@@ -82,7 +82,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     glm::vec3 light_forward(0.0f, 0.0f, 1.0f); // in eye space
 
     // directional light
-    glm::vec3 dir_light_dir = normal_transform * glm::normalize(-dir_light.pos);
+    glm::vec3 dir_light_dir = normal_transform * glm::normalize(-dir_light.dir);
     glm::vec3 dir_half_vec = glm::normalize(light_forward + dir_light_dir);
 
     // send per-frame (view and light) uniforms to GPU

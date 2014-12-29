@@ -30,11 +30,11 @@
 #include "lighting_window.hpp"
 
 // ctor takes ref to 2 light types, 2 colors
-Lighting_window::Lighting_window(Light & dir_light, Light & cam_light,
+Lighting_window::Lighting_window(Dir_light & dir_light, Point_light & cam_light,
     glm::vec3 & bkg_color, glm::vec3 & ambient_color):
-    _x_dir(Gtk::Adjustment::create(dir_light.pos.x, -100.0, 100.0, 0.1), 0.1, 1),
-    _y_dir(Gtk::Adjustment::create(dir_light.pos.y, -100.0, 100.0, 0.1), 0.1, 1),
-    _z_dir(Gtk::Adjustment::create(dir_light.pos.z, -100.0, 100.0, 0.1), 0.1, 1),
+    _x_dir(Gtk::Adjustment::create(dir_light.dir.x, -100.0, 100.0, 0.1), 0.1, 1),
+    _y_dir(Gtk::Adjustment::create(dir_light.dir.y, -100.0, 100.0, 0.1), 0.1, 1),
+    _z_dir(Gtk::Adjustment::create(dir_light.dir.z, -100.0, 100.0, 0.1), 0.1, 1),
     _dir_strength(Gtk::Adjustment::create(dir_light.strength, 0.0, 10.0, 0.1), Gtk::ORIENTATION_HORIZONTAL),
     _cam_strength(Gtk::Adjustment::create(cam_light.strength, 0.0, 10.0, 0.1), Gtk::ORIENTATION_HORIZONTAL),
     _cam_const_atten(Gtk::Adjustment::create(cam_light.const_atten, 0.0, 1.0, 0.01)),
@@ -127,9 +127,9 @@ Lighting_window::Lighting_window(Light & dir_light, Light & cam_light,
 // store values to referenced light objs before closing
 void Lighting_window::store(int response)
 {
-    _dir_light.pos.x = _x_dir.get_value();
-    _dir_light.pos.y = _y_dir.get_value();
-    _dir_light.pos.z = _z_dir.get_value();
+    _dir_light.dir.x = _x_dir.get_value();
+    _dir_light.dir.y = _y_dir.get_value();
+    _dir_light.dir.z = _z_dir.get_value();
 
     _dir_light.color.r = _dir_color.get_rgba().get_red();
     _dir_light.color.g = _dir_color.get_rgba().get_green();

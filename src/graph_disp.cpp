@@ -33,6 +33,18 @@
 
 extern int return_code; // from main.cpp
 
+Point_light::Point_light(const glm::vec3 & color, const float strength, const glm::vec3 & pos,
+    const float const_atten, const float linear_atten, const float quad_atten):
+    Light({color, strength}), pos(pos),
+    const_atten(const_atten), linear_atten(linear_atten), quad_atten(quad_atten)
+{
+}
+
+Dir_light::Dir_light(const glm::vec3 & color, const float strength, const glm::vec3 & dir):
+    Light({color, strength}), dir(dir)
+{
+}
+
 Cursor::Cursor(): shininess(90.0f), specular(1.0f),
     _tex(0), _vao(0), _vbo(0), _num_indexes(0)
 {}
@@ -180,13 +192,12 @@ void Axes::build()
 Graph_disp::Graph_disp(const sf::VideoMode & mode, const int size_request, const sf::ContextSettings & context_settings):
     SFMLWidget(mode, size_request, context_settings),
     draw_cursor_flag(true), draw_axes_flag(true), use_orbit_cam(true),
-    cam_light({glm::vec3(0.0f), glm::vec3(1.0f), 0.2f, 1.0f, 0.5f, 0.0f}),
-    dir_light({glm::vec3(-1.0f), glm::vec3(0.5f), 0.2f, 1.0f, 1.0f, 1.0f}),
+    cam_light(glm::vec3(1.0f), 0.2f, glm::vec3(0.0f), 1.0f, 0.5f, 0.0f),
+    dir_light(glm::vec3(0.5f), 0.2f, glm::vec3(-1.0f)),
     bkg_color(0.25f, 0.25f, 0.25f), ambient_color(0.4f, 0.4f, 0.4f),
     _cam(glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
     _orbit_cam({10.0f, 0.0f, (float)M_PI / 2.0f}), _scale(1.0f), _perspective(1.0f),
     _active_graph(nullptr)
-
 {
     // All OpenGL initialization has to wait until the drawing context actually exists
     // we do this in the initialize method

@@ -46,13 +46,25 @@
 
 struct Light
 {
-    glm::vec3 pos;
     glm::vec3 color;
     float strength;
+};
+
+struct Point_light: public Light
+{
+    glm::vec3 pos;
     // attenuation properties
     float const_atten;
     float linear_atten;
     float quad_atten;
+    Point_light(const glm::vec3 & color, const float strength, const glm::vec3 & pos,
+    const float const_atten, const float linear_atten, const float quad_atten);
+};
+
+struct Dir_light: public Light
+{
+    glm::vec3 dir;
+    Dir_light(const glm::vec3 & color, const float strength, const glm::vec3 & dir);
 };
 
 // 'orbital' camera
@@ -146,8 +158,8 @@ public:
     bool use_orbit_cam;
 
     // lighting vars
-    Light cam_light;
-    Light dir_light;
+    Point_light cam_light;
+    Dir_light dir_light;
 
     glm::vec3 bkg_color;
     glm::vec3 ambient_color;

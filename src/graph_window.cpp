@@ -351,8 +351,8 @@ void Graph_window::change_flags()
 
 void Graph_window::lighting()
 {
-    Light dir_light = _gl_window.dir_light;
-    Light cam_light = _gl_window.cam_light;
+    Dir_light dir_light = _gl_window.dir_light;
+    Point_light cam_light = _gl_window.cam_light;
     glm::vec3 bkg_color = _gl_window.bkg_color;
     glm::vec3 ambient_color = _gl_window.ambient_color;
 
