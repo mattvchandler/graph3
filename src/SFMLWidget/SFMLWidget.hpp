@@ -13,13 +13,11 @@
 #include <gtkmm/window.h>
 #include <gdkmm/general.h>
 
-#include <SFML/Graphics.hpp>
 #include <gtkmm/widget.h>
 
 class SFMLWidget : public Gtk::Widget
 {
 public:
-
     SFMLWidget(const sf::VideoMode & mode, const int size_request=-1, const sf::ContextSettings & context_settings = sf::ContextSettings());
 
     void invalidate();
@@ -35,7 +33,6 @@ protected:
     Glib::RefPtr<Gdk::Window> _gdk_window;
 
     sf::ContextSettings _gl_context_settings;
-
 };
 
 #endif
