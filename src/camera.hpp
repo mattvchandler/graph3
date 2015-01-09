@@ -63,8 +63,8 @@ public:
     // angles in radians
     void rotate(const float angle, const glm::vec3 & axis)
     {
-        //using Rodrigues' rotation formula
-        //http://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+        // using Rodrigues' rotation formula
+        // http://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
         _forward = glm::normalize(_forward * cosf(angle) + glm::cross(axis, _forward) * sinf(angle)
             + axis * glm::dot(axis, _forward) * (1.0f - cosf(angle)));
         _up = glm::normalize(_up * cosf(angle) + glm::cross(axis, _up) * sinf(angle)

@@ -107,9 +107,7 @@ GLuint link_shader_prog(const std::vector<GLuint> & shaders,
 
     // bind attributes - must be done before linking
     for(auto & attr: attribs)
-    {
         glBindAttribLocation(prog, attr.first, attr.second.c_str());
-    }
 
     // link program
     glLinkProgram(prog);
@@ -211,4 +209,3 @@ bool Shader_prog::add_uniform(const std::string & uniform)
     uniforms[uniform] = loc;
     return loc != -1;
 }
-
