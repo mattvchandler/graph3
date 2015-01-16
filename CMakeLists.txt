@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project(graph3)
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 3)
-set(VERSION_PATCH 16)
+set(VERSION_PATCH 17)
 set(GRAPH_TITLE "Graph 3")
 set(GRAPH_AUTHOR "Matthew Chandler <tardarsauce@gmail.com>")
 set(GRAPH_SUMMARY "A 3D graphing tool")
@@ -50,8 +50,8 @@ include_directories(${GTKMM_INCLUDE_DIRS}
     ${LIBCONFIG_INCLUDE_DIRS}
     ${PROJECT_BINARY_DIR}/src/
     ${CMAKE_CURRENT_SOURCE_DIR}/src/)
-link_directories(${GTKMM_LINK_DIRS}
-    ${LIBCONFIG_LINK_DIRS})
+link_directories(${GTKMM_LIBRARY_DIRS}
+    ${LIBCONFIG_LIBRARY_DIRS})
 
 # main compilation
 add_executable(${PROJECT_NAME}
