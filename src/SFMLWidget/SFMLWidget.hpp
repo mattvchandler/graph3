@@ -7,6 +7,7 @@
 #ifndef SFMLWIDGET_H_INCLUDED
 #define SFMLWIDGET_H_INCLUDED
 
+#include <GL/glew.h>
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 

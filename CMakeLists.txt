@@ -51,7 +51,8 @@ include_directories(${GTKMM_INCLUDE_DIRS}
     ${PROJECT_BINARY_DIR}/src/
     ${CMAKE_CURRENT_SOURCE_DIR}/src/)
 link_directories(${GTKMM_LIBRARY_DIRS}
-    ${LIBCONFIG_LIBRARY_DIRS})
+    ${LIBCONFIG_LIBRARY_DIRS}
+    ${MUPARSER_LIBRARY_DIRS})
 
 # main compilation
 add_executable(${PROJECT_NAME}
@@ -80,8 +81,8 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     ${GTKMM_LIBRARIES}
     ${SFML_LIBRARIES}
-    ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARIES}
+    ${OPENGL_LIBRARIES}
     ${MUPARSER_LIBRARIES}
     ${LIBCONFIG_LIBRARIES})
 
