@@ -1,6 +1,6 @@
 // common.frag
 // phong lighting fragment shader calculations
-// to be linked with another vert shader file
+// to be linked with another frag shader file
 
 // Copyright 2014 Matthew Chandler
 

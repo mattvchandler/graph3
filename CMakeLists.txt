@@ -26,7 +26,7 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(GTKMM gtkmm-3.0 REQUIRED REQUIRED)
+pkg_check_modules(GTKMM gtkmm-3.0 REQUIRED)
 find_package(SFML 2 COMPONENTS window system REQUIRED)
 pkg_check_modules(MUPARSER muparser REQUIRED)
 pkg_check_modules(LIBCONFIG libconfig++ REQUIRED)
