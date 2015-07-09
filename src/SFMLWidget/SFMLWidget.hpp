@@ -7,9 +7,7 @@
 #ifndef SFMLWIDGET_H_INCLUDED
 #define SFMLWIDGET_H_INCLUDED
 
-#include <GL/glew.h>
 #include <SFML/Window.hpp>
-#include <SFML/OpenGL.hpp>
 
 #include <gtkmm/window.h>
 #include <gdkmm/general.h>
@@ -20,6 +18,7 @@ class SFMLWidget : public Gtk::Widget
 {
 public:
     SFMLWidget(const sf::VideoMode & mode, const int size_request=-1, const sf::ContextSettings & context_settings = sf::ContextSettings());
+    ~SFMLWidget() = default;
 
     void invalidate();
     void display();

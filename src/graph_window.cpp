@@ -38,7 +38,7 @@
 extern int return_code; // from main.cpp
 
 Graph_window::Graph_window():
-    _gl_window(sf::VideoMode(800, 600), -1, sf::ContextSettings(24, 8, 8)),
+    _gl_window(sf::VideoMode(800, 600), -1, sf::ContextSettings(24, 8, 8, 3, 0)),
     _draw_axes("Draw Axes"),
     _draw_cursor("Draw Cursor"),
     _use_orbit_cam("Use Orbiting Camera"),
