@@ -1,8 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
 project(graph3)
-set(VERSION_MAJOR 1)
-set(VERSION_MINOR 4)
-set(VERSION_PATCH 2)
 set(GRAPH_TITLE "Graph 3")
 set(GRAPH_AUTHOR "Matthew Chandler <tardarsauce@gmail.com>")
 set(GRAPH_SUMMARY "A 3D graphing tool")
@@ -35,15 +32,10 @@ find_package(GLEW REQUIRED)
 find_package(GLM REQUIRED)
 
 # configure variables
+set(GRAPH3_GIT_VERSIONING ON CACHE INTERNAL "")
+
 set(bindir ${CMAKE_INSTALL_PREFIX}/bin)
 set(datadir ${CMAKE_INSTALL_PREFIX}/share/graph3)
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp.in
-    ${PROJECT_BINARY_DIR}/src/config.hpp)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/graph3.desktop.in
-    ${PROJECT_BINARY_DIR}/graph3.desktop)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/graph3.rc.in
-    ${PROJECT_BINARY_DIR}/graph3.rc)
 
 # directories
 include_directories(${GTKMM_INCLUDE_DIRS}
@@ -54,6 +46,97 @@ link_directories(${GTKMM_LIBRARY_DIRS}
     ${LIBCONFIG_LIBRARY_DIRS}
     ${MUPARSER_LIBRARY_DIRS})
 
+# git version info
+if(GRAPH3_GIT_VERSIONING)
+    find_package(Git)
+endif()
+if(GIT_FOUND)
+    file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/version.cmake CONTENT
+        "# copy vars from main CMakeLists.txt
+        set(CMAKE_CURRENT_SOURCE_DIR \"${CMAKE_CURRENT_SOURCE_DIR}\")
+        set(PROJECT_BINARY_DIR \"${PROJECT_BINARY_DIR}\")
+        set(PROJECT_NAME \"${PROJECT_NAME}\")
+        set(TITLE \"${TITLE}\")
+        set(AUTHOR \"${AUTHOR}\")
+        set(COPYRIGHT \"${COPYRIGHT}\")
+        set(SUMMARY \"${SUMMARY}\")
+        set(WEBSITE \"${WEBSITE}\")
+        set(bindir \"${bindir}\")
+        set(datadir \"${datadir}\")
+
+        execute_process(COMMAND \"${GIT_EXECUTABLE}\" describe --tags --dirty
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            OUTPUT_VARIABLE VERSION_FULL)
+
+        string(REGEX REPLACE \"^v([0-9]+)\\\\..*\" \"\\\\1\" VERSION_MAJOR \"\${VERSION_FULL}\")
+        string(REGEX REPLACE \"^v[0-9]+\\\\.([0-9]+).*\" \"\\\\1\" VERSION_MINOR \"\${VERSION_FULL}\")
+        string(REGEX REPLACE \"^v[0-9]+\\\\.[0-9]+-([0-9]+).*\" \"\\\\1\" VERSION_PATCH \"\${VERSION_FULL}\")
+        string(REGEX REPLACE \"^v[0-9]+\\\\.[0-9]+-[0-9]+-(.*)\" \"\\\\1\" VERSION_SHA1 \"\${VERSION_FULL}\")
+
+        if(NOT VERSION_PATCH OR VERSION_PATCH STREQUAL VERSION_FULL)
+            set(VERSION_PATCH 0)
+        endif()
+        if(NOT VERSION_SHA1 OR VERSION_SHA1 STREQUAL VERSION_FULL)
+            set(VERSION_SHA1 \"\")
+        endif()
+
+        set(VERSION_SHORT \"\${VERSION_MAJOR}.\${VERSION_MINOR}.\${VERSION_PATCH}\")
+
+        message(STATUS \"Hymns version \${VERSION_FULL}\")
+
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp.in
+            ${PROJECT_BINARY_DIR}/src/config.hpp)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/graph3.desktop.in
+            ${PROJECT_BINARY_DIR}/graph3.desktop)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/graph3.rc.in
+            ${PROJECT_BINARY_DIR}/graph3.rc)\n")
+
+    add_custom_target(version
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/version.cmake
+        DEPENDS
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp.in
+            ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.desktop.in
+            ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.rc.in
+        BYPRODUCTS
+            ${PROJECT_BINARY_DIR}/src/config.hpp
+            ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.desktop
+            ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.rc
+        COMMENT "Getting version from git"
+        )
+
+    execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags --dirty
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        OUTPUT_VARIABLE VERSION_FULL)
+
+    string(REGEX REPLACE "^v([0-9]+)\\..*" "\\1" VERSION_MAJOR "${VERSION_FULL}")
+    string(REGEX REPLACE "^v[0-9]+\\.([0-9]+).*" "\\1" VERSION_MINOR "${VERSION_FULL}")
+    string(REGEX REPLACE "^v[0-9]+\\.[0-9]+-([0-9]+).*" "\\1" VERSION_PATCH "${VERSION_FULL}")
+    string(REGEX REPLACE "^v[0-9]+\\.[0-9]+-[0-9]+-(.*)" "\\1" VERSION_SHA1 "${VERSION_FULL}")
+
+    if(NOT VERSION_PATCH OR VERSION_PATCH STREQUAL VERSION_FULL)
+        set(VERSION_PATCH 0)
+    endif()
+    if(NOT VERSION_SHA1 OR VERSION_SHA1 STREQUAL VERSION_FULL)
+        set(VERSION_SHA1 "")
+    endif()
+
+    set(VERSION_SHORT "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+else()
+    # manually update each minor release
+    set(VERSION_MAJOR 1)
+    set(VERSION_MINOR 5)
+    set(VERSION_PATCH 0)
+    set(VERSION_SHA1 "")
+    set(VERSION_SHORT "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+    set(VERSION_FULL "${VERSION_SHORT}")
+
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp.in
+        ${PROJECT_BINARY_DIR}/src/config.hpp)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.desktop.in
+        ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.desktop)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.rc.in
+        ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.rc)
+endif()
 # main compilation
 add_executable(${PROJECT_NAME}
     ${PROJECT_BINARY_DIR}/graph3.rc
@@ -77,6 +160,10 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
     src/SFMLWidget/SFMLWidget.cpp
     src/tab_label.cpp)
+
+if(GIT_FOUND)
+    add_dependencies(${PROJECT_NAME} version)
+endif()
 
 target_link_libraries(${PROJECT_NAME}
     ${GTKMM_LIBRARIES}
