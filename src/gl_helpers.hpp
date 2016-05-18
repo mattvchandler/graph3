@@ -49,7 +49,7 @@ GLuint create_texture_from_file(const std::string & filename);
 class Shader_prog
 {
 public:
-    Shader_prog(const GLuint program = 0);
+    explicit Shader_prog(const GLuint program = 0);
     ~Shader_prog();
     bool add_uniform(const std::string & uniform);
     GLuint prog;

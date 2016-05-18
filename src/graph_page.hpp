@@ -49,7 +49,7 @@
 class Graph_page final: public Gtk::Grid
 {
 public:
-    Graph_page(Graph_disp & gl_window);
+    explicit Graph_page(Graph_disp & gl_window);
     ~Graph_page();
 
     // sets the graph as the active graph

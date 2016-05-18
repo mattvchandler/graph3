@@ -28,7 +28,8 @@
 Graph_cylindrical::Graph_cylindrical(const std::string & eqn,
     const std::string & r_min, const std::string & r_max, size_t r_res,
     const std::string & theta_min, const std::string & theta_max, size_t theta_res):
-    _eqn(eqn), _r(0.0), _theta(0.0), _r_res(r_res), _theta_res(theta_res)
+    _eqn(eqn), _r(0.0), _theta(0.0), _r_res(r_res), _theta_res(theta_res),
+    _cursor_r(0.0f), _cursor_theta(0.0f), _cursor_defined(0.0f)
 {
     _p.DefineConst("pi", M_PI);
     _p.DefineConst("e", M_E);

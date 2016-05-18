@@ -28,7 +28,8 @@
 Graph_cartesian::Graph_cartesian(const std::string & eqn,
     const std::string & x_min, const std::string & x_max, size_t x_res,
     const std::string & y_min, const std::string & y_max, size_t y_res):
-    _eqn(eqn), _x(0.0), _y(0.0), _x_res(x_res), _y_res(y_res)
+    _eqn(eqn), _x(0.0), _y(0.0), _x_res(x_res), _y_res(y_res),
+    _cursor_defined(false)
 {
     _p.DefineConst("pi", M_PI);
     _p.DefineConst("e", M_E);

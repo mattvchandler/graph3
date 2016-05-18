@@ -31,7 +31,8 @@ Graph_parametric::Graph_parametric(const std::string & eqn_x,
     const std::string & u_min, const std::string & u_max, size_t u_res,
     const std::string & v_min, const std::string & v_max, size_t v_res):
     _eqn_x(eqn_x), _eqn_y(eqn_y), _eqn_z(eqn_z),
-    _u(0.0), _v(0.0), _u_res(u_res),_v_res(v_res)
+    _u(0.0), _v(0.0), _u_res(u_res),_v_res(v_res),
+    _cursor_u(0.0f), _cursor_v(0.0f), _cursor_defined(false)
 {
     // set constants for all 3 equation parsers
     _p_x.DefineConst("pi", M_PI);
