@@ -44,7 +44,7 @@ Graph_window::Graph_window():
     _use_orbit_cam("Use Orbiting Camera"),
     _use_free_cam("Use Free Camera")
 {
-    set_title(GRAPH_TITLE);
+    set_title(TITLE);
     set_default_size(800, 600);
 
     try
@@ -385,16 +385,20 @@ void Graph_window::about()
         about.set_logo_icon_name("graph3");
     }
 
-    about.set_program_name(GRAPH_TITLE);
-    about.set_version(VERSION_MAJOR_STR "." VERSION_MINOR_STR "." VERSION_PATCH_STR);
-    about.set_copyright(u8"© 2014 Matthew Chandler");
-    about.set_comments(GRAPH_SUMMARY);
+    about.set_program_name(TITLE);
+    #ifdef NDEBUG
+    about.set_version(VERSION_SHORT);
+    #else
+    about.set_version(VERSION_FULL " (debug)");
+    #endif
+    about.set_copyright(u8"© " COPYRIGHT);
+    about.set_comments(SUMMARY);
     about.set_license_type(Gtk::LICENSE_MIT_X11);
-    about.set_website(GRAPH_WEBSITE);
-    about.set_website_label(GRAPH_TITLE " on Github");
-    about.set_authors({GRAPH_AUTHOR});
-    about.set_artists({GRAPH_AUTHOR});
-    about.set_documenters({GRAPH_AUTHOR});
+    about.set_website(WEBSITE);
+    about.set_website_label(TITLE " on Github");
+    about.set_authors({AUTHOR});
+    about.set_artists({AUTHOR});
+    about.set_documenters({AUTHOR});
     about.run();
 }
 

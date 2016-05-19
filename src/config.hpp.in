@@ -32,13 +32,18 @@
 #define VERSION_MAJOR_STR "@VERSION_MAJOR@"
 #define VERSION_MINOR_STR "@VERSION_MINOR@"
 #define VERSION_PATCH_STR "@VERSION_PATCH@"
+#define VERSION_SHA1_STR "@VERSION_SHA1@"
+#define VERSION_SHORT "@VERSION_SHORT@"
+#define VERSION_FULL "@VERSION_FULL@"
 
 #define RESOURCE_BASE_DIR "@datadir@"
 
-#define GRAPH_TITLE "@GRAPH_TITLE@"
-#define GRAPH_AUTHOR "@GRAPH_AUTHOR@"
-#define GRAPH_SUMMARY "@GRAPH_SUMMARY@"
-#define GRAPH_WEBSITE "@GRAPH_WEBSITE@"
+#define TITLE "@TITLE@"
+#define AUTHOR "@AUTHOR@"
+#define SUMMARY "@SUMMARY@"
+#define COPYRIGHT "@COPYRIGHT@"
+#define WEBSITE "@WEBSITE@"
+#define PROJECT_NAME "@PROJECT_NAME@"
 
 std::string check_in_pwd(const std::string & path);
 
