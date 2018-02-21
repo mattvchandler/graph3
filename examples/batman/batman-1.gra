@@ -1,0 +1,25 @@
+graph : 
+{
+  r_car = false;
+  r_cyl = false;
+  r_sph = false;
+  r_par = true;
+  eqn = "u";
+  eqn_par_y = "v";
+  eqn_par_z = "2*sqrt(-abs(abs(u)-1)*abs(3-abs(u))/((abs(u)-1)*(3-abs(u))))*(1+abs(abs(u)-3)/(abs(u)-3))*sqrt(1-(u/7)^2)+(5+0.97*(abs(u-.5)+abs(u+.5))-3*(abs(u-.75)+abs(u+.75)))*(1+abs(1-abs(u))/(1-abs(u)))";
+  row_min = "-7";
+  row_max = "7";
+  col_min = "-1";
+  col_max = "1";
+  row_res = 1000;
+  col_res = 5;
+  draw = true;
+  transparent = false;
+  draw_normals = false;
+  draw_grid = false;
+  use_color = true;
+  use_tex = false;
+  color = ( 0.0, 0.0, 0.0 );
+  transparency = 0.5;
+  tex_filename = "";
+};
