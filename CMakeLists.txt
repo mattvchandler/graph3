@@ -82,7 +82,7 @@ if(GIT_FOUND)
 
         set(VERSION_SHORT \"\${VERSION_MAJOR}.\${VERSION_MINOR}.\${VERSION_PATCH}\")
 
-        message(STATUS \"Hymns version \${VERSION_FULL}\")
+        message(STATUS \"Graph3 version \${VERSION_FULL}\")
 
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp.in
             ${PROJECT_BINARY_DIR}/src/config.hpp)
