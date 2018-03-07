@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project(graph3)
 set(TITLE "Graph 3")
 set(AUTHOR "Matthew Chandler <tardarsauce@gmail.com>")
+set(COPYRIGHT "2018 Matthew Chandler")
 set(SUMMARY "A 3D graphing tool")
 set(WEBSITE "http://github.com/mattvchandler/graph3")
 

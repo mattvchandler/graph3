@@ -10,7 +10,7 @@ BEGIN
             VALUE "FileDescription", "@GRAPH_TITLE@"
             VALUE "FileVersion", "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@"
             VALUE "InternalName", "graph3"
-            VALUE "LegalCopyright", "2014 @GRAPH_AUTHOR@"
+            VALUE "LegalCopyright", "@COPYRIGHT@"
             VALUE "OriginalFilename", "graph3.exe"
             VALUE "ProductName", "@GRAPH_TITLE@"
             VALUE "ProductVersion", "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@"
