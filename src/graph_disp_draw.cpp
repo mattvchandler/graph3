@@ -67,7 +67,7 @@ bool Graph_disp::draw(const Cairo::RefPtr<Cairo::Context> & unused)
     glm::mat4 view_model;
     if(use_orbit_cam)
     {
-        view_model = glm::rotate(glm::rotate(glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -_orbit_cam.r)),
+        view_model = glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -_orbit_cam.r)),
             -_orbit_cam.phi, glm::vec3(1.0f, 0.0f, 0.0f)), -_orbit_cam.theta, glm::vec3(0.0f, 0.0f, 1.0f));
     }
     else
