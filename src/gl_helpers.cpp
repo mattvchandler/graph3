@@ -166,7 +166,6 @@ GLuint create_texture_from_file(const std::string & filename)
     }
 
     // create OpenGL texture
-    glEnable(GL_TEXTURE_2D);
     GLuint tex;
     glGenTextures(1, &tex);
 
